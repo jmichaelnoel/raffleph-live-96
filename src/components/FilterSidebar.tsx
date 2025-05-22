@@ -4,6 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RaffleCategory, raffleCategories } from '@/data/raffles';
+import { Ticket, TicketPercent, DollarSign, Percent } from 'lucide-react';
 
 interface FilterSidebarProps {
   priceRange: [number, number];
@@ -51,12 +52,18 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-      <h2 className="text-xl font-semibold mb-6">Filter Raffles</h2>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 sticky top-28">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <Ticket className="h-5 w-5" />
+        Filter Raffles
+      </h2>
       
-      <div className="mb-6">
-        <h3 className="font-medium mb-3">Prize Value</h3>
-        <div className="mb-2">
+      <div className="mb-8 animate-slide-up">
+        <div className="flex items-center mb-4">
+          <DollarSign className="h-4 w-4 mr-2 text-gray-500" />
+          <h3 className="font-medium text-gray-800">Prize Value</h3>
+        </div>
+        <div className="mb-2 px-1">
           <Slider 
             defaultValue={[0, maxPrize]} 
             min={0} 
@@ -64,17 +71,21 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             step={10000}
             value={priceRange}
             onValueChange={(value) => setPriceRange(value as [number, number])}
+            className="py-4"
           />
         </div>
-        <div className="flex justify-between text-sm text-gray-600">
+        <div className="flex justify-between text-sm font-medium text-gray-600">
           <span>{formatCurrency(priceRange[0])}</span>
           <span>{formatCurrency(priceRange[1])}</span>
         </div>
       </div>
       
-      <div className="mb-6">
-        <h3 className="font-medium mb-3">Betting Cost</h3>
-        <div className="mb-2">
+      <div className="mb-8 animate-slide-up delay-1">
+        <div className="flex items-center mb-4">
+          <TicketPercent className="h-4 w-4 mr-2 text-gray-500" />
+          <h3 className="font-medium text-gray-800">Betting Cost</h3>
+        </div>
+        <div className="mb-2 px-1">
           <Slider 
             defaultValue={[0, maxBet]} 
             min={0} 
@@ -82,17 +93,21 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             step={10}
             value={betRange}
             onValueChange={(value) => setBetRange(value as [number, number])}
+            className="py-4"
           />
         </div>
-        <div className="flex justify-between text-sm text-gray-600">
+        <div className="flex justify-between text-sm font-medium text-gray-600">
           <span>{formatCurrency(betRange[0])}</span>
           <span>{formatCurrency(betRange[1])}</span>
         </div>
       </div>
       
-      <div className="mb-6">
-        <h3 className="font-medium mb-3">Winning Percentage</h3>
-        <div className="mb-2">
+      <div className="mb-8 animate-slide-up delay-2">
+        <div className="flex items-center mb-4">
+          <Percent className="h-4 w-4 mr-2 text-gray-500" />
+          <h3 className="font-medium text-gray-800">Winning Percentage</h3>
+        </div>
+        <div className="mb-2 px-1">
           <Slider 
             defaultValue={[0, 0.02]} 
             min={0} 
@@ -100,30 +115,28 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             step={0.0001}
             value={winRateRange}
             onValueChange={(value) => setWinRateRange(value as [number, number])}
+            className="py-4"
           />
         </div>
-        <div className="flex justify-between text-sm text-gray-600">
+        <div className="flex justify-between text-sm font-medium text-gray-600">
           <span>{formatPercentage(winRateRange[0])}</span>
           <span>{formatPercentage(winRateRange[1])}</span>
         </div>
       </div>
 
-      <div className="mb-6">
-        <h3 className="font-medium mb-3">Categories</h3>
-        <div className="space-y-2">
+      <div className="animate-slide-up delay-3">
+        <div className="flex items-center mb-4">
+          <Ticket className="h-4 w-4 mr-2 text-gray-500" />
+          <h3 className="font-medium text-gray-800">Categories</h3>
+        </div>
+        <div className="flex flex-wrap gap-2">
           {raffleCategories.map((category) => (
-            <div key={category} className="flex items-center">
-              <Checkbox 
-                id={`category-${category}`} 
-                checked={selectedCategories.includes(category)}
-                onCheckedChange={() => handleCategoryChange(category)}
-              />
-              <Label
-                htmlFor={`category-${category}`}
-                className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {category}
-              </Label>
+            <div 
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              className={`filter-tag cursor-pointer ${selectedCategories.includes(category) ? 'active' : ''}`}
+            >
+              {category}
             </div>
           ))}
         </div>

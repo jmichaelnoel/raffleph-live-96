@@ -3,6 +3,7 @@ import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Ticket, TicketPercent, DollarSign, Calendar } from 'lucide-react';
 
 interface RaffleCardProps {
   raffle: Raffle;
@@ -30,7 +31,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
   };
 
   return (
-    <Card className="raffle-card overflow-hidden h-full flex flex-col">
+    <Card className="raffle-card overflow-hidden h-full flex flex-col rounded-3xl border-none">
       <div className="relative">
         <img
           src={raffle.imageUrl}
@@ -38,54 +39,72 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
           className="w-full h-48 object-cover"
         />
         {raffle.featured && (
-          <Badge className="absolute top-2 right-2 bg-ph-red hover:bg-ph-red">
+          <Badge className="absolute top-3 right-3 bg-ph-red hover:bg-ph-red rounded-full font-medium">
             Featured
           </Badge>
         )}
+        <Badge variant="outline" className="absolute top-3 left-3 bg-white/90 text-gray-800 rounded-full">
+          {raffle.category}
+        </Badge>
       </div>
       
-      <CardContent className="pt-4 pb-0 flex-grow">
-        <div className="mb-1 flex justify-between items-center">
-          <Badge variant="outline" className="bg-gray-100">
-            {raffle.category}
-          </Badge>
+      <CardContent className="pt-6 pb-0 flex-grow">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-xl font-bold">{raffle.title}</h3>
           <span className="text-sm text-gray-500">{raffle.location}</span>
         </div>
         
-        <h3 className="text-xl font-bold mt-2 mb-1">{raffle.title}</h3>
-        <p className="text-sm text-gray-500 mb-2">By {raffle.organization}</p>
+        <p className="text-sm text-gray-500 mb-3">By {raffle.organization}</p>
         
-        <p className="text-sm line-clamp-2 text-gray-600 mb-4">{raffle.description}</p>
+        <p className="text-sm line-clamp-2 text-gray-600 mb-6">{raffle.description}</p>
         
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Prize:</span>
-            <span className="font-semibold text-ph-blue">{formatCurrency(raffle.prize)}</span>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-full bg-blue-50 text-blue-500">
+              <DollarSign className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="text-xs text-gray-600 block">Prize</span>
+              <span className="font-semibold text-ph-blue">{formatCurrency(raffle.prize)}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Win Rate:</span>
-            <span className="font-semibold">{formatPercentage(raffle.winningPercentage)}</span>
+          
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-full bg-green-50 text-green-500">
+              <Percent className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="text-xs text-gray-600 block">Win Rate</span>
+              <span className="font-semibold">{formatPercentage(raffle.winningPercentage)}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Cost:</span>
-            <span className="font-semibold">{formatCurrency(raffle.bettingCost)}</span>
+          
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-full bg-amber-50 text-amber-500">
+              <TicketPercent className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="text-xs text-gray-600 block">Cost</span>
+              <span className="font-semibold">{formatCurrency(raffle.bettingCost)}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Tickets Left:</span>
-            <span className="font-semibold">{raffle.ticketsLeft.toLocaleString()}</span>
+          
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-full bg-purple-50 text-purple-500">
+              <Calendar className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="text-xs text-gray-600 block">Ends in</span>
+              <span className="font-semibold">{daysUntilEnd()} days</span>
+            </div>
           </div>
         </div>
       </CardContent>
       
       <CardFooter className="pt-4">
-        <div className="flex justify-between items-center w-full">
-          <span className="text-sm text-gray-500">
-            Ends in <span className="font-bold">{daysUntilEnd()}</span> days
-          </span>
-          <button className="bg-ph-blue hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm transition-colors">
-            View Raffle
-          </button>
-        </div>
+        <button className="w-full bg-gradient-to-r from-ph-blue to-blue-600 text-white py-3 px-4 rounded-full font-medium transition-all hover:shadow-lg">
+          View Raffle
+        </button>
       </CardFooter>
     </Card>
   );

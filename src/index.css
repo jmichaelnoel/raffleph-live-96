@@ -33,7 +33,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -91,13 +91,71 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
+/* Modern Card Styling */
 .raffle-card {
-  transition: transform 0.2s ease-in-out;
+  @apply transition-all duration-300 hover:translate-y-[-8px];
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.1);
 }
 
 .raffle-card:hover {
-  transform: translateY(-4px);
+  box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.2);
+}
+
+/* Pill Button Styling */
+.pill-button {
+  @apply rounded-full px-4 py-2 font-medium transition-colors;
+}
+
+.pill-button.active {
+  @apply bg-primary text-primary-foreground;
+}
+
+.pill-button:not(.active) {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+}
+
+/* Filter Tag Styling */
+.filter-tag {
+  @apply rounded-full px-3 py-1 text-sm font-medium transition-colors;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0%, rgba(240, 240, 250, 0.9) 100%);
+}
+
+.filter-tag.active {
+  @apply bg-primary/10 text-primary;
+}
+
+/* Animated Elements */
+.animate-fade-in {
+  @apply opacity-0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  @apply opacity-0;
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
