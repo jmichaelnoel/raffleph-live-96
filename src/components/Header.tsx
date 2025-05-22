@@ -1,14 +1,16 @@
+
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+
 interface HeaderProps {
   onSearchChange: (query: string) => void;
 }
-const Header: React.FC<HeaderProps> = ({
-  onSearchChange
-}) => {
-  return <header className="bg-white shadow-sm">
+
+const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
+  return (
+    <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
@@ -30,13 +32,18 @@ const Header: React.FC<HeaderProps> = ({
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="w-full md:w-2/3">
-            <h2 className="text-4xl md:text-5xl mb-3 animate-fade-in font-extrabold text-ph-blue">Discover Amazing Raffles</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-3 animate-fade-in">Discover Amazing Raffles</h2>
             <p className="text-xl text-gray-600 max-w-2xl mb-6 animate-fade-in delay-1">
               Find the best online raffles in the Philippines. Filter by prize value, winning odds, and betting cost.
             </p>
             
             <div className="relative animate-fade-in delay-2">
-              <Input type="text" placeholder="Search for raffles..." className="pl-12 pr-4 py-3 rounded-full border border-gray-300 focus:border-ph-blue focus:ring-2 focus:ring-ph-blue w-full text-lg" onChange={e => onSearchChange(e.target.value)} />
+              <Input
+                type="text"
+                placeholder="Search for raffles..."
+                className="pl-12 pr-4 py-3 rounded-full border border-gray-300 focus:border-ph-blue focus:ring-2 focus:ring-ph-blue w-full text-lg"
+                onChange={(e) => onSearchChange(e.target.value)}
+              />
               <Search className="absolute left-4 top-3.5 h-6 w-6 text-gray-400" />
             </div>
           </div>
@@ -67,6 +74,8 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;
