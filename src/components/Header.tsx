@@ -10,7 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
   return (
-    <header className="bg-white sticky top-0 z-10 shadow-sm">
+    <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
