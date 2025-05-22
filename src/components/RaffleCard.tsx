@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Ticket, TicketPercent, DollarSign, Calendar } from 'lucide-react';
+import { Ticket, TicketPercent, DollarSign, Calendar, Percent } from 'lucide-react';
 
 interface RaffleCardProps {
   raffle: Raffle;
