@@ -4,6 +4,7 @@
 @tailwind utilities;
 
 @layer base {
+  /* ... keep existing code (:root styles) */
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -14,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 209 100% 32%;
+    --primary: 209 100% 32%; /* ph-blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -23,7 +24,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 348 83% 47%;
+    --accent: 348 83% 47%; /* ph-red */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,7 +32,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 222.2 84% 4.9%; /* Using primary blue for ring */
 
     --radius: 1rem;
 
@@ -46,6 +47,7 @@
   }
 
   .dark {
+    /* ... keep existing code (.dark styles) */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -97,12 +99,13 @@
 
 /* Modern Card Styling */
 .raffle-card {
-  @apply transition-all duration-300 hover:translate-y-[-8px];
-  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.1);
+  @apply transition-all duration-300 ease-in-out;
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.07); /* Softer initial shadow */
 }
 
 .raffle-card:hover {
-  box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.2);
+  @apply scale-105; /* Added scale effect */
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15); /* Enhanced shadow for "glow" */
 }
 
 /* Pill Button Styling */
@@ -129,6 +132,7 @@
 }
 
 /* Animated Elements */
+/* ... keep existing code (animations keyframes and classes) */
 .animate-fade-in {
   @apply opacity-0;
   animation: fadeIn 0.5s ease-out forwards;

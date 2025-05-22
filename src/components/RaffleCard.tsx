@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Ticket, TicketPercent, DollarSign, Calendar, Percent } from 'lucide-react';
+// Removed Lucide icon imports as they are replaced by emojis for these specific items
+// import { TicketPercent, DollarSign, Calendar, Percent } from 'lucide-react'; 
 
 interface RaffleCardProps {
   raffle: Raffle;
@@ -24,7 +26,9 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
   const daysUntilEnd = () => {
     const endDate = new Date(raffle.endDate);
     const today = new Date();
-    const diffTime = Math.abs(endDate.getTime() - today.getTime());
+    // Ensure endDate is in the future for positive diffDays, or handle past dates
+    const diffTime = endDate.getTime() - today.getTime();
+    if (diffTime < 0) return 0; // Or handle as "Ended"
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
@@ -39,7 +43,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
         />
         {raffle.featured && (
           <Badge className="absolute top-3 right-3 bg-ph-red hover:bg-ph-red rounded-full font-medium">
-            Featured
+            🎁 Featured
           </Badge>
         )}
         <Badge variant="outline" className="absolute top-3 left-3 bg-white/90 text-gray-800 rounded-full">
@@ -58,44 +62,24 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
         <p className="text-sm line-clamp-2 text-gray-600 mb-6">{raffle.description}</p>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-full bg-blue-50 text-blue-500">
-              <DollarSign className="h-4 w-4" />
-            </div>
-            <div>
-              <span className="text-xs text-gray-600 block">Prize</span>
-              <span className="font-semibold text-ph-blue">{formatCurrency(raffle.prize)}</span>
-            </div>
+          <div>
+            <span className="text-xs text-gray-600 block">🏆 Prize</span>
+            <span className="font-semibold text-ph-blue">{formatCurrency(raffle.prize)}</span>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-full bg-green-50 text-green-500">
-              <Percent className="h-4 w-4" />
-            </div>
-            <div>
-              <span className="text-xs text-gray-600 block">Win Rate</span>
-              <span className="font-semibold">{formatPercentage(raffle.winningPercentage)}</span>
-            </div>
+          <div>
+            <span className="text-xs text-gray-600 block">🎯 Win Rate</span>
+            <span className="font-semibold">{formatPercentage(raffle.winningPercentage)}</span>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-full bg-amber-50 text-amber-500">
-              <TicketPercent className="h-4 w-4" />
-            </div>
-            <div>
-              <span className="text-xs text-gray-600 block">Cost</span>
-              <span className="font-semibold">{formatCurrency(raffle.bettingCost)}</span>
-            </div>
+          <div>
+            <span className="text-xs text-gray-600 block">💵 Cost</span>
+            <span className="font-semibold">{formatCurrency(raffle.bettingCost)}</span>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-full bg-purple-50 text-purple-500">
-              <Calendar className="h-4 w-4" />
-            </div>
-            <div>
-              <span className="text-xs text-gray-600 block">Ends in</span>
-              <span className="font-semibold">{daysUntilEnd()} days</span>
-            </div>
+          <div>
+            <span className="text-xs text-gray-600 block">⏳ Ends in</span>
+            <span className="font-semibold">{daysUntilEnd()} days</span>
           </div>
         </div>
       </CardContent>
@@ -110,3 +94,4 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
 };
 
 export default RaffleCard;
+

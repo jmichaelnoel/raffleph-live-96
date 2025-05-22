@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import FilterSidebar from '@/components/FilterSidebar';
@@ -113,7 +112,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <aside className="lg:w-1/4 hidden lg:block">
+          <aside className="lg:w-1/4 hidden lg:block lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
             <FilterSidebar
               priceRange={priceRange}
               setPriceRange={setPriceRange}
@@ -130,7 +129,7 @@ const Index = () => {
           
           {/* Main Content */}
           <div className="lg:w-3/4">
-            <div className="mb-6">
+            <div className="sticky top-0 bg-gray-50 z-10 py-3 mb-6">
               <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
             </div>
             
