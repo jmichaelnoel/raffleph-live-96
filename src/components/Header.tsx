@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import AnimatedCategoryText from './AnimatedCategoryText'; // Import the new component
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -10,7 +11,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-20">
+    // Removed sticky, top-0, z-20 classes from header
+    <header className="bg-white shadow-sm"> 
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
@@ -32,9 +34,14 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="w-full md:w-2/3">
-            <h2 className="text-4xl md:text-5xl font-bold mb-3 animate-fade-in">🎉 Discover Amazing Raffles 🎁</h2>
+            {/* Updated hero text */}
+            <h2 className="text-4xl md:text-5xl font-bold mb-3 animate-fade-in">
+              Join a Raffle. Change Your Life. 💸
+            </h2>
             <p className="text-xl text-gray-600 max-w-2xl mb-6 animate-fade-in delay-1">
-              💸 Find the best chances to win big! Filter by prize, odds, or cost.
+              Browse top online raffles and get a chance to win
+              <AnimatedCategoryText />! 
+              Bet for as low as P20.
             </p>
             
             <div className="relative animate-fade-in delay-2">
