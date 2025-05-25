@@ -104,13 +104,14 @@
 }
 
 .raffle-card:hover {
-  @apply scale-105; /* Added scale effect */
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15); /* Enhanced shadow for "glow" */
+  @apply scale-105; /* Keep scale effect */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Enhanced shadow for "glow" */
+  /* transform: scale(1.05) perspective(1000px) rotateY(1deg); */ /* Optional subtle 3D tilt */
 }
 
 /* Pill Button Styling */
 .pill-button {
-  @apply rounded-full px-4 py-2 font-medium transition-colors;
+  @apply rounded-full px-4 py-2 font-medium transition-all duration-300 ease-out; /* Added transition-all */
 }
 
 .pill-button.active {
@@ -121,9 +122,15 @@
   @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
 }
 
+.pill-button:not(.active):hover {
+  /* Apply the button pop animation on hover */
+  animation: button-hover-pop 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+}
+
+
 /* Filter Tag Styling */
 .filter-tag {
-  @apply rounded-full px-3 py-1 text-sm font-medium transition-colors;
+  @apply rounded-full px-3 py-1 text-sm font-medium transition-all duration-300 ease-out; /* Added transition-all */
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0%, rgba(240, 240, 250, 0.9) 100%);
 }
 
@@ -131,8 +138,15 @@
   @apply bg-primary/10 text-primary;
 }
 
+.filter-tag:hover:not(.active) {
+  /* Apply the button pop animation on hover */
+  animation: button-hover-pop 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+  /* You might want a slightly different or less pronounced effect for tags */
+  /* Example: transform: scale(1.1); */
+}
+
 /* Animated Elements */
-/* ... keep existing code (animations keyframes and classes) */
+/* ... keep existing code (animations keyframes and classes for fade-in, slide-up) */
 .animate-fade-in {
   @apply opacity-0;
   animation: fadeIn 0.5s ease-out forwards;
@@ -162,4 +176,13 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* New animation utility classes for sparkle and float (can be applied via Tailwind) */
+.animate-sparkle-effect {
+  @apply animate-sparkle;
+}
+
+.animate-float-gently-effect {
+  @apply animate-float-gently;
 }

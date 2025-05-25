@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white shadow-sm sticky top-0 z-20">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6">
           <div className="flex items-center mb-4 md:mb-0">
@@ -27,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">Featured</a>
             <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">How It Works</a>
             <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">About</a>
-            <Button className="rounded-full">Join Now</Button>
+            <Button className="rounded-full hover:animate-button-hover-pop">Join Now</Button>
           </nav>
         </div>
 
@@ -51,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
           
           <div 
             className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg animate-fade-in delay-3 hidden md:block bg-cover bg-center relative"
-            style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max)' }} // Reduced width for card
+            style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max)' }}
           >
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div> {/* Overlay for blur and text contrast */}
             <div className="relative z-10 p-6 text-white"> {/* Ensure content is above overlay and text is white */}
@@ -79,7 +78,9 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
                   <span className="font-bold text-lg">₱20</span>
                 </div>
               </div>
-              <button className="w-full bg-gradient-to-r from-ph-yellow to-orange-400 text-ph-blue py-2.5 px-4 rounded-full font-bold transition-all hover:shadow-lg text-base">
+              <button 
+                className="w-full bg-gradient-to-r from-ph-yellow to-orange-400 text-ph-blue py-2.5 px-4 rounded-full font-bold transition-all hover:shadow-lg text-base hover:animate-button-hover-pop"
+              >
                 🎟 Join Raffle Now
               </button>
             </div>
@@ -91,4 +92,3 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
 };
 
 export default Header;
-

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -85,7 +84,9 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
       </CardContent>
       
       <CardFooter className="pt-4">
-        <button className="w-full bg-gradient-to-r from-ph-blue to-blue-600 text-white py-3 px-4 rounded-full font-medium transition-all hover:shadow-lg">
+        <button 
+          className="w-full bg-gradient-to-r from-ph-blue to-blue-600 text-white py-3 px-4 rounded-full font-medium transition-all hover:shadow-lg hover:animate-button-hover-pop"
+        >
           View Raffle
         </button>
       </CardFooter>
@@ -94,4 +95,3 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
 };
 
 export default RaffleCard;
-
