@@ -1,101 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Header from '@/components/Header';
 import FilterSidebar from '@/components/FilterSidebar';
-import SortOptions, { SortOption } from '@/components/SortOptions';
+import SortOptions from '@/components/SortOptions';
 import RaffleCard from '@/components/RaffleCard';
-import { raffles, Raffle, RaffleCategory } from '@/data/raffles';
 import { useToast } from '@/hooks/use-toast';
+import { useRaffleData } from '@/hooks/useRaffleData';
+import { SortOption } from '@/utils/raffleUtils';
 
 const Index = () => {
   const { toast } = useToast();
-  const [filteredRaffles, setFilteredRaffles] = useState<Raffle[]>(raffles);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('prize-high-to-low');
-  const [selectedCategories, setSelectedCategories] = useState<RaffleCategory[]>([]);
+  const {
+    searchQuery, // Kept for clarity, though setSearchQuery is used by Header
+    setSearchQuery,
+    sortOption,
+    setSortOption,
+    selectedCategories,
+    setSelectedCategories,
+    priceRange,
+    setPriceRange,
+    betRange,
+    setBetRange,
+    winRateRange,
+    setWinRateRange,
+    filteredRaffles,
+    maxPrize,
+    maxBet,
+  } = useRaffleData();
   
-  // Calculate max values for sliders
-  const maxPrize = Math.max(...raffles.map(raffle => raffle.prize));
-  const maxBet = Math.max(...raffles.map(raffle => raffle.bettingCost));
-  
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrize]);
-  const [betRange, setBetRange] = useState<[number, number]>([0, maxBet]);
-  const [winRateRange, setWinRateRange] = useState<[number, number]>([0, 0.02]);
-  
-  // Apply filters and sorting
-  useEffect(() => {
-    let result = [...raffles];
-    
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        raffle => 
-          raffle.title.toLowerCase().includes(query) || 
-          raffle.description.toLowerCase().includes(query) ||
-          raffle.organization.toLowerCase().includes(query)
-      );
-    }
-    
-    // Filter by categories
-    if (selectedCategories.length > 0) {
-      result = result.filter(raffle => 
-        selectedCategories.includes(raffle.category)
-      );
-    }
-    
-    // Filter by price range
-    result = result.filter(
-      raffle => raffle.prize >= priceRange[0] && raffle.prize <= priceRange[1]
-    );
-    
-    // Filter by bet range
-    result = result.filter(
-      raffle => raffle.bettingCost >= betRange[0] && raffle.bettingCost <= betRange[1]
-    );
-    
-    // Filter by win rate range
-    result = result.filter(
-      raffle => 
-        raffle.winningPercentage >= winRateRange[0] && 
-        raffle.winningPercentage <= winRateRange[1]
-    );
-    
-    // Apply sorting
-    result = sortRaffles(result, sortOption);
-    
-    setFilteredRaffles(result);
-  }, [searchQuery, sortOption, selectedCategories, priceRange, betRange, winRateRange]);
-
-  // Function to handle sorting
-  const sortRaffles = (raffles: Raffle[], option: SortOption): Raffle[] => {
-    const sortedRaffles = [...raffles];
-    
-    switch (option) {
-      case 'prize-high-to-low':
-        return sortedRaffles.sort((a, b) => b.prize - a.prize);
-      case 'prize-low-to-high':
-        return sortedRaffles.sort((a, b) => a.prize - b.prize);
-      case 'win-high-to-low':
-        return sortedRaffles.sort((a, b) => b.winningPercentage - a.winningPercentage);
-      case 'win-low-to-high':
-        return sortedRaffles.sort((a, b) => a.winningPercentage - b.winningPercentage);
-      case 'bet-high-to-low':
-        return sortedRaffles.sort((a, b) => b.bettingCost - a.bettingCost);
-      case 'bet-low-to-high':
-        return sortedRaffles.sort((a, b) => a.bettingCost - b.bettingCost);
-      case 'end-date-asc':
-        return sortedRaffles.sort((a, b) => 
-          new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
-        );
-      case 'end-date-desc':
-        return sortedRaffles.sort((a, b) => 
-          new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
-        );
-      default:
-        return sortedRaffles;
-    }
-  };
-
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
     toast({
@@ -135,7 +66,7 @@ const Index = () => {
             
             <div className="mb-4 flex justify-between items-center">
               <p className="text-gray-500 font-medium">
-                Showing <span className="font-bold text-gray-800">{filteredRaffles.length}</span> results
+                Showing <span className="font-bold text-gray-800">{filteredRaffles.length}</span> results for "<span className="italic">{searchQuery}</span>"
               </p>
             </div>
             

@@ -1,0 +1,31 @@
+
+import React from 'react';
+import { Raffle } from '@/data/raffles';
+import { CalendarDays } from 'lucide-react';
+
+interface DetailsSectionProps {
+  raffle: Raffle;
+}
+
+const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
+  const drawingDate = new Date(raffle.endDate); // Assuming drawing date is end date for now
+
+  return (
+    <div className="p-6 bg-slate-50 rounded-lg shadow">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">About This Raffle</h2>
+      <p className="text-gray-600 mb-4">{raffle.description}</p>
+      
+      <div className="space-y-2 text-gray-700">
+        <p><strong>Organized by:</strong> {raffle.organization}</p>
+        <p><strong>Raffle Mechanics:</strong> One entry = one chance. Multiple entries allowed. (Example)</p>
+        <p><strong>Delivery:</strong> Prize will be shipped nationwide. No claiming needed. (Example)</p>
+        <p className="flex items-center">
+          <CalendarDays className="mr-2 h-5 w-5 text-ph-blue" /> 
+          <strong>Drawing Date:</strong> {drawingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} via Facebook Live (Example)
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default DetailsSection;

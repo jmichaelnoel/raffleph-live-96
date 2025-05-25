@@ -2,6 +2,7 @@ import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom'; // Import Link
 // Removed Lucide icon imports as they are replaced by emojis for these specific items
 // import { TicketPercent, DollarSign, Calendar, Percent } from 'lucide-react'; 
 
@@ -84,11 +85,13 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
       </CardContent>
       
       <CardFooter className="pt-4">
-        <button 
-          className="w-full bg-gradient-to-r from-ph-blue to-blue-600 text-white py-3 px-4 rounded-full font-medium transition-all hover:shadow-lg hover:animate-button-hover-pop"
-        >
-          View Raffle
-        </button>
+        <Link to={`/raffles/${raffle.id}`} className="w-full">
+          <button 
+            className="w-full bg-gradient-to-r from-ph-blue to-blue-600 text-white py-3 px-4 rounded-full font-medium transition-all hover:shadow-lg hover:animate-button-hover-pop"
+          >
+            View Raffle
+          </button>
+        </Link>
       </CardFooter>
     </Card>
   );
