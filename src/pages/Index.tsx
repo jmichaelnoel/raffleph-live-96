@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import FilterSidebar from '@/components/FilterSidebar';
@@ -15,7 +16,7 @@ const Index = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
   const {
-    searchQuery, // Kept for clarity, though setSearchQuery is used by Header
+    searchQuery,
     setSearchQuery,
     sortOption,
     setSortOption,
