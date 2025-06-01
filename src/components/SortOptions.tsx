@@ -30,15 +30,15 @@ const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) =
   const getSortIcon = (option: SortOption) => {
     switch (option) {
       case 'prize-high-to-low':
-        return <Trophy className="h-4 w-4" />;
+        return <Trophy className="h-3 w-3 lg:h-4 lg:w-4" />;
       case 'win-high-to-low':
-        return <Target className="h-4 w-4" />;
+        return <Target className="h-3 w-3 lg:h-4 lg:w-4" />;
       case 'bet-low-to-high':
-        return <DollarSign className="h-4 w-4" />;
+        return <DollarSign className="h-3 w-3 lg:h-4 lg:w-4" />;
       case 'end-date-asc':
-        return <Clock className="h-4 w-4" />;
+        return <Clock className="h-3 w-3 lg:h-4 lg:w-4" />;
       default:
-        return <Sparkles className="h-4 w-4" />;
+        return <Sparkles className="h-3 w-3 lg:h-4 lg:w-4" />;
     }
   };
 
@@ -65,31 +65,31 @@ const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) =
   ];
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex overflow-x-auto py-2 gap-3 hide-scrollbar flex-1">
+    <div className="flex items-center gap-3 lg:gap-4">
+      <div className="flex overflow-x-auto py-2 gap-2 lg:gap-3 hide-scrollbar flex-1">
         {sortButtons.map((button) => (
           <button
             key={button.option}
             onClick={() => onSortChange(button.option)}
             className={`
-              sort-card whitespace-nowrap px-6 py-3 rounded-2xl cursor-pointer transition-all duration-300 transform border-2
-              hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-3 font-semibold text-sm min-w-max
+              sort-card whitespace-nowrap px-4 lg:px-6 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl cursor-pointer transition-all duration-300 transform border-2
+              hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2 lg:gap-3 font-semibold text-xs lg:text-sm min-w-max min-h-[44px]
               ${sortOption === button.option 
                 ? `bg-gradient-to-r ${button.gradient} text-white shadow-lg border-white animate-float-gently` 
                 : `${button.bgColor} ${button.textColor} ${button.hoverColor} border-gray-200 hover:shadow-md`
               }
             `}
           >
-            <span className="text-lg animate-bounce" style={{ animationDelay: `${sortButtons.indexOf(button) * 100}ms` }}>
+            <span className="text-base lg:text-lg animate-bounce" style={{ animationDelay: `${sortButtons.indexOf(button) * 100}ms` }}>
               {getSortEmoji(button.option)}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 lg:gap-2">
               {getSortIcon(button.option)}
               <span>{button.label}</span>
             </div>
             {sortOption === button.option && (
               <div className="animate-spin">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-3 w-3 lg:h-4 lg:w-4" />
               </div>
             )}
           </button>
