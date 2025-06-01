@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -56,11 +57,10 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
           </div>
           
           <div 
-            className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg animate-fade-in delay-3 hidden md:block bg-cover bg-center relative"
-            style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max)' }}
+            className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg animate-fade-in delay-3 hidden md:block relative"
           >
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div> {/* Overlay for blur and text contrast */}
-            <div className="relative z-10 p-6 text-white"> {/* Ensure content is above overlay and text is white */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800"></div>
+            <div className="relative z-10 p-6 text-white">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Badge className="bg-ph-red hover:bg-ph-red/90 text-white px-3 py-1 rounded-full text-xs mr-2">🎁 Featured</Badge>
