@@ -25,13 +25,9 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             </h1>
           </div>
           
-          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">Home</a>
-            <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">Featured</a>
-            <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">How It Works</a>
-            <a href="#" className="text-gray-600 hover:text-ph-blue transition-colors font-medium">About</a>
-            <Button className="rounded-full hover:animate-button-hover-pop">Join Now</Button>
-          </nav>
+          <Button className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            Submit Raffle
+          </Button>
         </div>
 
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6">
@@ -56,38 +52,33 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             </div>
           </div>
           
-          <div 
-            className="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg animate-fade-in delay-3 hidden md:block relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800"></div>
-            <div className="relative z-10 p-6 text-white">
+          <div className="w-full md:w-1/3 rounded-2xl overflow-hidden shadow-lg animate-fade-in delay-3 hidden md:block relative bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 border-2 border-purple-100/50 backdrop-blur-sm">
+            <div className="relative z-10 p-6">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <Badge className="bg-ph-red hover:bg-ph-red/90 text-white px-3 py-1 rounded-full text-xs mr-2">🎁 Featured</Badge>
                   <Badge className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full text-xs">🔥 Trending</Badge>
                 </div>
-                <span className="text-sm text-gray-200">Manila</span>
+                <span className="text-sm text-gray-600 font-medium">Manila</span>
               </div>
-              <h3 className="text-xl font-bold mb-1">Mega Million Jackpot</h3>
-              <p className="text-xs text-gray-300 mb-3">From: PCSO Philippines (Example)</p>
-              <p className="text-sm text-gray-200 mb-4">Win the biggest cash prize of the year in our nationwide lottery draw.</p>
+              <h3 className="text-xl font-bold mb-1 text-gray-800">Mega Million Jackpot</h3>
+              <p className="text-xs text-gray-500 mb-3">From: PCSO Philippines (Example)</p>
+              <p className="text-sm text-gray-600 mb-4">Win the biggest cash prize of the year in our nationwide lottery draw.</p>
               <div className="grid grid-cols-3 gap-2 text-sm mb-4 text-center">
-                <div>
-                  <span className="block text-gray-300 text-xs">🏆 Prize</span>
-                  <span className="font-bold text-lg">₱10M</span>
+                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg p-2">
+                  <span className="block text-gray-600 text-xs">🏆 Prize</span>
+                  <span className="font-bold text-lg text-gray-800">₱10M</span>
                 </div>
-                <div>
-                  <span className="block text-gray-300 text-xs">🎯 Odds</span>
-                  <span className="font-bold text-lg">0.01%</span>
+                <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg p-2">
+                  <span className="block text-gray-600 text-xs">🎯 Odds</span>
+                  <span className="font-bold text-lg text-gray-800">0.01%</span>
                 </div>
-                <div>
-                  <span className="block text-gray-300 text-xs">💵 Cost</span>
-                  <span className="font-bold text-lg">₱20</span>
+                <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-2">
+                  <span className="block text-gray-600 text-xs">💵 Cost</span>
+                  <span className="font-bold text-lg text-gray-800">₱20</span>
                 </div>
               </div>
-              <button 
-                className="w-full bg-gradient-to-r from-ph-yellow to-orange-400 text-ph-blue py-2.5 px-4 rounded-full font-bold transition-all hover:shadow-lg text-base hover:animate-button-hover-pop"
-              >
+              <button className="w-full bg-gradient-to-r from-ph-yellow to-orange-400 text-ph-blue py-2.5 px-4 rounded-full font-bold transition-all hover:shadow-lg text-base hover:animate-button-hover-pop">
                 🎟 Join Raffle Now
               </button>
             </div>
