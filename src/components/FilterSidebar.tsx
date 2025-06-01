@@ -114,7 +114,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               step={10000}
               value={priceRange}
               onValueChange={(value) => setPriceRange(value as [number, number])}
-              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-yellow-600 [&_.h-2]:to-yellow-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-yellow-600 [&_[role=slider]]:to-yellow-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-yellow-600 [&_.absolute.h-full]:to-yellow-400"
+              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-yellow-200 [&_.h-2]:to-yellow-600 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-yellow-600 [&_[role=slider]]:to-yellow-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-yellow-600 [&_.absolute.h-full]:to-yellow-400"
             />
           </div>
           <div className="flex justify-between text-sm font-medium">
@@ -142,7 +142,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               step={10}
               value={betRange}
               onValueChange={(value) => setBetRange(value as [number, number])}
-              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-green-600 [&_.h-2]:to-green-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-green-600 [&_[role=slider]]:to-green-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-green-600 [&_.absolute.h-full]:to-green-400"
+              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-green-200 [&_.h-2]:to-green-600 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-green-600 [&_[role=slider]]:to-green-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-green-600 [&_.absolute.h-full]:to-green-400"
             />
           </div>
           <div className="flex justify-between text-sm font-medium">
@@ -170,7 +170,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               step={0.0001}
               value={winRateRange}
               onValueChange={(value) => setWinRateRange(value as [number, number])}
-              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-blue-600 [&_.h-2]:to-blue-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-blue-600 [&_[role=slider]]:to-blue-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-blue-600 [&_.absolute.h-full]:to-blue-400"
+              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-blue-200 [&_.h-2]:to-blue-600 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-blue-600 [&_[role=slider]]:to-blue-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-blue-600 [&_.absolute.h-full]:to-blue-400"
             />
           </div>
           <div className="flex justify-between text-sm font-medium">
