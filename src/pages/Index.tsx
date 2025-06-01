@@ -8,6 +8,11 @@ import MobileFilterButton from '@/components/MobileFilterButton';
 import { useToast } from '@/hooks/use-toast';
 import { useRaffleData } from '@/hooks/useRaffleData';
 import { SortOption } from '@/utils/raffleUtils';
+import Sparkles from '@/components/Sparkles';
+import Trophy from '@/components/Trophy';
+import Target from '@/components/Target';
+import Zap from '@/components/Zap';
+import Coins from '@/components/Coins';
 
 const Index = () => {
   const { toast } = useToast();
@@ -128,40 +133,113 @@ const Index = () => {
         setWinRateRange={setWinRateRange}
       />
       
-      <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16 mt-24">
-        <div className="container mx-auto px-4">
+      <footer className="bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white py-20 mt-24 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-10 left-10 animate-float-gently">
+            <Sparkles className="h-6 w-6 text-pink-300 opacity-70" />
+          </div>
+          <div className="absolute top-20 right-20 animate-float-gently delay-1000">
+            <Trophy className="h-8 w-8 text-yellow-300 opacity-60" />
+          </div>
+          <div className="absolute bottom-20 left-1/4 animate-float-gently delay-500">
+            <Target className="h-5 w-5 text-blue-300 opacity-80" />
+          </div>
+          <div className="absolute bottom-10 right-1/3 animate-float-gently delay-1500">
+            <Zap className="h-7 w-7 text-orange-300 opacity-50" />
+          </div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float-gently delay-700">
+            <Coins className="h-4 w-4 text-green-300 opacity-60" />
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div>
-              <h2 className="text-2xl font-bold mb-6 flex items-center">
-                <span className="text-ph-red">Raffle</span>
-                <span className="text-white">PH</span>
-                <span className="text-ph-yellow">.</span>
+            <div className="text-center md:text-left">
+              <h2 className="text-3xl font-bold mb-6 flex items-center justify-center md:justify-start">
+                <span className="bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">Raffle</span>
+                <span className="bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">PH</span>
+                <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent text-4xl">.</span>
+                <div className="ml-2 animate-bounce">
+                  <Sparkles className="h-6 w-6 text-pink-400" />
+                </div>
               </h2>
-              <p className="text-gray-300 mb-6">
-                The ultimate directory of online raffles in the Philippines.
-                Find the best chances to win amazing prizes!
+              <p className="text-gray-200 mb-6 text-lg leading-relaxed">
+                🎉 The ultimate directory of online raffles in the Philippines.
+                Find the best chances to win amazing prizes! 🏆
               </p>
+              <div className="flex gap-4 justify-center md:justify-start">
+                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                  <Trophy className="h-5 w-5 text-white" />
+                </div>
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                  <Target className="h-5 w-5 text-white" />
+                </div>
+                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                  <Zap className="h-5 w-5 text-white" />
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-6">Quick Links</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Featured Raffles</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition-colors">How It Works</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition-colors">FAQ</a></li>
+            
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-6 flex items-center justify-center gap-2">
+                <span className="text-2xl">🚀</span>
+                Quick Links
+              </h3>
+              <ul className="space-y-4">
+                <li>
+                  <a href="#" className="text-gray-200 hover:text-white transition-colors duration-300 text-lg hover:underline decoration-pink-400 decoration-2 underline-offset-4">
+                    🏠 Home
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-200 hover:text-white transition-colors duration-300 text-lg hover:underline decoration-yellow-400 decoration-2 underline-offset-4">
+                    ⭐ Featured Raffles
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-200 hover:text-white transition-colors duration-300 text-lg hover:underline decoration-blue-400 decoration-2 underline-offset-4">
+                    ❓ How It Works
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-200 hover:text-white transition-colors duration-300 text-lg hover:underline decoration-green-400 decoration-2 underline-offset-4">
+                    💬 FAQ
+                  </a>
+                </li>
               </ul>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-6">Contact</h3>
-              <p className="text-gray-300">
-                Email: info@rafflesPH.com<br />
-                Phone: +63 (2) 8888-1234<br />
-                Manila, Philippines
-              </p>
+            
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-6 flex items-center justify-center gap-2">
+                <span className="text-2xl">📞</span>
+                Contact
+              </h3>
+              <div className="space-y-3 text-gray-200">
+                <p className="flex items-center justify-center gap-2 text-lg">
+                  <span className="text-xl">📧</span>
+                  info@rafflesPH.com
+                </p>
+                <p className="flex items-center justify-center gap-2 text-lg">
+                  <span className="text-xl">📱</span>
+                  +63 (2) 8888-1234
+                </p>
+                <p className="flex items-center justify-center gap-2 text-lg">
+                  <span className="text-xl">📍</span>
+                  Manila, Philippines
+                </p>
+              </div>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-            <p className="text-gray-400">&copy; 2025 RafflePH. All rights reserved.</p>
+          
+          <div className="border-t border-purple-700/50 mt-16 pt-8 text-center">
+            <div className="flex items-center justify-center gap-2 text-gray-300 text-lg">
+              <span>&copy; 2025 RafflePH. All rights reserved.</span>
+              <div className="animate-pulse">
+                <Sparkles className="h-4 w-4 text-pink-400" />
+              </div>
+              <span className="text-pink-400">Made with ❤️ in the Philippines</span>
+            </div>
           </div>
         </div>
       </footer>

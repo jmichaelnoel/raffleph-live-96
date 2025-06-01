@@ -77,7 +77,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const maxWinRate = 0.02; // This should be dynamically calculated from raffle data
 
   return (
-    <div className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 rounded-2xl border-2 border-purple-100/50 shadow-xl backdrop-blur-sm p-4 sticky top-28 overflow-hidden relative">
+    <div className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 rounded-2xl border-2 border-purple-100/50 shadow-xl backdrop-blur-sm p-5 sticky top-28 overflow-hidden relative">
       {/* Floating sparkles background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-2 right-3 animate-float-gently">
@@ -92,21 +92,21 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       </div>
       
       <div className="relative z-10">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+        <h2 className="text-xl font-bold mb-5 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           <div className="p-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg animate-pulse">
             <Filter className="h-4 w-4 text-white" />
           </div>
           Filter Raffles
         </h2>
         
-        <div className="mb-4 animate-slide-up">
+        <div className="mb-5 animate-slide-up">
           <div className="flex items-center mb-3">
             <div className="p-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg mr-1.5 shadow-md">
               <Trophy className="h-4 w-4 text-white" />
             </div>
-            <h3 className="font-semibold text-gray-800 text-base">🏆 Prize Value</h3>
+            <h3 className="font-semibold text-gray-800 text-lg">🏆 Prize Value</h3>
           </div>
-          <div className="mb-2 px-1">
+          <div className="mb-3 px-1">
             <Slider 
               defaultValue={[0, maxPrize]} 
               min={0} 
@@ -114,7 +114,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               step={10000}
               value={priceRange}
               onValueChange={(value) => setPriceRange(value as [number, number])}
-              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-orange-200 [&_.h-2]:to-yellow-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-orange-500 [&_[role=slider]]:to-yellow-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-orange-500 [&_.absolute.h-full]:to-yellow-400"
+              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-yellow-600 [&_.h-2]:to-yellow-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-yellow-600 [&_[role=slider]]:to-yellow-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-yellow-600 [&_.absolute.h-full]:to-yellow-400"
             />
           </div>
           <div className="flex justify-between text-sm font-medium">
@@ -127,14 +127,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </div>
         
-        <div className="mb-4 animate-slide-up delay-150">
+        <div className="mb-5 animate-slide-up delay-150">
           <div className="flex items-center mb-3">
             <div className="p-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg mr-1.5 shadow-md">
               <Coins className="h-4 w-4 text-white" />
             </div>
-            <h3 className="font-semibold text-gray-800 text-base">💰 Betting Cost</h3>
+            <h3 className="font-semibold text-gray-800 text-lg">💰 Betting Cost</h3>
           </div>
-          <div className="mb-2 px-1">
+          <div className="mb-3 px-1">
             <Slider 
               defaultValue={[0, maxBet]} 
               min={0} 
@@ -142,7 +142,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               step={10}
               value={betRange}
               onValueChange={(value) => setBetRange(value as [number, number])}
-              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-emerald-200 [&_.h-2]:to-green-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-emerald-500 [&_[role=slider]]:to-green-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-emerald-500 [&_.absolute.h-full]:to-green-400"
+              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-green-600 [&_.h-2]:to-green-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-green-600 [&_[role=slider]]:to-green-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-green-600 [&_.absolute.h-full]:to-green-400"
             />
           </div>
           <div className="flex justify-between text-sm font-medium">
@@ -155,14 +155,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </div>
         
-        <div className="mb-4 animate-slide-up delay-300">
+        <div className="mb-5 animate-slide-up delay-300">
           <div className="flex items-center mb-3">
             <div className="p-1 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg mr-1.5 shadow-md">
               <Target className="h-4 w-4 text-white" />
             </div>
-            <h3 className="font-semibold text-gray-800 text-base">🎯 Winning Percentage</h3>
+            <h3 className="font-semibold text-gray-800 text-lg">🎯 Winning Percentage</h3>
           </div>
-          <div className="mb-2 px-1">
+          <div className="mb-3 px-1">
             <Slider 
               defaultValue={[0, maxWinRate]} 
               min={0} 
@@ -170,7 +170,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               step={0.0001}
               value={winRateRange}
               onValueChange={(value) => setWinRateRange(value as [number, number])}
-              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-indigo-200 [&_.h-2]:to-blue-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-indigo-500 [&_[role=slider]]:to-blue-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-indigo-500 [&_.absolute.h-full]:to-blue-400"
+              className="py-3 [&_.h-2]:bg-gradient-to-r [&_.h-2]:from-blue-600 [&_.h-2]:to-blue-200 [&_[role=slider]]:bg-gradient-to-r [&_[role=slider]]:from-blue-600 [&_[role=slider]]:to-blue-400 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-lg [&_[role=slider]]:hover:scale-110 [&_[role=slider]]:transition-transform [&_.absolute.h-full]:bg-gradient-to-r [&_.absolute.h-full]:from-blue-600 [&_.absolute.h-full]:to-blue-400"
             />
           </div>
           <div className="flex justify-between text-sm font-medium">
@@ -188,25 +188,25 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <div className="p-1 bg-gradient-to-r from-pink-400 to-rose-500 rounded-lg mr-1.5 shadow-md">
               <Zap className="h-4 w-4 text-white" />
             </div>
-            <h3 className="font-semibold text-gray-800 text-base">🏷️ Categories</h3>
+            <h3 className="font-semibold text-gray-800 text-lg">🏷️ Categories</h3>
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 gap-2">
             {raffleCategories.map((category) => (
               <div 
                 key={category}
                 onClick={() => handleCategoryChange(category)}
                 className={`
-                  px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-300 transform border-2
+                  px-2 py-2 rounded-lg cursor-pointer transition-all duration-300 transform border-2
                   hover:scale-105 hover:shadow-md active:scale-95 flex items-center justify-center
                   ${getCategoryColor(category, selectedCategories.includes(category))}
                   ${selectedCategories.includes(category) ? 'shadow-md' : 'hover:shadow-sm'}
                 `}
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="text-sm animate-bounce" style={{ animationDelay: `${raffleCategories.indexOf(category) * 100}ms` }}>
                     {getCategoryEmoji(category)}
                   </span>
-                  <span className="font-medium text-sm text-center">
+                  <span className="font-medium text-xs text-center leading-tight">
                     {category}
                   </span>
                   {selectedCategories.includes(category) && (
