@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import RaffleDetailsPage from "./pages/RaffleDetailsPage";
 import SubmitRafflePage from "./pages/SubmitRafflePage";
 import HowItWorksPage from "./pages/HowItWorksPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App: React.FC = () => (
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/raffles/:raffleId" element={<RaffleDetailsPage />} />
           <Route path="/submit-raffle" element={<SubmitRafflePage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
