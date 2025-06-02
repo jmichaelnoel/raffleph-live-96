@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -37,12 +38,15 @@ const Header: React.FC<HeaderProps> = ({
           
           {/* Desktop/Tablet Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <button 
+            <Button 
               onClick={() => navigate('/how-it-works')}
-              className="text-gray-600 hover:text-ph-blue transition-colors font-medium"
+              className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+              style={{
+                background: 'linear-gradient(220.55deg, #3793FF 0%, #0017E4 100%)'
+              }}
             >
               How It Works
-            </button>
+            </Button>
             <Button 
               onClick={() => navigate('/submit-raffle')}
               className="rounded-full text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform" 

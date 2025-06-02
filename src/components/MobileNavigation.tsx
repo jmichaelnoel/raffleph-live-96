@@ -36,12 +36,15 @@ const MobileNavigation: React.FC = () => {
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-4 mt-8">
-          <button
+          <Button
             onClick={() => handleNavigation('/how-it-works')}
-            className="text-lg font-medium text-gray-600 hover:text-ph-blue transition-colors py-2 text-left"
+            className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+            style={{
+              background: 'linear-gradient(220.55deg, #3793FF 0%, #0017E4 100%)'
+            }}
           >
             How It Works
-          </button>
+          </Button>
           <Button 
             onClick={() => handleNavigation('/submit-raffle')}
             className="mt-4 rounded-full w-full bg-gradient-to-r from-ph-red to-ph-blue text-white"
