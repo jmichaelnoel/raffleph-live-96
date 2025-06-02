@@ -19,9 +19,12 @@ const RaffleDetailsPage = () => {
     return <Navigate to="/404" replace />;
   }
 
+  // Empty search handler since we don't need search on detail pages
+  const handleSearchChange = () => {};
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onSearchChange={handleSearchChange} />
       
       <main className="container mx-auto px-4 py-8">
         <HeroSection raffle={raffle} />
@@ -34,8 +37,8 @@ const RaffleDetailsPage = () => {
             <WhatYouWinSection raffle={raffle} />
           </div>
         </div>
-        <TrustVerificationSection raffle={raffle} />
-        <FAQSection raffle={raffle} />
+        <TrustVerificationSection />
+        <FAQSection />
       </main>
     </div>
   );
