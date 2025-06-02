@@ -14,6 +14,7 @@ import { Plus, Minus, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ImageUpload from '@/components/ImageUpload';
 
 interface BundlePricing {
   slots: string;
@@ -37,8 +38,9 @@ const SubmitRafflePage = () => {
     organizerFacebookUrl: '',
     raffleDetailsUrl: '',
     slotInquiryUrl: '',
-    entriesLeft: '',
-    convertibleToCash: false
+    totalSlots: '',
+    convertibleToCash: false,
+    imageUrl: ''
   });
 
   const [bundlePricing, setBundlePricing] = useState<BundlePricing[]>([
@@ -109,8 +111,9 @@ const SubmitRafflePage = () => {
         organizer_facebook_url: formData.organizerFacebookUrl || null,
         raffle_details_url: formData.raffleDetailsUrl || null,
         slot_inquiry_url: formData.slotInquiryUrl || null,
-        entries_left: formData.entriesLeft ? parseInt(formData.entriesLeft) : null,
-        convertible_to_cash: formData.convertibleToCash
+        entries_left: formData.totalSlots ? parseInt(formData.totalSlots) : null,
+        convertible_to_cash: formData.convertibleToCash,
+        image_url: formData.imageUrl || null
       };
 
       const { data, error } = await supabase
@@ -149,8 +152,9 @@ const SubmitRafflePage = () => {
         organizerFacebookUrl: '',
         raffleDetailsUrl: '',
         slotInquiryUrl: '',
-        entriesLeft: '',
-        convertibleToCash: false
+        totalSlots: '',
+        convertibleToCash: false,
+        imageUrl: ''
       });
 
       setBundlePricing([{ slots: '', price: '' }]);
@@ -267,6 +271,15 @@ const SubmitRafflePage = () => {
                   />
                 </div>
 
+                {/* Image Upload */}
+                <div className="md:col-span-2">
+                  <ImageUpload
+                    onImageUpload={(url) => handleInputChange('imageUrl', url)}
+                    currentImageUrl={formData.imageUrl}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
                 {/* Description */}
                 <div className="md:col-span-2">
                   <Label htmlFor="description" className="text-lg font-semibold flex items-center">
@@ -331,6 +344,23 @@ const SubmitRafflePage = () => {
                     placeholder="20"
                     value={formData.bettingCost}
                     onChange={(e) => handleInputChange('bettingCost', e.target.value)}
+                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* Total Slots - Updated label */}
+                <div>
+                  <Label htmlFor="totalSlots" className="text-lg font-semibold flex items-center">
+                    <span className="mr-2 text-xl">🎟️</span>
+                    Total Slots (available & taken)
+                  </Label>
+                  <Input
+                    id="totalSlots"
+                    type="number"
+                    placeholder="1000 (leave empty for unlimited)"
+                    value={formData.totalSlots}
+                    onChange={(e) => handleInputChange('totalSlots', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
                     disabled={isSubmitting}
                   />
@@ -505,23 +535,6 @@ const SubmitRafflePage = () => {
                     placeholder="messenger.com/slotinquiry"
                     value={formData.slotInquiryUrl}
                     onChange={(e) => handleInputChange('slotInquiryUrl', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* Entries Left */}
-                <div>
-                  <Label htmlFor="entriesLeft" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🎟️</span>
-                    Available Entries
-                  </Label>
-                  <Input
-                    id="entriesLeft"
-                    type="number"
-                    placeholder="1000 (leave empty for unlimited)"
-                    value={formData.entriesLeft}
-                    onChange={(e) => handleInputChange('entriesLeft', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
                     disabled={isSubmitting}
                   />

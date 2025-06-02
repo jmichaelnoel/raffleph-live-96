@@ -97,6 +97,7 @@ export type Database = {
           draw_date: string | null
           entries_left: number | null
           id: string
+          image_url: string | null
           location: string | null
           organization: string | null
           organizer_facebook_url: string | null
@@ -121,6 +122,7 @@ export type Database = {
           draw_date?: string | null
           entries_left?: number | null
           id?: string
+          image_url?: string | null
           location?: string | null
           organization?: string | null
           organizer_facebook_url?: string | null
@@ -145,6 +147,7 @@ export type Database = {
           draw_date?: string | null
           entries_left?: number | null
           id?: string
+          image_url?: string | null
           location?: string | null
           organization?: string | null
           organizer_facebook_url?: string | null

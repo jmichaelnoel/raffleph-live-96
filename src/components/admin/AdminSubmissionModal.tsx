@@ -38,6 +38,7 @@ interface Submission {
   slot_inquiry_url: string | null;
   entries_left: number | null;
   convertible_to_cash: boolean | null;
+  image_url: string | null;
 }
 
 interface AdminSubmissionModalProps {
@@ -80,6 +81,22 @@ const AdminSubmissionModal: React.FC<AdminSubmissionModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Image Preview */}
+          {submission.image_url && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Raffle Image</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src={submission.image_url} 
+                  alt={submission.title}
+                  className="w-full max-w-md h-64 object-cover rounded-lg border-2 border-gray-200"
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -108,7 +125,7 @@ const AdminSubmissionModal: React.FC<AdminSubmissionModalProps> = ({
                   <p className="text-lg">₱{submission.betting_cost || 'Not specified'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Entries Left</label>
+                  <label className="text-sm font-medium text-gray-500">Total Slots (available & taken)</label>
                   <p className="text-lg">{submission.entries_left || 'Not specified'}</p>
                 </div>
                 <div>

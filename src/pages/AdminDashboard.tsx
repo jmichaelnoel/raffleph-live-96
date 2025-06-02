@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +27,7 @@ interface Submission {
   slot_inquiry_url: string | null;
   entries_left: number | null;
   convertible_to_cash: boolean | null;
+  image_url: string | null;
 }
 
 const AdminDashboard = () => {
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
 
-      // Create approved raffle
+      // Create approved raffle with the submission's image
       const { error: approveError } = await supabase
         .from('approved_raffles')
         .insert({
@@ -101,10 +101,12 @@ const AdminDashboard = () => {
           organizer_facebook_url: submission.organizer_facebook_url || '#',
           entries_left: submission.entries_left,
           convertible_to_cash: submission.convertible_to_cash || false,
-          featured: false
+          featured: false,
+          image_url: submission.image_url || 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'
         });
 
       if (approveError) {
+        console.error('Error creating approved raffle:', approveError);
         throw approveError;
       }
 
@@ -118,6 +120,7 @@ const AdminDashboard = () => {
         .eq('id', submission.id);
 
       if (updateError) {
+        console.error('Error updating submission status:', updateError);
         throw updateError;
       }
 
@@ -132,7 +135,7 @@ const AdminDashboard = () => {
       console.error('Error approving submission:', error);
       toast({
         title: "Error",
-        description: "Failed to approve submission",
+        description: "Failed to approve submission. Check console for details.",
         variant: "destructive",
       });
     }
