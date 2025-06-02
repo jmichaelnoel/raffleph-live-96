@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -45,8 +46,11 @@ const Header: React.FC<HeaderProps> = ({
             </h2>
             
             <div className="text-lg lg:text-xl text-gray-600 max-w-2xl mb-5 lg:mb-6 animate-fade-in delay-1 text-center lg:text-left">
-              <p className="mb-3">
-                Browse top online raffles and get a chance to win<AnimatedCategoryText />! Join for as low as ₱20. 
+              <p className="mb-2">
+                Browse top online raffles and get a chance to win<AnimatedCategoryText />!
+              </p>
+              <p>
+                Join for as low as ₱20. 
                 <span className="inline-block ml-1 animate-bounce delay-700">🎯</span>
                 <span className="inline-block ml-1 animate-pulse delay-1000">💰</span>
               </p>
@@ -104,3 +108,4 @@ const Header: React.FC<HeaderProps> = ({
 };
 
 export default Header;
+
