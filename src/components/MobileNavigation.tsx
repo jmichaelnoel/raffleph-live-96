@@ -9,16 +9,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useNavigate } from 'react-router-dom';
 
 const MobileNavigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const navItems = [
-    { name: 'Home', href: '#' },
-    { name: 'Featured', href: '#' },
-    { name: 'How It Works', href: '#' },
-    { name: 'About', href: '#' },
-  ];
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -36,18 +36,17 @@ const MobileNavigation: React.FC = () => {
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-4 mt-8">
-          {navItems.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="text-lg font-medium text-gray-600 hover:text-ph-blue transition-colors py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </a>
-          ))}
-          <Button className="mt-4 rounded-full w-full">
-            Join Now
+          <button
+            onClick={() => handleNavigation('/how-it-works')}
+            className="text-lg font-medium text-gray-600 hover:text-ph-blue transition-colors py-2 text-left"
+          >
+            How It Works
+          </button>
+          <Button 
+            onClick={() => handleNavigation('/submit-raffle')}
+            className="mt-4 rounded-full w-full bg-gradient-to-r from-ph-red to-ph-blue text-white"
+          >
+            🎁 Submit Raffle
           </Button>
         </nav>
       </SheetContent>

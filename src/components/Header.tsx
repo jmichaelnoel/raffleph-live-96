@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { GradientText } from '@/components/ui/gradient-text';
 import AnimatedCategoryText from './AnimatedCategoryText';
 import MobileNavigation from './MobileNavigation';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -15,6 +15,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   onSearchChange
 }) => {
+  const navigate = useNavigate();
+
   return (
     <header className="bg-white shadow-sm"> 
       <div className="container mx-auto px-4 py-4 lg:py-6">
@@ -33,11 +35,24 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
           
-          <Button className="rounded-full text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform" style={{
-          background: 'linear-gradient(220.55deg, #FF3F3F 0%, #063CFF 100%)'
-        }}>
-            🎁 Submit Raffle
-          </Button>
+          {/* Desktop/Tablet Navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            <button 
+              onClick={() => navigate('/how-it-works')}
+              className="text-gray-600 hover:text-ph-blue transition-colors font-medium"
+            >
+              How It Works
+            </button>
+            <Button 
+              onClick={() => navigate('/submit-raffle')}
+              className="rounded-full text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform" 
+              style={{
+                background: 'linear-gradient(220.55deg, #FF3F3F 0%, #063CFF 100%)'
+              }}
+            >
+              🎁 Submit Raffle
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8">
