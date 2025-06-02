@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { GradientText } from '@/components/ui/gradient-text';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Plus, Minus, ChevronDown } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+
+interface BundlePricing {
+  slots: string;
+  price: string;
+}
 
 const SubmitRafflePage = () => {
   const { toast } = useToast();
@@ -22,21 +30,44 @@ const SubmitRafflePage = () => {
     prize: '',
     category: '',
     bettingCost: '',
-    endDate: '',
+    drawDate: '',
     location: '',
     organization: '',
     organizerFacebookUrl: '',
-    externalJoinUrl: '',
-    imageUrl: '',
+    raffleDetailsUrl: '',
+    slotInquiryUrl: '',
     entriesLeft: '',
     convertibleToCash: false
   });
+
+  const [bundlePricing, setBundlePricing] = useState<BundlePricing[]>([
+    { slots: '', price: '' }
+  ]);
+
+  const [isBundlePricingOpen, setIsBundlePricingOpen] = useState(false);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const addBundlePricing = () => {
+    setBundlePricing([...bundlePricing, { slots: '', price: '' }]);
+  };
+
+  const removeBundlePricing = (index: number) => {
+    if (bundlePricing.length > 1) {
+      setBundlePricing(bundlePricing.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateBundlePricing = (index: number, field: 'slots' | 'price', value: string) => {
+    const updated = bundlePricing.map((item, i) => 
+      i === index ? { ...item, [field]: value } : item
+    );
+    setBundlePricing(updated);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,15 +97,17 @@ const SubmitRafflePage = () => {
       prize: '',
       category: '',
       bettingCost: '',
-      endDate: '',
+      drawDate: '',
       location: '',
       organization: '',
       organizerFacebookUrl: '',
-      externalJoinUrl: '',
-      imageUrl: '',
+      raffleDetailsUrl: '',
+      slotInquiryUrl: '',
       entriesLeft: '',
       convertibleToCash: false
     });
+
+    setBundlePricing([{ slots: '', price: '' }]);
   };
 
   return (
@@ -134,7 +167,7 @@ const SubmitRafflePage = () => {
         </div>
       </div>
       
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
+      <main className="container mx-auto px-4 py-12 max-w-5xl">
         {/* Enhanced Form Card */}
         <Card className="shadow-2xl border-0 bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
@@ -148,7 +181,7 @@ const SubmitRafflePage = () => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="p-8">
+          <CardContent className="p-10">
             {/* Encouraging Message */}
             <div className="mb-8 p-6 bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl border-2 border-green-200">
               <div className="flex items-center text-lg font-semibold text-green-800">
@@ -242,17 +275,90 @@ const SubmitRafflePage = () => {
                   />
                 </div>
 
-                {/* End Date */}
+                {/* Bundle Pricing Section */}
+                <div className="md:col-span-2">
+                  <Collapsible open={isBundlePricingOpen} onOpenChange={setIsBundlePricingOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        className="w-full justify-between text-lg font-semibold border-2 border-orange-200 hover:border-orange-400 rounded-xl p-4 h-auto"
+                      >
+                        <span className="flex items-center">
+                          <span className="mr-2 text-xl">💎</span>
+                          Bundle Pricing (Optional)
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isBundlePricingOpen ? 'transform rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-4 mt-4">
+                      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-xl border border-orange-200">
+                        <p className="text-sm text-orange-700 mb-4">
+                          <span className="font-semibold">💡 Tip:</span> Offer discounts for bulk purchases! Example: 1 slot = ₱120, 3 slots = ₱300, 10 slots = ₱2000
+                        </p>
+                        {bundlePricing.map((bundle, index) => (
+                          <div key={index} className="flex gap-4 items-end mb-4">
+                            <div className="flex-1">
+                              <Label className="text-sm font-medium">Number of Slots</Label>
+                              <Input
+                                type="number"
+                                placeholder="e.g., 3"
+                                value={bundle.slots}
+                                onChange={(e) => updateBundlePricing(index, 'slots', e.target.value)}
+                                className="mt-1 h-10 border-orange-200 focus:border-orange-400"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <Label className="text-sm font-medium">Bundle Price (₱)</Label>
+                              <Input
+                                type="number"
+                                placeholder="e.g., 300"
+                                value={bundle.price}
+                                onChange={(e) => updateBundlePricing(index, 'price', e.target.value)}
+                                className="mt-1 h-10 border-orange-200 focus:border-orange-400"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              {index === bundlePricing.length - 1 && (
+                                <Button
+                                  type="button"
+                                  onClick={addBundlePricing}
+                                  size="sm"
+                                  className="bg-green-500 hover:bg-green-600 text-white h-10"
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {bundlePricing.length > 1 && (
+                                <Button
+                                  type="button"
+                                  onClick={() => removeBundlePricing(index)}
+                                  size="sm"
+                                  variant="destructive"
+                                  className="h-10"
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+
+                {/* Draw Date */}
                 <div>
-                  <Label htmlFor="endDate" className="text-lg font-semibold flex items-center">
+                  <Label htmlFor="drawDate" className="text-lg font-semibold flex items-center">
                     <span className="mr-2 text-xl">📅</span>
-                    End Date
+                    Draw Date
                   </Label>
                   <Input
-                    id="endDate"
+                    id="drawDate"
                     type="date"
-                    value={formData.endDate}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
+                    value={formData.drawDate}
+                    onChange={(e) => handleInputChange('drawDate', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
                   />
                 </div>
@@ -276,7 +382,7 @@ const SubmitRafflePage = () => {
                 <div>
                   <Label htmlFor="organization" className="text-lg font-semibold flex items-center">
                     <span className="mr-2 text-xl">🏢</span>
-                    Organization/Host
+                    Organization/Facebook Page Name
                   </Label>
                   <Input
                     id="organization"
@@ -302,32 +408,32 @@ const SubmitRafflePage = () => {
                   />
                 </div>
 
-                {/* Join URL */}
+                {/* Raffle Details URL */}
                 <div>
-                  <Label htmlFor="externalJoinUrl" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🔗</span>
-                    How to Join URL
+                  <Label htmlFor="raffleDetailsUrl" className="text-lg font-semibold flex items-center">
+                    <span className="mr-2 text-xl">📋</span>
+                    Raffle Full Details & Images
                   </Label>
                   <Input
-                    id="externalJoinUrl"
-                    placeholder="https://yourwebsite.com/join"
-                    value={formData.externalJoinUrl}
-                    onChange={(e) => handleInputChange('externalJoinUrl', e.target.value)}
+                    id="raffleDetailsUrl"
+                    placeholder="facebook.com/post/raffledetails"
+                    value={formData.raffleDetailsUrl}
+                    onChange={(e) => handleInputChange('raffleDetailsUrl', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
                   />
                 </div>
 
-                {/* Image URL */}
+                {/* Slot Inquiry URL */}
                 <div>
-                  <Label htmlFor="imageUrl" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🖼️</span>
-                    Prize Image URL
+                  <Label htmlFor="slotInquiryUrl" className="text-lg font-semibold flex items-center">
+                    <span className="mr-2 text-xl">💬</span>
+                    Slot Inquiry/Buying URL
                   </Label>
                   <Input
-                    id="imageUrl"
-                    placeholder="https://example.com/image.jpg"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                    id="slotInquiryUrl"
+                    placeholder="messenger.com/slotinquiry"
+                    value={formData.slotInquiryUrl}
+                    onChange={(e) => handleInputChange('slotInquiryUrl', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
                   />
                 </div>
@@ -377,7 +483,7 @@ const SubmitRafflePage = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2 text-lg">✅</span>
-                    FREE during our beta period - normally ₱200 submission fee
+                    Submission is free for a limited time only.
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2 text-lg">✅</span>
