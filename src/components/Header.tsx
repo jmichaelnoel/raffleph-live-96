@@ -2,25 +2,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import MobileNavigation from './MobileNavigation';
 
 interface HeaderProps {
-  onSearchChange: (searchTerm: string) => void;
+  onSearchChange?: (searchTerm: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const Header: React.FC<HeaderProps> = () => {
   const navigate = useNavigate();
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    onSearchChange(value);
-  };
 
   const handleBrowseRaffles = () => {
     if (window.location.pathname === '/') {
@@ -33,10 +23,6 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
       // If on other pages, navigate to homepage and then scroll
       navigate('/', { state: { scrollToRaffles: true } });
     }
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
@@ -80,22 +66,6 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             <MobileNavigation />
           </div>
         </div>
-
-        {/* Search Bar - Only show on homepage */}
-        {window.location.pathname === '/' && (
-          <div className="pb-4">
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search for raffles... (Try 'iPhone', 'Car', 'Cash')"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="pl-10 pr-4 py-2 w-full border-2 border-purple-200 focus:border-purple-400 rounded-lg"
-              />
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );
