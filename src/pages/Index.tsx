@@ -132,7 +132,7 @@ const Index = () => {
                 <Trophy className="h-10 w-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-3 text-white">🏆 Premium Prizes</h3>
-              <p className="text-blue-200 leading-relaxed">Discover amazing rewards from trusted organizations across the Philippines</p>
+              <p className="text-blue-200 leading-relaxed">Discover crazy rewards across the Philippines</p>
             </div>
             
             <div className="text-center group transform hover:scale-105 transition-all duration-300">
