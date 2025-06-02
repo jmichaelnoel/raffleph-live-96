@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RaffleDetailsPage from "./pages/RaffleDetailsPage";
+import SubmitRafflePage from "./pages/SubmitRafflePage";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App: React.FC = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/raffles/:raffleId" element={<RaffleDetailsPage />} />
+          <Route path="/submit-raffle" element={<SubmitRafflePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

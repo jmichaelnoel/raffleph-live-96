@@ -8,7 +8,9 @@ import MobileFilterButton from '@/components/MobileFilterButton';
 import { useToast } from '@/hooks/use-toast';
 import { useRaffleData } from '@/hooks/useRaffleData';
 import { SortOption } from '@/utils/raffleUtils';
-import { Sparkles, Trophy, Target, Zap, Coins } from 'lucide-react';
+import { Sparkles, Trophy, Target, Zap, Coins, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 const Index = () => {
   const {
     toast
@@ -152,7 +154,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
             <div className="text-center">
               <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-pink-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
                 <span className="text-3xl group-hover:scale-110 transition-transform duration-300">🏠</span>
@@ -166,13 +168,19 @@ const Index = () => {
               </a>
             </div>
             <div className="text-center">
+              <Link to="/submit-raffle" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+                <Plus className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+                Submit Raffle
+              </Link>
+            </div>
+            <div className="text-center">
               <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-blue-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
                 <span className="text-3xl group-hover:scale-110 transition-transform duration-300">❓</span>
                 How It Works
               </a>
             </div>
             <div className="text-center">
-              <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+              <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-purple-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
                 <span className="text-3xl group-hover:scale-110 transition-transform duration-300">💬</span>
                 FAQ
               </a>
@@ -186,7 +194,7 @@ const Index = () => {
                 <div className="animate-pulse">
                   <Sparkles className="h-5 w-5 text-pink-400" />
                 </div>
-                <span className="text-pink-300 font-semibold text-lg">Made with ❤️ in Cebu,  Philippines</span>
+                <span className="text-pink-300 font-semibold text-lg">Made with ❤️ in Cebu, Philippines</span>
                 <div className="animate-bounce">
                   <Coins className="h-5 w-5 text-yellow-400" />
                 </div>
@@ -197,4 +205,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
