@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -25,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({
                 <span className="text-ph-red animate-pulse">🎊</span>
                 <span className="text-ph-red animate-pulse">Raffle</span>
                 <span className="text-ph-blue group-hover:animate-bounce">PH</span>
-                <span className="text-sm lg:text-base font-mono font-bold text-gray-600 tracking-wider transform rotate-90 origin-center whitespace-nowrap mx-1" style={{ height: '1.5rem', lineHeight: '1.5rem' }}>.com</span>
+                <span className="text-xs lg:text-sm font-sans font-bold text-gray-600 tracking-tight transform rotate-90 origin-center whitespace-nowrap -ml-1 mr-0.5" style={{ fontSize: '0.6rem', lineHeight: '2.4rem', letterSpacing: '0.02em' }}>.com</span>
                 <span className="text-ph-yellow animate-ping inline-block w-2 h-2 rounded-full">.</span>
                 <span className="text-2xl ml-2 animate-bounce delay-100">🎊</span>
               </h1>
