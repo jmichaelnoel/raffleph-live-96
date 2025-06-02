@@ -50,24 +50,20 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
   const getCategoryEmoji = (category: RaffleCategory) => {
     const emojiMap: Record<RaffleCategory, string> = {
-      'Electronics': '📱',
+      'Gadgets': '🎮',
       'Cars': '🚗',
-      'Cash Prizes': '💰',
-      'Property': '🏠',
-      'Travel': '✈️',
-      'Gadgets': '🎮'
+      'Cash': '💰',
+      'Motorcycle': '🏍️'
     };
     return emojiMap[category] || '🎁';
   };
 
   const getCategoryColor = (category: RaffleCategory, isSelected: boolean) => {
     const colorMap: Record<RaffleCategory, string> = {
-      'Electronics': isSelected ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-200' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200',
+      'Gadgets': isSelected ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-indigo-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200',
       'Cars': isSelected ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-200' : 'bg-red-50 text-red-700 hover:bg-red-100 border-red-200',
-      'Cash Prizes': isSelected ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-200' : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200',
-      'Property': isSelected ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-purple-200' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200',
-      'Travel': isSelected ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-orange-200' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-200',
-      'Gadgets': isSelected ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-indigo-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200'
+      'Cash': isSelected ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-200' : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200',
+      'Motorcycle': isSelected ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-purple-200' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200'
     };
     return colorMap[category];
   };

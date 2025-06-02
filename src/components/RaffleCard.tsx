@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -33,26 +32,20 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
 
   const getCategoryButtonStyle = (category: string) => {
     const categoryStyles = {
-      'Electronics': 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-      'Cars': 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
-      'Cash Prizes': 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
-      'Property': 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
-      'Travel': 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700',
       'Gadgets': 'from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700',
-      'Motorcycles': 'from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800'
+      'Cars': 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
+      'Cash': 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+      'Motorcycle': 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
     };
     return categoryStyles[category as keyof typeof categoryStyles] || 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700';
   };
 
   const getCategoryEmoji = (category: string) => {
     const emojiMap = {
-      'Electronics': '📱',
-      'Cars': '🚗',
-      'Cash Prizes': '💰',
-      'Property': '🏠',
-      'Travel': '✈️',
       'Gadgets': '🎮',
-      'Motorcycles': '🏍️'
+      'Cars': '🚗',
+      'Cash': '💰',
+      'Motorcycle': '🏍️'
     };
     return emojiMap[category as keyof typeof emojiMap] || '🎁';
   };
