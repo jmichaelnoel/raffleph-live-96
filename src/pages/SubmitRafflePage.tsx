@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { GradientText } from '@/components/ui/gradient-text';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Minus, ChevronDown } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -23,6 +23,7 @@ interface BundlePricing {
 const SubmitRafflePage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -70,7 +71,7 @@ const SubmitRafflePage = () => {
     setBundlePricing(updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -83,31 +84,87 @@ const SubmitRafflePage = () => {
       return;
     }
 
-    // Enhanced success message with celebration
-    toast({
-      title: "🎉 AMAZING! Your Raffle is Submitted! 🎉",
-      description: "Your raffle has been submitted for review! Get ready to reach thousands of excited participants. We'll contact you within 24 hours! 🚀✨",
-      duration: 8000
-    });
+    setIsSubmitting(true);
 
-    // Reset form
-    setFormData({
-      title: '',
-      description: '',
-      prize: '',
-      category: '',
-      bettingCost: '',
-      drawDate: '',
-      location: '',
-      organization: '',
-      organizerFacebookUrl: '',
-      raffleDetailsUrl: '',
-      slotInquiryUrl: '',
-      entriesLeft: '',
-      convertibleToCash: false
-    });
+    try {
+      // Filter out empty bundle pricing entries
+      const validBundlePricing = bundlePricing.filter(
+        bundle => bundle.slots && bundle.price
+      ).map(bundle => ({
+        slots: parseInt(bundle.slots),
+        price: parseFloat(bundle.price)
+      }));
 
-    setBundlePricing([{ slots: '', price: '' }]);
+      // Prepare submission data
+      const submissionData = {
+        title: formData.title,
+        description: formData.description,
+        prize: parseFloat(formData.prize),
+        category: formData.category,
+        betting_cost: formData.bettingCost ? parseFloat(formData.bettingCost) : null,
+        bundle_pricing: validBundlePricing,
+        draw_date: formData.drawDate || null,
+        location: formData.location || null,
+        organization: formData.organization || null,
+        organizer_facebook_url: formData.organizerFacebookUrl || null,
+        raffle_details_url: formData.raffleDetailsUrl || null,
+        slot_inquiry_url: formData.slotInquiryUrl || null,
+        entries_left: formData.entriesLeft ? parseInt(formData.entriesLeft) : null,
+        convertible_to_cash: formData.convertibleToCash
+      };
+
+      const { data, error } = await supabase
+        .from('raffle_submissions')
+        .insert(submissionData)
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Submission error:', error);
+        toast({
+          title: "Submission Failed",
+          description: "There was an error submitting your raffle. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Enhanced success message with submission ID
+      toast({
+        title: "🎉 AMAZING! Your Raffle is Submitted! 🎉",
+        description: `Your raffle has been submitted for review! Submission ID: ${data.id.slice(0, 8)}... We'll contact you within 24 hours! 🚀✨`,
+        duration: 8000
+      });
+
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        prize: '',
+        category: '',
+        bettingCost: '',
+        drawDate: '',
+        location: '',
+        organization: '',
+        organizerFacebookUrl: '',
+        raffleDetailsUrl: '',
+        slotInquiryUrl: '',
+        entriesLeft: '',
+        convertibleToCash: false
+      });
+
+      setBundlePricing([{ slots: '', price: '' }]);
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Submission Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -206,6 +263,7 @@ const SubmitRafflePage = () => {
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -221,6 +279,7 @@ const SubmitRafflePage = () => {
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     className="mt-2 min-h-[120px] text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -237,6 +296,7 @@ const SubmitRafflePage = () => {
                     value={formData.prize}
                     onChange={(e) => handleInputChange('prize', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -246,7 +306,7 @@ const SubmitRafflePage = () => {
                     <span className="mr-2 text-xl">🎯</span>
                     Category *
                   </Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                  <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)} disabled={isSubmitting}>
                     <SelectTrigger className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
@@ -272,6 +332,7 @@ const SubmitRafflePage = () => {
                     value={formData.bettingCost}
                     onChange={(e) => handleInputChange('bettingCost', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -283,6 +344,7 @@ const SubmitRafflePage = () => {
                         type="button"
                         variant="outline" 
                         className="w-full justify-between text-lg font-semibold border-2 border-orange-200 hover:border-orange-400 rounded-xl p-4 h-auto"
+                        disabled={isSubmitting}
                       >
                         <span className="flex items-center">
                           <span className="mr-2 text-xl">💎</span>
@@ -306,6 +368,7 @@ const SubmitRafflePage = () => {
                                 value={bundle.slots}
                                 onChange={(e) => updateBundlePricing(index, 'slots', e.target.value)}
                                 className="mt-1 h-10 border-orange-200 focus:border-orange-400"
+                                disabled={isSubmitting}
                               />
                             </div>
                             <div className="flex-1">
@@ -316,6 +379,7 @@ const SubmitRafflePage = () => {
                                 value={bundle.price}
                                 onChange={(e) => updateBundlePricing(index, 'price', e.target.value)}
                                 className="mt-1 h-10 border-orange-200 focus:border-orange-400"
+                                disabled={isSubmitting}
                               />
                             </div>
                             <div className="flex gap-2">
@@ -325,6 +389,7 @@ const SubmitRafflePage = () => {
                                   onClick={addBundlePricing}
                                   size="sm"
                                   className="bg-green-500 hover:bg-green-600 text-white h-10"
+                                  disabled={isSubmitting}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>
@@ -336,6 +401,7 @@ const SubmitRafflePage = () => {
                                   size="sm"
                                   variant="destructive"
                                   className="h-10"
+                                  disabled={isSubmitting}
                                 >
                                   <Minus className="h-4 w-4" />
                                 </Button>
@@ -360,6 +426,7 @@ const SubmitRafflePage = () => {
                     value={formData.drawDate}
                     onChange={(e) => handleInputChange('drawDate', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -375,6 +442,7 @@ const SubmitRafflePage = () => {
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -390,6 +458,7 @@ const SubmitRafflePage = () => {
                     value={formData.organization}
                     onChange={(e) => handleInputChange('organization', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -405,6 +474,7 @@ const SubmitRafflePage = () => {
                     value={formData.organizerFacebookUrl}
                     onChange={(e) => handleInputChange('organizerFacebookUrl', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -420,6 +490,7 @@ const SubmitRafflePage = () => {
                     value={formData.raffleDetailsUrl}
                     onChange={(e) => handleInputChange('raffleDetailsUrl', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -435,6 +506,7 @@ const SubmitRafflePage = () => {
                     value={formData.slotInquiryUrl}
                     onChange={(e) => handleInputChange('slotInquiryUrl', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -451,6 +523,7 @@ const SubmitRafflePage = () => {
                     value={formData.entriesLeft}
                     onChange={(e) => handleInputChange('entriesLeft', e.target.value)}
                     className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -462,6 +535,7 @@ const SubmitRafflePage = () => {
                     checked={formData.convertibleToCash}
                     onChange={(e) => handleInputChange('convertibleToCash', e.target.checked)}
                     className="w-5 h-5 rounded"
+                    disabled={isSubmitting}
                   />
                   <Label htmlFor="convertibleToCash" className="text-lg font-semibold flex items-center">
                     <span className="mr-2 text-xl">💵</span>
@@ -496,10 +570,11 @@ const SubmitRafflePage = () => {
               <div className="pt-8 border-t-2 border-purple-200">
                 <Button 
                   type="submit" 
-                  className="w-full text-xl py-6 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 text-white hover:shadow-2xl hover:scale-105 transition-all duration-300 font-bold rounded-2xl border-0"
+                  disabled={isSubmitting}
+                  className="w-full text-xl py-6 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 text-white hover:shadow-2xl hover:scale-105 transition-all duration-300 font-bold rounded-2xl border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <span className="mr-3 text-2xl animate-bounce">🚀</span>
-                  SUBMIT MY EPIC RAFFLE
+                  {isSubmitting ? 'SUBMITTING YOUR RAFFLE...' : 'SUBMIT MY EPIC RAFFLE'}
                   <span className="ml-3 text-2xl animate-pulse">⚡</span>
                 </Button>
                 <p className="text-center mt-4 text-lg text-gray-600">

@@ -12,9 +12,7 @@ import { useRaffleData } from '@/hooks/useRaffleData';
 import { SortOption } from '@/utils/raffleUtils';
 
 const Index = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const {
     searchQuery,
@@ -31,7 +29,8 @@ const Index = () => {
     setWinRateRange,
     filteredRaffles,
     maxPrize,
-    maxBet
+    maxBet,
+    isLoading
   } = useRaffleData();
   
   const handleSortChange = (option: SortOption) => {
@@ -47,7 +46,8 @@ const Index = () => {
     return priceRange[0] > 0 || priceRange[1] < maxPrize || betRange[0] > 0 || betRange[1] < maxBet || winRateRange[0] > 0 || winRateRange[1] < 0.02;
   };
   
-  return <div className="min-h-screen bg-gray-50">
+  return (
+    <div className="min-h-screen bg-gray-50">
       <Header onSearchChange={setSearchQuery} />
       
       <main className="container mx-auto px-4 py-6 lg:py-12">
@@ -83,21 +83,41 @@ const Index = () => {
             
             <div className="mb-4 flex justify-between items-center">
               <p className="text-gray-500 font-medium text-sm lg:text-base">
-                Showing <span className="font-bold text-gray-800">{filteredRaffles.length}</span> results 
-                {searchQuery && <span> for "<span className="italic">{searchQuery}</span>"</span>}
+                {isLoading ? (
+                  "Loading raffles..."
+                ) : (
+                  <>
+                    Showing <span className="font-bold text-gray-800">{filteredRaffles.length}</span> results 
+                    {searchQuery && <span> for "<span className="italic">{searchQuery}</span>"</span>}
+                  </>
+                )}
               </p>
             </div>
             
-            {filteredRaffles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
-                {filteredRaffles.map((raffle, index) => <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
+            {isLoading ? (
+              <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">Loading raffles...</h3>
+                <p className="text-gray-600 text-sm lg:text-base">
+                  Getting the latest raffles for you!
+                </p>
+              </div>
+            ) : filteredRaffles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
+                {filteredRaffles.map((raffle, index) => (
+                  <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
                     <RaffleCard raffle={raffle} />
-                  </div>)}
-              </div> : <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
                 <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">No raffles found</h3>
                 <p className="text-gray-600 text-sm lg:text-base">
                   Try adjusting your filters or search query to find more raffles.
                 </p>
-              </div>}
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -121,7 +141,8 @@ const Index = () => {
       />
       
       <Footer />
-    </div>;
+    </div>
+  );
 };
 
 export default Index;

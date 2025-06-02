@@ -9,7 +9,155 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      approved_raffles: {
+        Row: {
+          betting_cost: number
+          category: string
+          convertible_to_cash: boolean | null
+          created_at: string | null
+          description: string
+          end_date: string
+          entries_left: number | null
+          external_join_url: string
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          location: string | null
+          organization: string
+          organizer_facebook_url: string
+          prize: number
+          submission_id: string | null
+          title: string
+          updated_at: string | null
+          winning_percentage: number | null
+        }
+        Insert: {
+          betting_cost?: number
+          category: string
+          convertible_to_cash?: boolean | null
+          created_at?: string | null
+          description: string
+          end_date: string
+          entries_left?: number | null
+          external_join_url: string
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          organization: string
+          organizer_facebook_url: string
+          prize: number
+          submission_id?: string | null
+          title: string
+          updated_at?: string | null
+          winning_percentage?: number | null
+        }
+        Update: {
+          betting_cost?: number
+          category?: string
+          convertible_to_cash?: boolean | null
+          created_at?: string | null
+          description?: string
+          end_date?: string
+          entries_left?: number | null
+          external_join_url?: string
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          organization?: string
+          organizer_facebook_url?: string
+          prize?: number
+          submission_id?: string | null
+          title?: string
+          updated_at?: string | null
+          winning_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approved_raffles_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "raffle_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffle_submissions: {
+        Row: {
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          betting_cost: number | null
+          bundle_pricing: Json | null
+          category: string
+          convertible_to_cash: boolean | null
+          created_at: string | null
+          description: string
+          draw_date: string | null
+          entries_left: number | null
+          id: string
+          location: string | null
+          organization: string | null
+          organizer_facebook_url: string | null
+          prize: number
+          raffle_details_url: string | null
+          slot_inquiry_url: string | null
+          status: Database["public"]["Enums"]["approval_status"] | null
+          submitted_at: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          betting_cost?: number | null
+          bundle_pricing?: Json | null
+          category: string
+          convertible_to_cash?: boolean | null
+          created_at?: string | null
+          description: string
+          draw_date?: string | null
+          entries_left?: number | null
+          id?: string
+          location?: string | null
+          organization?: string | null
+          organizer_facebook_url?: string | null
+          prize: number
+          raffle_details_url?: string | null
+          slot_inquiry_url?: string | null
+          status?: Database["public"]["Enums"]["approval_status"] | null
+          submitted_at?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          betting_cost?: number | null
+          bundle_pricing?: Json | null
+          category?: string
+          convertible_to_cash?: boolean | null
+          created_at?: string | null
+          description?: string
+          draw_date?: string | null
+          entries_left?: number | null
+          id?: string
+          location?: string | null
+          organization?: string | null
+          organizer_facebook_url?: string | null
+          prize?: number
+          raffle_details_url?: string | null
+          slot_inquiry_url?: string | null
+          status?: Database["public"]["Enums"]["approval_status"] | null
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +166,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      approval_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +281,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      approval_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const

@@ -1,22 +1,100 @@
 
 import { useState, useEffect } from 'react';
-import { Raffle, RaffleCategory, raffles as allRaffles } from '@/data/raffles';
+import { supabase } from '@/integrations/supabase/client';
 import { SortOption, sortRaffles } from '@/utils/raffleUtils';
+
+export type RaffleCategory = 'Cash' | 'Cars' | 'Motorcycle' | 'Gadgets';
+
+export interface Raffle {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  category: RaffleCategory;
+  prize: number;
+  bettingCost: number;
+  winningPercentage: number;
+  endDate: string;
+  organization: string;
+  location: string;
+  featured: boolean;
+  entriesLeft?: number;
+  externalJoinUrl: string;
+  organizerFacebookUrl: string;
+  convertibleToCash: boolean;
+}
 
 export const useRaffleData = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('prize-high-to-low');
   const [selectedCategories, setSelectedCategories] = useState<RaffleCategory[]>([]);
+  const [allRaffles, setAllRaffles] = useState<Raffle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const maxPrize = Math.max(...allRaffles.map(raffle => raffle.prize), 0);
   const maxBet = Math.max(...allRaffles.map(raffle => raffle.bettingCost), 0);
   
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrize]);
-  const [betRange, setBetRange] = useState<[number, number]>([0, maxBet]);
-  const [winRateRange, setWinRateRange] = useState<[number, number]>([0, 0.02]); // Assuming max win rate for slider
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
+  const [betRange, setBetRange] = useState<[number, number]>([0, 0]);
+  const [winRateRange, setWinRateRange] = useState<[number, number]>([0, 0.02]);
   
-  const [filteredRaffles, setFilteredRaffles] = useState<Raffle[]>(allRaffles);
+  const [filteredRaffles, setFilteredRaffles] = useState<Raffle[]>([]);
 
+  // Fetch approved raffles from Supabase
+  useEffect(() => {
+    const fetchRaffles = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('approved_raffles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching raffles:', error);
+          return;
+        }
+
+        // Transform the data to match the expected Raffle interface
+        const transformedRaffles: Raffle[] = (data || []).map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          imageUrl: item.image_url,
+          category: item.category as RaffleCategory,
+          prize: Number(item.prize),
+          bettingCost: Number(item.betting_cost),
+          winningPercentage: Number(item.winning_percentage),
+          endDate: item.end_date,
+          organization: item.organization,
+          location: item.location,
+          featured: item.featured,
+          entriesLeft: item.entries_left,
+          externalJoinUrl: item.external_join_url,
+          organizerFacebookUrl: item.organizer_facebook_url,
+          convertibleToCash: item.convertible_to_cash
+        }));
+
+        setAllRaffles(transformedRaffles);
+        
+        // Update ranges based on fetched data
+        const newMaxPrize = Math.max(...transformedRaffles.map(raffle => raffle.prize), 0);
+        const newMaxBet = Math.max(...transformedRaffles.map(raffle => raffle.bettingCost), 0);
+        
+        setPriceRange([0, newMaxPrize]);
+        setBetRange([0, newMaxBet]);
+        
+      } catch (error) {
+        console.error('Unexpected error fetching raffles:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRaffles();
+  }, []);
+
+  // Filter and sort raffles
   useEffect(() => {
     let result = [...allRaffles];
     
@@ -53,7 +131,7 @@ export const useRaffleData = () => {
     result = sortRaffles(result, sortOption);
     
     setFilteredRaffles(result);
-  }, [searchQuery, sortOption, selectedCategories, priceRange, betRange, winRateRange]);
+  }, [searchQuery, sortOption, selectedCategories, priceRange, betRange, winRateRange, allRaffles]);
 
   return {
     searchQuery,
@@ -71,5 +149,6 @@ export const useRaffleData = () => {
     filteredRaffles,
     maxPrize,
     maxBet,
+    isLoading,
   };
 };
