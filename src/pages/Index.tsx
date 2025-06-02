@@ -147,7 +147,7 @@ const Index = () => {
               <div className="bg-gradient-to-br from-green-500 to-emerald-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-transform duration-300 shadow-2xl">
                 <Zap className="h-10 w-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 text-white">⚡ Live Updates</h3>
+              <h3 className="text-2xl font-bold mb-3 text-white">⚡ Updated Daily</h3>
               <p className="text-blue-200 leading-relaxed">Real-time raffle updates and winning statistics</p>
             </div>
           </div>
