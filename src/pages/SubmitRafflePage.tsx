@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send } from 'lucide-react';
 import { raffleCategories } from '@/data/raffles';
-
 const submitRaffleSchema = z.object({
   organizerName: z.string().min(2, 'Organizer name must be at least 2 characters'),
   facebookPageUrl: z.string().url('Please enter a valid Facebook page URL'),
@@ -28,36 +26,33 @@ const submitRaffleSchema = z.object({
   entryPrice: z.number().min(1, 'Entry price must be greater than 0'),
   externalJoinUrl: z.string().url('Please enter a valid join URL (Messenger, Telegram, etc.)'),
   drawDate: z.string().min(1, 'Draw date is required'),
-  location: z.string().min(2, 'Location is required'),
+  location: z.string().min(2, 'Location is required')
 });
-
 type SubmitRaffleForm = z.infer<typeof submitRaffleSchema>;
-
 const SubmitRafflePage = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
-
   const form = useForm<SubmitRaffleForm>({
     resolver: zodResolver(submitRaffleSchema),
     defaultValues: {
-      convertibleToCash: false,
-    },
+      convertibleToCash: false
+    }
   });
-
   const onSubmit = async (data: SubmitRaffleForm) => {
     try {
       // In a real app, this would submit to Supabase
       console.log('Raffle submission:', data);
-      
       toast({
         title: "Raffle Submitted Successfully!",
         description: "Your raffle has been submitted for review. We'll contact you within 24 hours.",
-        duration: 5000,
+        duration: 5000
       });
 
       // Reset form
       form.reset();
-      
+
       // Navigate back to home after a delay
       setTimeout(() => {
         navigate('/');
@@ -66,19 +61,13 @@ const SubmitRafflePage = () => {
       toast({
         title: "Submission Failed",
         description: "Please try again or contact support if the issue persists.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <Button 
-          onClick={() => navigate(-1)} 
-          variant="outline" 
-          className="mb-6"
-        >
+        <Button onClick={() => navigate(-1)} variant="outline" className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
 
@@ -96,55 +85,41 @@ const SubmitRafflePage = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="organizerName"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="organizerName" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Organizer Name *</FormLabel>
                         <FormControl>
                           <Input placeholder="Your name or business name" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
 
-                  <FormField
-                    control={form.control}
-                    name="facebookPageUrl"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="facebookPageUrl" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Facebook Page URL *</FormLabel>
                         <FormControl>
                           <Input placeholder="https://facebook.com/yourpage" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="raffleTitle"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={form.control} name="raffleTitle" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Raffle Title *</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., iPhone 15 Pro Max Giveaway" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="category" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Category *</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
@@ -153,170 +128,110 @@ const SubmitRafflePage = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {raffleCategories.map((category) => (
-                              <SelectItem key={category} value={category}>
+                            {raffleCategories.map(category => <SelectItem key={category} value={category}>
                                 {category}
-                              </SelectItem>
-                            ))}
+                              </SelectItem>)}
                           </SelectContent>
                         </Select>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
 
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="location" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Location *</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., Manila, Nationwide" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="prize"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={form.control} name="prize" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Prize Description *</FormLabel>
                       <FormControl>
                         <Input placeholder="Describe the prize in detail" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="prizeValue"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="prizeValue" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Prize Value (₱) *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="50000" 
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
+                          <Input type="number" placeholder="50000" {...field} onChange={e => field.onChange(Number(e.target.value))} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
 
-                  <FormField
-                    control={form.control}
-                    name="entryPrice"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="entryPrice" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Entry Price (₱) *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="50" 
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
+                          <Input type="number" placeholder="50" {...field} onChange={e => field.onChange(Number(e.target.value))} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="convertibleToCash"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormField control={form.control} name="convertibleToCash" render={({
+                field
+              }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
                           Prize can be converted to cash equivalent
                         </FormLabel>
                       </div>
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
+                <FormField control={form.control} name="description" render={({
+                field
+              }) => <FormItem>
                       <FormLabel>Description & Mechanics *</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Describe the raffle mechanics, how to join, when the draw will happen, etc."
-                          className="min-h-[100px]"
-                          {...field} 
-                        />
+                        <Textarea placeholder="Describe the raffle mechanics, how to join, when the draw will happen, etc." className="min-h-[100px]" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image URL *</FormLabel>
+                <FormField control={form.control} name="imageUrl" render={({
+                field
+              }) => <FormItem>
+                      <FormLabel>Raffle Info Link *</FormLabel>
                       <FormControl>
                         <Input placeholder="https://example.com/prize-image.jpg" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormItem>} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="externalJoinUrl"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="externalJoinUrl" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Join Link *</FormLabel>
                         <FormControl>
                           <Input placeholder="https://m.me/yourpage or Telegram link" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
 
-                  <FormField
-                    control={form.control}
-                    name="drawDate"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="drawDate" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Draw Date *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="datetime-local" 
-                            {...field} 
-                          />
+                          <Input type="datetime-local" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -329,11 +244,7 @@ const SubmitRafflePage = () => {
                   </ul>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 text-lg font-semibold"
-                  disabled={form.formState.isSubmitting}
-                >
+                <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 text-lg font-semibold" disabled={form.formState.isSubmitting}>
                   <Send className="mr-2 h-5 w-5" />
                   {form.formState.isSubmitting ? 'Submitting...' : 'Submit Raffle for Review'}
                 </Button>
@@ -342,8 +253,6 @@ const SubmitRafflePage = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default SubmitRafflePage;
