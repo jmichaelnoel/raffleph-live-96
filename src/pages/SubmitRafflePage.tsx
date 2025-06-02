@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -108,7 +107,7 @@ const SubmitRafflePage = () => {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-            Submit Your <GradientText className="text-white">Epic Raffle</GradientText> 
+            Submit Your <span className="bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 bg-clip-text text-transparent font-extrabold">Epic Raffle</span> 
             <span className="inline-block ml-3 animate-bounce delay-300">🎯</span>
           </h1>
           
@@ -378,7 +377,7 @@ const SubmitRafflePage = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2 text-lg">✅</span>
-                    FREE during our beta period - normally ₱500 submission fee
+                    FREE during our beta period - normally ₱200 submission fee
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2 text-lg">✅</span>

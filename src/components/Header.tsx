@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,8 +40,8 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="bg-white shadow-sm"> 
-      <div className="container mx-auto px-4 py-4 lg:py-6">
-        <div className="flex items-center justify-between mb-6 lg:mb-8">
+      <div className="container mx-auto px-4 py-2 lg:py-3">
+        <div className="flex items-center justify-between mb-4 lg:mb-6">
           <div className="flex items-center">
             <MobileNavigation />
             <div className="flex items-center ml-2 md:ml-0">
