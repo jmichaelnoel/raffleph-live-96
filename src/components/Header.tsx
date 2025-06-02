@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -22,16 +21,14 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center">
             <MobileNavigation />
             <div className="flex items-center ml-2 md:ml-0">
-              <h1 className="text-2xl lg:text-3xl font-bold group cursor-pointer">
+              <h1 className="text-2xl lg:text-3xl font-bold group cursor-pointer flex items-center">
                 <span className="text-ph-red animate-pulse">🎊</span>
                 <span className="text-ph-red animate-pulse">Raffle</span>
                 <span className="text-ph-blue group-hover:animate-bounce">PH</span>
-                <span className="text-ph-yellow animate-ping inline-block w-2 h-2 rounded-full ml-1">.</span>
+                <span className="text-sm lg:text-base font-mono font-bold text-gray-600 tracking-wider transform rotate-90 origin-center whitespace-nowrap mx-1" style={{ height: '1.5rem', lineHeight: '1.5rem' }}>.com</span>
+                <span className="text-ph-yellow animate-ping inline-block w-2 h-2 rounded-full">.</span>
                 <span className="text-2xl ml-2 animate-bounce delay-100">🎊</span>
               </h1>
-              <div className="flex flex-col items-center justify-center ml-1">
-                <span className="text-sm font-bold text-gray-600 tracking-wider transform rotate-90 origin-center whitespace-nowrap">.com</span>
-              </div>
             </div>
           </div>
           
