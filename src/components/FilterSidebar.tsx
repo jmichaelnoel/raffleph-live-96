@@ -1,7 +1,8 @@
 import React from 'react';
 import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
 import { RaffleCategory, raffleCategories } from '@/data/raffles';
-import { Sparkles, Trophy, Coins, Target, Zap, Filter } from 'lucide-react';
+import { Sparkles, Trophy, Coins, Target, Zap, Filter, Search } from 'lucide-react';
 
 interface FilterSidebarProps {
   priceRange: [number, number];
@@ -14,6 +15,8 @@ interface FilterSidebarProps {
   maxBet: number;
   winRateRange: [number, number];
   setWinRateRange: (range: [number, number]) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({
@@ -26,7 +29,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   setBetRange,
   maxBet,
   winRateRange,
-  setWinRateRange
+  setWinRateRange,
+  searchQuery,
+  setSearchQuery
 }) => {
   const handleCategoryChange = (category: RaffleCategory) => {
     if (selectedCategories.includes(category)) {
@@ -87,6 +92,20 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       </div>
       
       <div className="relative z-10">
+        {/* Search Bar */}
+        <div className="mb-5 animate-slide-up">
+          <div className="relative group">
+            <Input 
+              type="text" 
+              placeholder="🔍 Search raffles..." 
+              className="pl-10 pr-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 w-full text-base shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]" 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)} 
+            />
+            <Search className="absolute left-3 top-3 h-5 w-5 text-purple-400 animate-pulse" />
+          </div>
+        </div>
+
         <h2 className="text-xl font-bold mb-5 flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           <div className="p-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg animate-pulse">
             <Filter className="h-4 w-4 text-white" />

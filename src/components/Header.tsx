@@ -1,6 +1,5 @@
+
 import React from 'react';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GradientText } from '@/components/ui/gradient-text';
@@ -102,17 +101,6 @@ const Header: React.FC<HeaderProps> = ({
                 <span className="inline-block ml-1 animate-bounce delay-700">🎯</span>
                 <span className="inline-block ml-1 animate-pulse delay-1000">💰</span>
               </p>
-            </div>
-            
-            <div className="relative animate-fade-in delay-2 group">
-              <Input 
-                type="text" 
-                placeholder="🔍 Search for raffles… (Try 'iPhone', 'Car', 'Cash')" 
-                className="pl-10 lg:pl-12 pr-4 py-3 lg:py-4 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 w-full text-base lg:text-lg shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]" 
-                onChange={e => onSearchChange(e.target.value)} 
-              />
-              <Search className="absolute left-3 lg:left-4 top-3 lg:top-4 h-5 w-5 lg:h-6 lg:w-6 text-purple-400 animate-pulse" />
-              <div className="absolute right-3 top-3 lg:top-4 text-2xl animate-bounce delay-500">🎲</div>
             </div>
           </div>
           
