@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { GradientText } from '@/components/ui/gradient-text';
 import { Sparkles, Gift, Trophy, Zap } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -31,11 +32,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onBrowseRaffles }) => {
 
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-4xl mx-auto">
-          {/* Main heading with moving gradient */}
+          {/* Main heading with GradientText */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
-            <span className="moving-gradient-text">
-              Win Amazing Prizes
-            </span>
+            Win <GradientText>Amazing Prizes</GradientText>
             <br />
             <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Every Single Day! 🎁
@@ -43,32 +42,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onBrowseRaffles }) => {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-gray-700 mb-8 animate-fade-in delay-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-700 mb-12 animate-fade-in delay-300 max-w-3xl mx-auto leading-relaxed">
             Join thousands of Filipinos winning incredible prizes daily! From the latest gadgets to dream cars, 
             your next big win is just a click away! 🚗💰📱
           </p>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-fade-in delay-500">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-purple-100">
-              <div className="text-3xl font-bold text-purple-600 mb-2">1000+</div>
-              <div className="text-gray-600">Active Raffles</div>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-pink-100">
-              <div className="text-3xl font-bold text-pink-600 mb-2">₱50M+</div>
-              <div className="text-gray-600">Prizes Given</div>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-blue-100">
-              <div className="text-3xl font-bold text-blue-600 mb-2">50K+</div>
-              <div className="text-gray-600">Happy Winners</div>
-            </div>
-          </div>
-
-          {/* CTA Button */}
+          {/* CTA Button with Browse Raffles styling */}
           <Button
             onClick={onBrowseRaffles}
             size="lg"
-            className="text-xl px-12 py-6 animate-fade-in delay-700 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 rounded-2xl"
+            className="text-xl px-12 py-8 animate-fade-in delay-700 text-white font-bold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 border-2 border-white"
+            style={{
+              background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
+            }}
           >
             <Sparkles className="mr-3 h-6 w-6" />
             Start Winning Today!
