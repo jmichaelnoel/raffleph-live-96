@@ -7,7 +7,8 @@ import { GradientText } from '@/components/ui/gradient-text';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Search, FileText, Rocket, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
+import { Input } from '@/components/ui/input';
+import MobileNavigation from '@/components/MobileNavigation';
 import Footer from '@/components/Footer';
 
 const HowItWorksPage: React.FC = () => {
@@ -63,20 +64,61 @@ const HowItWorksPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30">
-      <Header onSearchChange={() => {}} />
+      {/* Simplified Header - Navbar Only */}
+      <header className="bg-white shadow-sm"> 
+        <div className="container mx-auto px-4 py-4 lg:py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MobileNavigation />
+              <div className="flex items-center ml-2 md:ml-0">
+                <h1 className="text-2xl lg:text-3xl font-bold group cursor-pointer flex items-center">
+                  <span className="text-ph-red animate-pulse">🎊</span>
+                  <span className="text-ph-red animate-pulse">Raffle</span>
+                  <span className="text-ph-blue group-hover:animate-bounce">PH</span>
+                  <span className="text-xs lg:text-sm font-sans font-bold text-gray-600 tracking-tight transform rotate-90 origin-center whitespace-nowrap -ml-1 mr-0.5" style={{ fontSize: '0.6rem', lineHeight: '2.4rem', letterSpacing: '0.02em' }}>.com</span>
+                  <span className="text-ph-yellow animate-ping inline-block w-2 h-2 rounded-full">.</span>
+                  <span className="text-2xl ml-2 animate-bounce delay-100">🎊</span>
+                </h1>
+              </div>
+            </div>
+            
+            {/* Desktop/Tablet Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+              <Button 
+                onClick={() => navigate('/how-it-works')}
+                className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+                style={{
+                  background: 'linear-gradient(220.55deg, #3793FF 0%, #0017E4 100%)'
+                }}
+              >
+                How It Works
+              </Button>
+              <Button 
+                onClick={() => navigate('/submit-raffle')}
+                className="rounded-full text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform" 
+                style={{
+                  background: 'linear-gradient(220.55deg, #FF3F3F 0%, #063CFF 100%)'
+                }}
+              >
+                🎁 Submit Raffle
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
       
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      {/* Hero Section - Adjusted spacing */}
+      <section className="relative py-12 lg:py-20 overflow-hidden">
         <div className="absolute top-4 right-4 text-2xl animate-sparkle">✨</div>
         <div className="absolute bottom-8 left-8 text-xl animate-float-gently">🎊</div>
         <div className="absolute top-1/2 right-1/4 text-lg animate-bounce delay-300">⭐</div>
         
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 animate-fade-in">
               How It <GradientText>Works</GradientText>
             </h1>
-            <p className="text-xl lg:text-2xl text-gray-600 mb-8 animate-fade-in delay-150">
+            <p className="text-xl lg:text-2xl text-gray-600 mb-6 animate-fade-in delay-150">
               Join exciting raffles in just a few taps 🎟️
             </p>
             <div className="flex justify-center items-center gap-4 animate-fade-in delay-300">
