@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -46,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center">
             <MobileNavigation />
             <div className="flex items-center ml-2 md:ml-0">
-              <h1 className="text-2xl lg:text-3xl font-bold group cursor-pointer flex items-center">
+              <h1 className="text-2xl lg:text-3xl font-bold group cursor-pointer flex items-center" onClick={() => navigate('/')}>
                 <span className="text-ph-red animate-pulse">🎊</span>
                 <span className="text-ph-red animate-pulse">Raffle</span>
                 <span className="text-ph-blue group-hover:animate-bounce">PH</span>
@@ -62,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({
             <Button 
               onClick={() => navigate('/how-it-works')}
               variant="outline"
-              className="rounded-full border-2 border-gray-300 text-gray-600 hover:text-gray-800 hover:border-gray-400 font-medium px-6 py-2 transition-all duration-300 hover:scale-105 transform bg-white hover:bg-gray-50"
+              className="rounded-full border-2 border-gray-300 text-gray-600 hover:text-gray-800 hover:border-gray-400 font-medium px-6 py-2 transition-all duration-300 hover:scale-105 transform bg-gradient-to-r from-gray-50 to-blue-50 hover:from-blue-50 hover:to-purple-50"
             >
               How It Works
             </Button>

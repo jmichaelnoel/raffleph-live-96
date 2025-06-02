@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,73 +75,6 @@ const SubmitRafflePage = () => {
     <div className="min-h-screen">
       <Header onSearchChange={() => {}} />
       
-      {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-10 left-10 animate-float-gentle">
-          <Sparkles className="h-6 w-6 text-pink-400 opacity-60" />
-        </div>
-        <div className="absolute top-20 right-16 animate-bounce-slow delay-500">
-          <Gift className="h-8 w-8 text-purple-400 opacity-70" />
-        </div>
-        <div className="absolute bottom-20 left-20 animate-float-gentle delay-700">
-          <Trophy className="h-7 w-7 text-yellow-400 opacity-80" />
-        </div>
-        <div className="absolute top-1/3 right-1/4 animate-pulse delay-300">
-          <Star className="h-5 w-5 text-blue-400 opacity-60" />
-        </div>
-        <div className="absolute bottom-1/3 right-10 animate-float-gentle delay-200">
-          <Crown className="h-6 w-6 text-orange-400 opacity-70" />
-        </div>
-      </div>
-
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-red-500 text-white py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          {/* FREE Limited Time Banner */}
-          <div className="text-center mb-8">
-            <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 py-3 rounded-full font-bold text-lg shadow-2xl animate-pulse border-4 border-white">
-              <Clock className="inline mr-2 h-5 w-5" />
-              🎊 FREE SUBMISSION - LIMITED TIME ONLY! 🎊
-            </div>
-          </div>
-
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 animate-fade-in">
-              <span className="inline-block animate-bounce delay-100">🚀</span>
-              <span className="bg-gradient-to-r from-yellow-300 to-white bg-clip-text text-transparent">
-                Launch Your Raffle
-              </span>
-              <span className="inline-block animate-bounce delay-300">✨</span>
-            </h1>
-            
-            <p className="text-xl lg:text-2xl mb-8 text-purple-100 animate-fade-in delay-1">
-              Join thousands of successful raffle organizers on RafflePH! 
-              <br />
-              <span className="text-yellow-300 font-semibold">Reach millions of participants across the Philippines! 🇵🇭</span>
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in delay-2">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div className="text-4xl mb-3">📈</div>
-                <h3 className="font-bold text-lg mb-2">Massive Reach</h3>
-                <p className="text-purple-100">Get exposure to thousands of eager participants</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div className="text-4xl mb-3">💰</div>
-                <h3 className="font-bold text-lg mb-2">100% FREE</h3>
-                <p className="text-purple-100">No fees during our beta period - save hundreds!</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div className="text-4xl mb-3">⚡</div>
-                <h3 className="font-bold text-lg mb-2">Quick Setup</h3>
-                <p className="text-purple-100">Live within 24 hours after approval</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Form Section */}
       <div className="relative bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-16">
         <div className="container mx-auto px-4">
