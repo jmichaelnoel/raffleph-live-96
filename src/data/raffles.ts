@@ -1,4 +1,3 @@
-
 export type RaffleCategory = 'Cash' | 'Cars' | 'Motorcycle' | 'Gadgets';
 
 export const raffleCategories: RaffleCategory[] = [
@@ -50,7 +49,7 @@ export const raffles: Raffle[] = [
     id: '2',
     title: 'Brand New Toyota Vios 2025',
     description: 'Drive home a brand new Toyota Vios 2025 model. Complete with 3-year warranty and full insurance coverage. Perfect for your family needs!',
-    imageUrl: 'https://images.unsplash.com/photo-1549924231-f129b911e442?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800',
+    imageUrl: '/lovable-uploads/adc5bb76-0107-4448-9683-195bd554314c.png',
     category: 'Cars',
     prize: 850000,
     bettingCost: 200,
