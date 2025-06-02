@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import MobileNavigation from './MobileNavigation';
 
 interface HeaderProps {
@@ -29,7 +28,7 @@ const Header: React.FC<HeaderProps> = () => {
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+          {/* Logo - Now clickable */}
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-2xl font-bold">
               <span className="text-purple-600">Raffle</span>

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { GradientText } from '@/components/ui/gradient-text';
-import { Sparkles, Gift, Trophy, Zap } from 'lucide-react';
+import { Sparkles, Gift, Trophy, Zap, Crown } from 'lucide-react';
 
 interface HeroSectionProps {
   onBrowseRaffles: () => void;
@@ -34,10 +34,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onBrowseRaffles }) => {
         <div className="max-w-4xl mx-auto">
           {/* Main heading with GradientText */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
-            Win <GradientText>Amazing Prizes</GradientText>
+            Win <GradientText className="bg-transparent">Amazing Prizes</GradientText>
             <br />
             <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Every Single Day! 🎁
+              Every Single Day! <Crown className="inline-block h-12 w-12 md:h-16 md:w-16 lg:h-20 lg:w-20 text-yellow-500 ml-2" />
             </span>
           </h1>
 
