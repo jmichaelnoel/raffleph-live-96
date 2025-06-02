@@ -95,12 +95,12 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
                 </div>
               </div>
               
-              {raffle.totalEntries !== undefined && (
+              {raffle.entriesLeft !== undefined && (
                 <div className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
                   <Users className="mr-3 h-6 w-6 text-blue-500" />
                   <div>
                     <p className="text-sm text-gray-600">Total Entries</p>
-                    <p className="font-bold text-lg text-gray-800">{raffle.totalEntries > 0 ? raffle.totalEntries.toLocaleString() : "Unlimited"}</p>
+                    <p className="font-bold text-lg text-gray-800">{raffle.entriesLeft > 0 ? raffle.entriesLeft.toLocaleString() : "Unlimited"}</p>
                   </div>
                 </div>
               )}

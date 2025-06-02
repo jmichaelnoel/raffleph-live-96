@@ -25,8 +25,8 @@ const StatsBar: React.FC<StatsBarProps> = ({ raffle }) => {
       <StatItem icon={Percent} label="Win Rate" value={`${(raffle.winningPercentage * 100).toFixed(3)}%`} iconColor="text-yellow-600" />
       <StatItem icon={CalendarDays} label="Days Left" value={daysLeft} iconColor="text-blue-500" />
       <StatItem icon={MapPin} label="Location" value={raffle.location} iconColor="text-purple-500" />
-      {raffle.totalEntries !== undefined && (
-        <StatItem icon={Users} label="Total Entries" value={raffle.totalEntries > 0 ? raffle.totalEntries.toLocaleString() : "Unlimited"} iconColor="text-indigo-500" />
+      {raffle.entriesLeft !== undefined && (
+        <StatItem icon={Users} label="Total Entries" value={raffle.entriesLeft > 0 ? raffle.entriesLeft.toLocaleString() : "Unlimited"} iconColor="text-indigo-500" />
       )}
     </div>
   );
