@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { GradientText } from '@/components/ui/gradient-text';
 import AnimatedCategoryText from './AnimatedCategoryText';
 import MobileNavigation from './MobileNavigation';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -17,6 +17,27 @@ const Header: React.FC<HeaderProps> = ({
   onSearchChange
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBrowseRaffles = () => {
+    if (location.pathname === '/') {
+      // If on homepage, scroll to raffles section
+      const rafflesSection = document.querySelector('main');
+      if (rafflesSection) {
+        rafflesSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // If on other pages, navigate to homepage
+      navigate('/');
+      // After navigation, scroll to raffles section
+      setTimeout(() => {
+        const rafflesSection = document.querySelector('main');
+        if (rafflesSection) {
+          rafflesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm"> 
@@ -37,19 +58,26 @@ const Header: React.FC<HeaderProps> = ({
           </div>
           
           {/* Desktop/Tablet Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             <Button 
               onClick={() => navigate('/how-it-works')}
-              className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
-              style={{
-                background: 'linear-gradient(220.55deg, #3793FF 0%, #0017E4 100%)'
-              }}
+              variant="outline"
+              className="rounded-full border-2 border-gray-300 text-gray-600 hover:text-gray-800 hover:border-gray-400 font-medium px-6 py-2 transition-all duration-300 hover:scale-105 transform bg-white hover:bg-gray-50"
             >
               How It Works
             </Button>
             <Button 
+              onClick={handleBrowseRaffles}
+              className="rounded-full text-white font-bold px-8 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform text-lg"
+              style={{
+                background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
+              }}
+            >
+              🎯 Browse Raffles
+            </Button>
+            <Button 
               onClick={() => navigate('/submit-raffle')}
-              className="rounded-full text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform" 
+              className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform" 
               style={{
                 background: 'linear-gradient(220.55deg, #FF3F3F 0%, #063CFF 100%)'
               }}

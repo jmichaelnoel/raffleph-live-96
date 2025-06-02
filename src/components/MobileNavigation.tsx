@@ -9,14 +9,36 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MobileNavigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNavigation = (path: string) => {
     navigate(path);
+    setIsOpen(false);
+  };
+
+  const handleBrowseRaffles = () => {
+    if (location.pathname === '/') {
+      // If on homepage, scroll to raffles section
+      const rafflesSection = document.querySelector('main');
+      if (rafflesSection) {
+        rafflesSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // If on other pages, navigate to homepage
+      navigate('/');
+      // After navigation, scroll to raffles section
+      setTimeout(() => {
+        const rafflesSection = document.querySelector('main');
+        if (rafflesSection) {
+          rafflesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
     setIsOpen(false);
   };
 
@@ -38,16 +60,26 @@ const MobileNavigation: React.FC = () => {
         <nav className="flex flex-col gap-4 mt-8">
           <Button
             onClick={() => handleNavigation('/how-it-works')}
-            className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
-            style={{
-              background: 'linear-gradient(220.55deg, #3793FF 0%, #0017E4 100%)'
-            }}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-600 hover:text-gray-800 hover:border-gray-400 font-medium px-6 py-2 transition-all duration-300 bg-white hover:bg-gray-50"
           >
             How It Works
           </Button>
           <Button 
+            onClick={handleBrowseRaffles}
+            className="rounded-full text-white font-bold px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+            style={{
+              background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
+            }}
+          >
+            🎯 Browse Raffles
+          </Button>
+          <Button 
             onClick={() => handleNavigation('/submit-raffle')}
-            className="mt-4 rounded-full w-full bg-gradient-to-r from-ph-red to-ph-blue text-white"
+            className="rounded-full text-white font-medium px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+            style={{
+              background: 'linear-gradient(220.55deg, #FF3F3F 0%, #063CFF 100%)'
+            }}
           >
             🎁 Submit Raffle
           </Button>
