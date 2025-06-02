@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { GradientText } from '@/components/ui/gradient-text';
 import AnimatedCategoryText from './AnimatedCategoryText';
 import MobileNavigation from './MobileNavigation';
 
@@ -20,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center">
             <MobileNavigation />
             <h1 className="text-2xl lg:text-3xl font-bold ml-2 md:ml-0 group cursor-pointer">
+              <span className="text-ph-red animate-pulse">🎊</span>
               <span className="text-ph-red animate-pulse">Raffle</span>
               <span className="text-ph-blue group-hover:animate-bounce">PH</span>
               <span className="text-ph-yellow animate-ping inline-block w-2 h-2 rounded-full ml-1">.</span>
@@ -36,8 +38,8 @@ const Header: React.FC<HeaderProps> = ({
 
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6">
           <div className="w-full lg:w-2/3">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 lg:mb-3 animate-fade-in text-center lg:text-left moving-gradient-text">
-              Join a Raffle. Change Your Life. 
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 lg:mb-3 animate-fade-in text-center lg:text-left">
+              Join a <GradientText>Raffle</GradientText>. Change Your <GradientText>Life</GradientText>. 
               <span className="inline-block ml-2 animate-bounce delay-300">🚀</span>
               <span className="inline-block ml-1 animate-pulse delay-500">✨</span>
             </h2>
