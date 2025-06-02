@@ -75,18 +75,10 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             </Link>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+          {/* Mobile Menu Component - it manages its own state */}
+          <div className="md:hidden">
+            <MobileNavigation />
+          </div>
         </div>
 
         {/* Search Bar - Only show on homepage */}
@@ -105,13 +97,6 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
           </div>
         )}
       </div>
-
-      {/* Mobile Navigation */}
-      <MobileNavigation 
-        isOpen={isMobileMenuOpen} 
-        onClose={() => setIsMobileMenuOpen(false)}
-        onBrowseRaffles={handleBrowseRaffles}
-      />
     </header>
   );
 };
