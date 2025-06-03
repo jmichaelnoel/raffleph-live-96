@@ -1,9 +1,9 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { SortOption, sortRaffles } from '@/utils/raffleUtils';
+import { useToast } from '@/hooks/use-toast';
+import { sortRaffles } from '@/utils/raffleUtils';
 
-export type RaffleCategory = 'Cash' | 'Cars' | 'Motorcycle' | 'Gadgets';
+export type RaffleCategory = 'Gadgets' | 'Cars' | 'Cash' | 'Motorcycle';
 
 export interface Raffle {
   id: string;
@@ -14,36 +14,31 @@ export interface Raffle {
   prize: number;
   bettingCost: number;
   winningPercentage: number;
-  endDate: string;
+  drawDate: string | null; // Changed from endDate to drawDate
   organization: string;
   location: string;
-  featured: boolean;
-  entriesLeft?: number;
   externalJoinUrl: string;
   organizerFacebookUrl: string;
+  entriesLeft: number | null;
   convertibleToCash: boolean;
+  featured: boolean;
 }
 
+export type SortOption = 'featured' | 'prize-high' | 'prize-low' | 'win-rate-high' | 'win-rate-low' | 'cost-low' | 'cost-high' | 'draw-date';
+
 export const useRaffleData = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('prize-high-to-low');
-  const [selectedCategories, setSelectedCategories] = useState<RaffleCategory[]>([]);
-  const [allRaffles, setAllRaffles] = useState<Raffle[]>([]);
+  const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const maxPrize = Math.max(...allRaffles.map(raffle => raffle.prize), 0);
-  const maxBet = Math.max(...allRaffles.map(raffle => raffle.bettingCost), 0);
-  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>('featured');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [betRange, setBetRange] = useState<[number, number]>([0, 0]);
   const [winRateRange, setWinRateRange] = useState<[number, number]>([0, 0.02]);
-  
-  const [filteredRaffles, setFilteredRaffles] = useState<Raffle[]>([]);
+  const { toast } = useToast();
 
-  // Fetch approved raffles from Supabase
   useEffect(() => {
     const fetchRaffles = async () => {
-      setIsLoading(true);
       try {
         const { data, error } = await supabase
           .from('approved_raffles')
@@ -52,88 +47,82 @@ export const useRaffleData = () => {
 
         if (error) {
           console.error('Error fetching raffles:', error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch raffles",
+            variant: "destructive",
+          });
           return;
         }
 
-        // Transform the data to match the expected Raffle interface
-        const transformedRaffles: Raffle[] = (data || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          imageUrl: item.image_url,
-          category: item.category as RaffleCategory,
-          prize: Number(item.prize),
-          bettingCost: Number(item.betting_cost),
-          winningPercentage: Number(item.winning_percentage),
-          endDate: item.end_date,
-          organization: item.organization,
-          location: item.location,
-          featured: item.featured,
-          entriesLeft: item.entries_left,
-          externalJoinUrl: item.external_join_url,
-          organizerFacebookUrl: item.organizer_facebook_url,
-          convertibleToCash: item.convertible_to_cash
+        const formattedRaffles: Raffle[] = (data || []).map(raffle => ({
+          id: raffle.id,
+          title: raffle.title,
+          description: raffle.description,
+          imageUrl: raffle.image_url || 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800',
+          category: raffle.category as RaffleCategory,
+          prize: raffle.prize,
+          bettingCost: raffle.betting_cost,
+          winningPercentage: raffle.winning_percentage || 0.001,
+          drawDate: raffle.draw_date, // Changed from end_date to draw_date
+          organization: raffle.organization,
+          location: raffle.location || 'Philippines',
+          externalJoinUrl: raffle.external_join_url,
+          organizerFacebookUrl: raffle.organizer_facebook_url,
+          entriesLeft: raffle.entries_left,
+          convertibleToCash: raffle.convertible_to_cash || false,
+          featured: raffle.featured || false
         }));
 
-        setAllRaffles(transformedRaffles);
-        
-        // Update ranges based on fetched data
-        const newMaxPrize = Math.max(...transformedRaffles.map(raffle => raffle.prize), 0);
-        const newMaxBet = Math.max(...transformedRaffles.map(raffle => raffle.bettingCost), 0);
-        
-        setPriceRange([0, newMaxPrize]);
-        setBetRange([0, newMaxBet]);
-        
+        setRaffles(formattedRaffles);
+
+        // Set initial range values based on actual data
+        if (formattedRaffles.length > 0) {
+          const maxPrize = Math.max(...formattedRaffles.map(r => r.prize));
+          const maxBet = Math.max(...formattedRaffles.map(r => r.bettingCost));
+          
+          setPriceRange([0, maxPrize]);
+          setBetRange([0, maxBet]);
+        }
+
       } catch (error) {
-        console.error('Unexpected error fetching raffles:', error);
+        console.error('Unexpected error:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRaffles();
-  }, []);
+  }, [toast]);
 
-  // Filter and sort raffles
-  useEffect(() => {
-    let result = [...allRaffles];
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        raffle => 
-          raffle.title.toLowerCase().includes(query) || 
-          raffle.description.toLowerCase().includes(query) ||
-          raffle.organization.toLowerCase().includes(query)
-      );
-    }
-    
-    if (selectedCategories.length > 0) {
-      result = result.filter(raffle => 
-        selectedCategories.includes(raffle.category)
-      );
-    }
-    
-    result = result.filter(
-      raffle => raffle.prize >= priceRange[0] && raffle.prize <= priceRange[1]
-    );
-    
-    result = result.filter(
-      raffle => raffle.bettingCost >= betRange[0] && raffle.bettingCost <= betRange[1]
-    );
-    
-    result = result.filter(
-      raffle => 
-        raffle.winningPercentage >= winRateRange[0] && 
-        raffle.winningPercentage <= winRateRange[1]
-    );
-    
-    result = sortRaffles(result, sortOption);
-    
-    setFilteredRaffles(result);
-  }, [searchQuery, sortOption, selectedCategories, priceRange, betRange, winRateRange, allRaffles]);
+  const filteredRaffles = useMemo(() => {
+    let filtered = raffles.filter(raffle => {
+      const matchesSearch = raffle.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        raffle.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        raffle.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategories = selectedCategories.length === 0 || selectedCategories.includes(raffle.category);
+      const matchesPrice = raffle.prize >= priceRange[0] && raffle.prize <= priceRange[1];
+      const matchesBet = raffle.bettingCost >= betRange[0] && raffle.bettingCost <= betRange[1];
+      const matchesWinRate = raffle.winningPercentage >= winRateRange[0] && raffle.winningPercentage <= winRateRange[1];
+
+      return matchesSearch && matchesCategories && matchesPrice && matchesBet && matchesWinRate;
+    });
+
+    return sortRaffles(filtered, sortOption);
+  }, [raffles, searchQuery, selectedCategories, priceRange, betRange, winRateRange, sortOption]);
+
+  const maxPrize = useMemo(() => raffles.length > 0 ? Math.max(...raffles.map(r => r.prize)) : 1000000, [raffles]);
+  const maxBet = useMemo(() => raffles.length > 0 ? Math.max(...raffles.map(r => r.bettingCost)) : 1000, [raffles]);
 
   return {
+    raffles,
+    isLoading,
     searchQuery,
     setSearchQuery,
     sortOption,
@@ -149,6 +138,5 @@ export const useRaffleData = () => {
     filteredRaffles,
     maxPrize,
     maxBet,
-    isLoading,
   };
 };

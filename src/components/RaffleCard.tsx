@@ -1,8 +1,10 @@
+
 import React from 'react';
-import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import DrawDateBadge from '@/components/DrawDateBadge';
+import { Raffle } from '@/types/raffle';
 
 interface RaffleCardProps {
   raffle: Raffle;
@@ -19,15 +21,6 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
 
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(3)}%`;
-  };
-
-  const daysUntilEnd = () => {
-    const endDate = new Date(raffle.endDate);
-    const today = new Date();
-    const diffTime = endDate.getTime() - today.getTime();
-    if (diffTime < 0) return 0;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
   };
 
   const getCategoryButtonStyle = (category: string) => {
@@ -101,9 +94,11 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
               <span className="font-bold text-green-700 text-sm lg:text-base">{formatCurrency(raffle.bettingCost)}</span>
             </div>
             
-            <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-3 border border-red-200/50">
-              <span className="text-xs text-gray-600 block font-medium">⏳ Ends in</span>
-              <span className="font-bold text-red-700 text-sm lg:text-base">{daysUntilEnd()} days</span>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 border border-purple-200/50">
+              <span className="text-xs text-gray-600 block font-medium">📅 Draw</span>
+              <div className="font-bold text-purple-700 text-xs lg:text-sm">
+                <DrawDateBadge drawDate={raffle.drawDate} size="sm" />
+              </div>
             </div>
           </div>
         </CardContent>

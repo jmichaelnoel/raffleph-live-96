@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +13,7 @@ import FAQSection from '@/components/raffle-details/FAQSection';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { Raffle, RaffleCategory } from '@/hooks/useRaffleData';
+import { Raffle } from '@/types/raffle';
 
 interface ApprovedRaffle {
   id: string;
@@ -23,7 +24,7 @@ interface ApprovedRaffle {
   prize: number;
   betting_cost: number;
   winning_percentage: number;
-  end_date: string;
+  draw_date: string | null; // Changed from end_date to draw_date
   organization: string;
   location: string;
   external_join_url: string;
@@ -93,11 +94,11 @@ const RaffleDetailsPage = () => {
     title: raffle.title,
     description: raffle.description,
     imageUrl: raffle.image_url,
-    category: raffle.category as RaffleCategory,
+    category: raffle.category,
     prize: raffle.prize,
     bettingCost: raffle.betting_cost,
     winningPercentage: raffle.winning_percentage,
-    endDate: raffle.end_date,
+    drawDate: raffle.draw_date, // Changed from endDate to drawDate
     organization: raffle.organization,
     location: raffle.location,
     externalJoinUrl: raffle.external_join_url,

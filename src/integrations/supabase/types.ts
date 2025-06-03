@@ -67,7 +67,7 @@ export type Database = {
           convertible_to_cash: boolean | null
           created_at: string | null
           description: string
-          end_date: string
+          draw_date: string | null
           entries_left: number | null
           external_join_url: string
           featured: boolean | null
@@ -88,7 +88,7 @@ export type Database = {
           convertible_to_cash?: boolean | null
           created_at?: string | null
           description: string
-          end_date: string
+          draw_date?: string | null
           entries_left?: number | null
           external_join_url: string
           featured?: boolean | null
@@ -109,7 +109,7 @@ export type Database = {
           convertible_to_cash?: boolean | null
           created_at?: string | null
           description?: string
-          end_date?: string
+          draw_date?: string | null
           entries_left?: number | null
           external_join_url?: string
           featured?: boolean | null

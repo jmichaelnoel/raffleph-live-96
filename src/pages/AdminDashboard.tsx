@@ -11,6 +11,7 @@ import AdminFilters from '@/components/admin/AdminFilters';
 import SubmissionsList from '@/components/admin/SubmissionsList';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { useAdminStats } from '@/hooks/useAdminStats';
+import { DrawDateStatus } from '@/types/raffle';
 
 interface Submission {
   id: string;
@@ -38,6 +39,7 @@ const AdminDashboard = () => {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [drawDateFilter, setDrawDateFilter] = useState<DrawDateStatus>('all');
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -252,11 +254,36 @@ const AdminDashboard = () => {
       submission.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       submission.category.toLowerCase().includes(searchQuery.toLowerCase());
 
+    let matchesStatus = true;
     if (statusFilter === 'all') {
-      return matchesSearch;
+      matchesStatus = true;
+    } else {
+      matchesStatus = submission.status === statusFilter;
     }
 
-    return matchesSearch && submission.status === statusFilter;
+    let matchesDrawDate = true;
+    if (statusFilter === 'approved' && drawDateFilter !== 'all') {
+      if (drawDateFilter === 'confirmed') {
+        matchesDrawDate = submission.draw_date != null;
+      } else if (drawDateFilter === 'tbd') {
+        matchesDrawDate = submission.draw_date == null;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDrawDate;
+  });
+
+  // Sort submissions by draw date (TBD items at the end)
+  const sortedSubmissions = [...filteredSubmissions].sort((a, b) => {
+    // If both have draw dates, sort by date
+    if (a.draw_date && b.draw_date) {
+      return new Date(a.draw_date).getTime() - new Date(b.draw_date).getTime();
+    }
+    // Items with draw dates come before TBD items
+    if (a.draw_date && !b.draw_date) return -1;
+    if (!a.draw_date && b.draw_date) return 1;
+    // Both TBD, sort by submission date
+    return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
   });
 
   return (
@@ -297,11 +324,13 @@ const AdminDashboard = () => {
               setSearchQuery={setSearchQuery}
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
+              drawDateFilter={drawDateFilter}
+              setDrawDateFilter={setDrawDateFilter}
             />
 
             {/* Submissions List */}
             <SubmissionsList
-              submissions={filteredSubmissions}
+              submissions={sortedSubmissions}
               isLoading={isLoading}
               processingIds={processingIds}
               statusFilter={statusFilter}

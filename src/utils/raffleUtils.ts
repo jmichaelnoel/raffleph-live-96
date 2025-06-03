@@ -1,41 +1,51 @@
 
-import { Raffle } from '@/data/raffles';
+import { Raffle } from '@/hooks/useRaffleData';
 
-export type SortOption = 
-  | 'prize-high-to-low'
-  | 'prize-low-to-high'
-  | 'win-high-to-low'
-  | 'win-low-to-high'
-  | 'bet-high-to-low'
-  | 'bet-low-to-high'
-  | 'end-date-asc'
-  | 'end-date-desc';
+export type SortOption = 'featured' | 'prize-high' | 'prize-low' | 'win-rate-high' | 'win-rate-low' | 'cost-low' | 'cost-high' | 'draw-date';
 
-export const sortRaffles = (rafflesToSort: Raffle[], option: SortOption): Raffle[] => {
-  const sortedRaffles = [...rafflesToSort];
-  
-  switch (option) {
-    case 'prize-high-to-low':
-      return sortedRaffles.sort((a, b) => b.prize - a.prize);
-    case 'prize-low-to-high':
-      return sortedRaffles.sort((a, b) => a.prize - b.prize);
-    case 'win-high-to-low':
-      return sortedRaffles.sort((a, b) => b.winningPercentage - a.winningPercentage);
-    case 'win-low-to-high':
-      return sortedRaffles.sort((a, b) => a.winningPercentage - b.winningPercentage);
-    case 'bet-high-to-low':
-      return sortedRaffles.sort((a, b) => b.bettingCost - a.bettingCost);
-    case 'bet-low-to-high':
-      return sortedRaffles.sort((a, b) => a.bettingCost - b.bettingCost);
-    case 'end-date-asc':
-      return sortedRaffles.sort((a, b) => 
-        new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
-      );
-    case 'end-date-desc':
-      return sortedRaffles.sort((a, b) => 
-        new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
-      );
+export const sortRaffles = (raffles: Raffle[], sortOption: SortOption): Raffle[] => {
+  const sorted = [...raffles];
+
+  switch (sortOption) {
+    case 'featured':
+      return sorted.sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return b.prize - a.prize;
+      });
+    
+    case 'prize-high':
+      return sorted.sort((a, b) => b.prize - a.prize);
+    
+    case 'prize-low':
+      return sorted.sort((a, b) => a.prize - b.prize);
+    
+    case 'win-rate-high':
+      return sorted.sort((a, b) => b.winningPercentage - a.winningPercentage);
+    
+    case 'win-rate-low':
+      return sorted.sort((a, b) => a.winningPercentage - b.winningPercentage);
+    
+    case 'cost-low':
+      return sorted.sort((a, b) => a.bettingCost - b.bettingCost);
+    
+    case 'cost-high':
+      return sorted.sort((a, b) => b.bettingCost - a.bettingCost);
+    
+    case 'draw-date':
+      return sorted.sort((a, b) => {
+        // Items with draw dates come first, sorted by date
+        if (a.drawDate && b.drawDate) {
+          return new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime();
+        }
+        // Items with draw dates come before TBD items
+        if (a.drawDate && !b.drawDate) return -1;
+        if (!a.drawDate && b.drawDate) return 1;
+        // Both TBD, sort by prize (high to low)
+        return b.prize - a.prize;
+      });
+    
     default:
-      return sortedRaffles;
+      return sorted;
   }
 };
