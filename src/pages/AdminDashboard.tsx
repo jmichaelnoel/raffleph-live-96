@@ -28,7 +28,8 @@ interface Submission {
   entries_left: number | null;
   convertible_to_cash: boolean | null;
   image_url: string | null;
-  isOptimistic?: boolean; // For tracking optimistic updates
+  isOptimistic?: boolean;
+  optimisticStatus?: 'pending' | 'approved' | 'rejected';
 }
 
 const AdminDashboard = () => {
@@ -39,9 +40,10 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [lastRefetch, setLastRefetch] = useState<number>(Date.now());
   const { toast } = useToast();
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (forceRefresh = false) => {
     setIsLoading(true);
     try {
       let query = supabase
@@ -65,7 +67,27 @@ const AdminDashboard = () => {
         return;
       }
 
-      setSubmissions(data || []);
+      // Merge with existing optimistic updates if not forcing refresh
+      if (!forceRefresh) {
+        setSubmissions(prev => {
+          const optimisticItems = prev.filter(item => item.isOptimistic);
+          const freshData = data || [];
+          
+          // Keep optimistic items and merge with fresh data
+          const merged = [...optimisticItems];
+          freshData.forEach(item => {
+            if (!optimisticItems.some(opt => opt.id === item.id)) {
+              merged.push(item);
+            }
+          });
+          
+          return merged;
+        });
+      } else {
+        setSubmissions(data || []);
+      }
+      
+      setLastRefetch(Date.now());
     } catch (error) {
       console.error('Unexpected error:', error);
     } finally {
@@ -73,26 +95,38 @@ const AdminDashboard = () => {
     }
   };
 
+  // Only refetch when authenticated changes, not when statusFilter changes
   useEffect(() => {
     if (isAuthenticated) {
-      fetchSubmissions();
+      fetchSubmissions(true);
     }
-  }, [isAuthenticated, statusFilter]);
+  }, [isAuthenticated]);
+
+  // Debounced refetch mechanism - only refetch if no operations in progress for 5 seconds
+  useEffect(() => {
+    if (!isAuthenticated || processingIds.size > 0) return;
+
+    const timer = setTimeout(() => {
+      if (processingIds.size === 0) {
+        fetchSubmissions(false);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [lastRefetch, processingIds.size, isAuthenticated]);
 
   const handleApproveSubmission = async (submission: Submission) => {
     if (processingIds.has(submission.id)) return;
     
-    // Start processing
     setProcessingIds(prev => new Set(prev).add(submission.id));
     
-    // Optimistic update: immediately update the local state
+    // Optimistic update with better tracking
     setSubmissions(prev => prev.map(s => 
       s.id === submission.id 
-        ? { ...s, status: 'approved' as const, isOptimistic: true }
+        ? { ...s, status: 'approved' as const, isOptimistic: true, optimisticStatus: 'approved' as const }
         : s
     ));
 
-    // Show immediate feedback
     toast({
       title: "Processing...",
       description: "Approving submission, please wait...",
@@ -111,7 +145,7 @@ const AdminDashboard = () => {
         // Revert optimistic update
         setSubmissions(prev => prev.map(s => 
           s.id === submission.id 
-            ? { ...s, status: 'pending' as const, isOptimistic: false }
+            ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
             : s
         ));
         
@@ -168,10 +202,10 @@ const AdminDashboard = () => {
         throw updateError;
       }
 
-      // Success - confirm the optimistic update
+      // Confirm the optimistic update with real data
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
-          ? { ...s, status: 'approved' as const, isOptimistic: false }
+          ? { ...s, status: 'approved' as const, isOptimistic: false, optimisticStatus: undefined }
           : s
       ));
 
@@ -180,19 +214,10 @@ const AdminDashboard = () => {
         description: "Raffle approved and published successfully!",
       });
 
-      // Close modal
       setSelectedSubmission(null);
 
-      // Smart filter handling: if we're on pending filter, switch to all to show the approved item
-      if (statusFilter === 'pending') {
-        setTimeout(() => {
-          setStatusFilter('all');
-          toast({
-            title: "Filter Updated",
-            description: "Switched to 'All' submissions to show your approved raffle",
-          });
-        }, 2000);
-      }
+      // If we're on pending filter and item is now approved, keep it visible with success indication
+      // Don't automatically switch filters to prevent confusion
       
     } catch (error) {
       console.error('Error approving submission:', error);
@@ -200,7 +225,7 @@ const AdminDashboard = () => {
       // Revert optimistic update on error
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
-          ? { ...s, status: 'pending' as const, isOptimistic: false }
+          ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
           : s
       ));
       
@@ -226,7 +251,7 @@ const AdminDashboard = () => {
     // Optimistic update
     setSubmissions(prev => prev.map(s => 
       s.id === submission.id 
-        ? { ...s, status: 'rejected' as const, isOptimistic: true }
+        ? { ...s, status: 'rejected' as const, isOptimistic: true, optimisticStatus: 'rejected' as const }
         : s
     ));
 
@@ -245,7 +270,7 @@ const AdminDashboard = () => {
       // Confirm optimistic update
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
-          ? { ...s, status: 'rejected' as const, isOptimistic: false }
+          ? { ...s, status: 'rejected' as const, isOptimistic: false, optimisticStatus: undefined }
           : s
       ));
 
@@ -256,20 +281,13 @@ const AdminDashboard = () => {
 
       setSelectedSubmission(null);
       
-      // Smart filter handling for rejected items too
-      if (statusFilter === 'pending') {
-        setTimeout(() => {
-          setStatusFilter('all');
-        }, 2000);
-      }
-      
     } catch (error) {
       console.error('Error rejecting submission:', error);
       
       // Revert optimistic update
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
-          ? { ...s, status: 'pending' as const, isOptimistic: false }
+          ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
           : s
       ));
       
@@ -287,6 +305,15 @@ const AdminDashboard = () => {
     }
   };
 
+  // Manual refresh function
+  const handleRefresh = () => {
+    fetchSubmissions(true);
+    toast({
+      title: "Refreshed",
+      description: "Submissions list has been refreshed",
+    });
+  };
+
   if (!isAuthenticated) {
     return <AdminAuth onAuthenticated={() => setIsAuthenticated(true)} />;
   }
@@ -296,7 +323,7 @@ const AdminDashboard = () => {
       submission.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       submission.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Show optimistically updated items even if they don't match the current filter
+    // For optimistic items, show them regardless of filter if they match search
     if (submission.isOptimistic) {
       return matchesSearch;
     }
@@ -309,8 +336,8 @@ const AdminDashboard = () => {
   });
 
   const stats = {
-    pending: submissions.filter(s => s.status === 'pending').length,
-    approved: submissions.filter(s => s.status === 'approved').length,
+    pending: submissions.filter(s => s.status === 'pending' || (s.isOptimistic && s.optimisticStatus === 'pending')).length,
+    approved: submissions.filter(s => s.status === 'approved' || (s.isOptimistic && s.optimisticStatus === 'approved')).length,
     total: submissions.length
   };
 
@@ -319,8 +346,15 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage raffle submissions and approvals</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+              <p className="text-gray-600">Manage raffle submissions and approvals</p>
+            </div>
+            <Button onClick={handleRefresh} variant="outline" size="sm">
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -399,6 +433,7 @@ const AdminDashboard = () => {
                 {filteredSubmissions.map((submission) => {
                   const isProcessing = processingIds.has(submission.id);
                   const isOptimistic = submission.isOptimistic;
+                  const displayStatus = isOptimistic ? submission.optimisticStatus : submission.status;
                   
                   return (
                     <div 
@@ -412,10 +447,10 @@ const AdminDashboard = () => {
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-lg">{submission.title}</h3>
                             <Badge variant={
-                              submission.status === 'pending' ? 'secondary' :
-                              submission.status === 'approved' ? 'default' : 'destructive'
+                              displayStatus === 'pending' ? 'secondary' :
+                              displayStatus === 'approved' ? 'default' : 'destructive'
                             }>
-                              {submission.status}
+                              {displayStatus}
                               {isOptimistic && ' (processing...)'}
                             </Badge>
                             {isProcessing && (
@@ -440,7 +475,7 @@ const AdminDashboard = () => {
                             <Eye className="h-4 w-4 mr-1" />
                             Review
                           </Button>
-                          {submission.status === 'pending' && !isOptimistic && (
+                          {(displayStatus === 'pending' && !isOptimistic) && (
                             <>
                               <Button
                                 variant="default"
