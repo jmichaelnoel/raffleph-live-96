@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Raffle } from '@/data/raffles';
-import { DollarSign, Percent, CalendarDays, MapPin, BarChartBig, Users } from 'lucide-react';
+import { Raffle } from '@/hooks/useRaffleData';
+import { DollarSign, Percent, CalendarDays, BarChartBig, Users } from 'lucide-react';
 
 interface StatsBarProps {
   raffle: Raffle;
@@ -19,12 +19,11 @@ const StatsBar: React.FC<StatsBarProps> = ({ raffle }) => {
   const daysLeft = Math.max(0, Math.ceil((new Date(raffle.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
       <StatItem icon={BarChartBig} label="Total Prize Value" value={`₱${raffle.prize.toLocaleString()}`} iconColor="text-ph-red" />
       <StatItem icon={DollarSign} label="Entry Cost" value={`₱${raffle.bettingCost.toLocaleString()}`} iconColor="text-green-500" />
       <StatItem icon={Percent} label="Win Rate" value={`${(raffle.winningPercentage * 100).toFixed(3)}%`} iconColor="text-yellow-600" />
       <StatItem icon={CalendarDays} label="Days Left" value={daysLeft} iconColor="text-blue-500" />
-      <StatItem icon={MapPin} label="Location" value={raffle.location} iconColor="text-purple-500" />
       {raffle.entriesLeft !== undefined && (
         <StatItem icon={Users} label="Total Entries" value={raffle.entriesLeft > 0 ? raffle.entriesLeft.toLocaleString() : "Unlimited"} iconColor="text-indigo-500" />
       )}

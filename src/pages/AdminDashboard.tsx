@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,7 @@ interface Submission {
   entries_left: number | null;
   convertible_to_cash: boolean | null;
   image_url: string | null;
+  prize_details: string | null;
 }
 
 const AdminDashboard = () => {
@@ -79,23 +81,18 @@ const AdminDashboard = () => {
   }, [isAuthenticated, statusFilter]);
 
   const handleApproveSubmission = async (submission: Submission) => {
-    if (isApproving === submission.id) return; // Prevent double clicks
+    if (isApproving === submission.id) return;
     
     setIsApproving(submission.id);
     
     try {
       console.log('Starting approval process for submission:', submission.id);
 
-      // First, check if this submission is already approved
-      const { data: existingApprovals, error: checkError } = await supabase
+      // Check if already approved
+      const { data: existingApprovals } = await supabase
         .from('approved_raffles')
         .select('id')
         .eq('submission_id', submission.id);
-
-      if (checkError) {
-        console.error('Error checking existing approval:', checkError);
-        throw checkError;
-      }
 
       if (existingApprovals && existingApprovals.length > 0) {
         toast({
@@ -107,7 +104,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Calculate end date (30 days from now as default)
+      // Calculate end date (30 days from now)
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
 
@@ -121,7 +118,7 @@ const AdminDashboard = () => {
           category: submission.category,
           prize: submission.prize,
           betting_cost: submission.betting_cost || 20,
-          winning_percentage: 0.001, // Default 0.1%
+          winning_percentage: 0.001,
           end_date: endDate.toISOString(),
           organization: submission.organization || 'Unknown',
           location: submission.location || 'Philippines',
@@ -138,7 +135,7 @@ const AdminDashboard = () => {
         throw approveError;
       }
 
-      // Update submission status to approved
+      // Update submission status
       const { error: updateError } = await supabase
         .from('raffle_submissions')
         .update({
@@ -157,20 +154,9 @@ const AdminDashboard = () => {
         description: "Raffle approved and published successfully!",
       });
 
-      // Update the local state immediately
-      setSubmissions(prevSubmissions => 
-        prevSubmissions.map(sub => 
-          sub.id === submission.id 
-            ? { ...sub, status: 'approved' as const }
-            : sub
-        )
-      );
-
-      // Close modal
+      // Close modal and refresh data
       setSelectedSubmission(null);
-      
-      // Refresh the list to ensure consistency
-      await fetchSubmissions();
+      await fetchSubmissions(); // Simple refetch to ensure UI is updated
       
     } catch (error) {
       console.error('Error approving submission:', error);
@@ -202,17 +188,8 @@ const AdminDashboard = () => {
         description: "Submission rejected",
       });
 
-      // Update local state immediately
-      setSubmissions(prevSubmissions => 
-        prevSubmissions.map(sub => 
-          sub.id === submission.id 
-            ? { ...sub, status: 'rejected' as const }
-            : sub
-        )
-      );
-
       setSelectedSubmission(null);
-      await fetchSubmissions();
+      await fetchSubmissions(); // Simple refetch to ensure UI is updated
     } catch (error) {
       console.error('Error rejecting submission:', error);
       toast({

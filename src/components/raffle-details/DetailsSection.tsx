@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Raffle } from '@/data/raffles';
+import { Raffle } from '@/hooks/useRaffleData';
 import { CalendarDays } from 'lucide-react';
 
 interface DetailsSectionProps {
@@ -8,7 +8,7 @@ interface DetailsSectionProps {
 }
 
 const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
-  const drawingDate = new Date(raffle.endDate); // Assuming drawing date is end date for now
+  const drawingDate = new Date(raffle.endDate);
 
   return (
     <div className="p-6 bg-slate-50 rounded-lg shadow">
@@ -17,11 +17,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
       
       <div className="space-y-2 text-gray-700">
         <p><strong>Organized by:</strong> {raffle.organization}</p>
-        <p><strong>Raffle Mechanics:</strong> One entry = one chance. Multiple entries allowed. (Example)</p>
-        <p><strong>Delivery:</strong> Prize will be shipped nationwide. No claiming needed. (Example)</p>
+        <p><strong>Raffle Mechanics:</strong> One entry = one chance. Multiple entries allowed.</p>
+        <p><strong>Delivery:</strong> Prize will be shipped nationwide. No claiming needed.</p>
         <p className="flex items-center">
           <CalendarDays className="mr-2 h-5 w-5 text-ph-blue" /> 
-          <strong>Drawing Date:</strong> {drawingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} via Facebook Live (Example)
+          <strong>Drawing Date:</strong> {drawingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} via Facebook Live
         </p>
       </div>
     </div>
