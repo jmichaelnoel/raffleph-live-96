@@ -10,16 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sparkles, Trophy, Target, DollarSign, Clock } from 'lucide-react';
-
-export type SortOption = 
-  | 'prize-high-to-low'
-  | 'prize-low-to-high'
-  | 'win-high-to-low'
-  | 'win-low-to-high'
-  | 'bet-high-to-low'
-  | 'bet-low-to-high'
-  | 'end-date-asc'
-  | 'end-date-desc';
+import { SortOption } from '@/utils/raffleUtils';
 
 interface SortOptionsProps {
   sortOption: SortOption;
@@ -153,6 +144,10 @@ const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) =
               <SelectLabel className="text-red-600 font-semibold">⏰ End Date</SelectLabel>
               <SelectItem value="end-date-asc">Ending Soon</SelectItem>
               <SelectItem value="end-date-desc">Ending Later</SelectItem>
+            </SelectGroup>
+            <SelectGroup>
+              <SelectLabel className="text-gray-600 font-semibold">✨ Other</SelectLabel>
+              <SelectItem value="newest">Newest First</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
