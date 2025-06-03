@@ -15,8 +15,8 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onAuthenticated }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Simple password check - in production, this should be more secure
-  const ADMIN_PASSWORD = 'admin123'; // This should be in environment variables
+  // Updated admin password - not displayed publicly
+  const ADMIN_PASSWORD = 'john123';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,9 +76,6 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onAuthenticated }) => {
               {isLoading ? 'Authenticating...' : 'Access Dashboard'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-gray-600">
-            <p>For demo purposes, password is: <code className="bg-gray-100 px-1 rounded">admin123</code></p>
-          </div>
         </CardContent>
       </Card>
     </div>
