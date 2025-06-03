@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AdminAuthProps {
-  onAuthenticated: (sessionToken: string) => void;
+  onAuthenticated: () => void;
 }
 
 const AdminAuth: React.FC<AdminAuthProps> = ({ onAuthenticated }) => {
@@ -16,89 +15,39 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onAuthenticated }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Simple password check - in production, this should be more secure
+  const ADMIN_PASSWORD = 'admin123'; // This should be in environment variables
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      // Get user's IP and user agent for audit logging
-      const userAgent = navigator.userAgent;
-      
-      // Call the admin authentication function
-      const { data, error } = await supabase.rpc('create_admin_session', {
-        password: password,
-        user_agent_str: userAgent
+    // Simulate authentication delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    if (password === ADMIN_PASSWORD) {
+      sessionStorage.setItem('adminAuthenticated', 'true');
+      onAuthenticated();
+      toast({
+        title: "Success",
+        description: "Welcome to the admin dashboard!",
       });
-
-      if (error) {
-        console.error('Authentication error:', error);
-        toast({
-          title: "Error",
-          description: "Authentication failed. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data && data.length > 0 && data[0].success) {
-        const sessionToken = data[0].session_token;
-        localStorage.setItem('adminSessionToken', sessionToken);
-        localStorage.setItem('adminSessionExpires', data[0].expires_at);
-        
-        onAuthenticated(sessionToken);
-        
-        toast({
-          title: "Success",
-          description: "Welcome to the admin dashboard!",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Invalid password",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+    } else {
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "Invalid password",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
-  // Check if already authenticated on component mount
+  // Check if already authenticated
   React.useEffect(() => {
-    const checkExistingSession = async () => {
-      const sessionToken = localStorage.getItem('adminSessionToken');
-      const expiresAt = localStorage.getItem('adminSessionExpires');
-      
-      if (sessionToken && expiresAt && new Date(expiresAt) > new Date()) {
-        // Validate session with server
-        try {
-          const { data } = await supabase.rpc('validate_admin_session', {
-            session_token: sessionToken
-          });
-          
-          if (data) {
-            onAuthenticated(sessionToken);
-          } else {
-            // Clear invalid session
-            localStorage.removeItem('adminSessionToken');
-            localStorage.removeItem('adminSessionExpires');
-          }
-        } catch (error) {
-          console.error('Session validation error:', error);
-          localStorage.removeItem('adminSessionToken');
-          localStorage.removeItem('adminSessionExpires');
-        }
-      }
-    };
-
-    checkExistingSession();
+    if (sessionStorage.getItem('adminAuthenticated') === 'true') {
+      onAuthenticated();
+    }
   }, [onAuthenticated]);
 
   return (
