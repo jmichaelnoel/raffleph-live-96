@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, Check, X, Users, Clock, CheckCircle } from 'lucide-react';
+import { Eye, Check, X, Users, Clock, CheckCircle, ExternalLink } from 'lucide-react';
 import AdminSubmissionModal from '@/components/admin/AdminSubmissionModal';
 import AdminAuth from '@/components/admin/AdminAuth';
 
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
         throw approveError;
       }
 
-      // Update submission status - simplified without function calls
+      // Update submission status
       const { error: updateError } = await supabase
         .from('raffle_submissions')
         .update({
@@ -167,15 +167,29 @@ const AdminDashboard = () => {
         throw updateError;
       }
 
+      // Show success toast with action to view approved raffles
       toast({
         title: "Success! 🎉",
-        description: "Raffle approved and published successfully!",
+        description: `"${submission.title}" has been approved and published!`,
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setStatusFilter('approved')}
+            className="ml-auto"
+          >
+            <ExternalLink className="h-4 w-4 mr-1" />
+            View Approved
+          </Button>
+        ),
       });
 
       setSelectedSubmission(null);
       
-      // Refresh the list to ensure consistency
-      await fetchSubmissions();
+      // Auto-switch to approved tab to show the newly approved item
+      setTimeout(() => {
+        setStatusFilter('approved');
+      }, 1500);
       
     } catch (error) {
       console.error('Error approving submission:', error);
@@ -226,14 +240,22 @@ const AdminDashboard = () => {
       }
 
       toast({
-        title: "Success",
-        description: "Submission rejected",
+        title: "Submission Rejected",
+        description: `"${submission.title}" has been rejected`,
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setStatusFilter('rejected')}
+            className="ml-auto"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View Rejected
+          </Button>
+        ),
       });
 
       setSelectedSubmission(null);
-      
-      // Refresh the list to ensure consistency
-      await fetchSubmissions();
       
     } catch (error) {
       console.error('Error rejecting submission:', error);
@@ -366,7 +388,21 @@ const AdminDashboard = () => {
               </div>
             ) : filteredSubmissions.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600">No submissions found</p>
+                <p className="text-gray-600">
+                  {statusFilter === 'pending' ? 'No pending submissions' : 
+                   statusFilter === 'approved' ? 'No approved submissions' :
+                   statusFilter === 'rejected' ? 'No rejected submissions' : 'No submissions found'}
+                </p>
+                {statusFilter !== 'all' && statusFilter !== 'pending' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => setStatusFilter('pending')}
+                  >
+                    View Pending Submissions
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
