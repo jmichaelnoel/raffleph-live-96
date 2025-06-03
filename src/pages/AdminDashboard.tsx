@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import AdminStats from '@/components/admin/AdminStats';
 import AdminFilters from '@/components/admin/AdminFilters';
 import SubmissionsList from '@/components/admin/SubmissionsList';
 import { useSubmissions } from '@/hooks/useSubmissions';
+import { useAdminStats } from '@/hooks/useAdminStats';
 
 interface Submission {
   id: string;
@@ -42,6 +42,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
 
   const { submissions, isLoading, fetchSubmissions, setSubmissions } = useSubmissions(statusFilter);
+  const { stats, isLoading: statsLoading, refreshStats } = useAdminStats();
 
   const handleApproveSubmission = async (submission: Submission) => {
     if (processingIds.has(submission.id)) return;
@@ -258,12 +259,6 @@ const AdminDashboard = () => {
     return matchesSearch && submission.status === statusFilter;
   });
 
-  const stats = {
-    pending: submissions.filter(s => s.status === 'pending').length,
-    approved: submissions.filter(s => s.status === 'approved').length,
-    total: submissions.length
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -274,14 +269,21 @@ const AdminDashboard = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
               <p className="text-gray-600">Manage raffle submissions and approvals</p>
             </div>
-            <Button onClick={fetchSubmissions} variant="outline" size="sm">
+            <Button 
+              onClick={() => {
+                fetchSubmissions();
+                refreshStats();
+              }} 
+              variant="outline" 
+              size="sm"
+            >
               Refresh
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <AdminStats stats={stats} />
+        <AdminStats stats={stats} isLoading={statsLoading} />
 
         {/* Filters and Search */}
         <Card className="mb-6">
