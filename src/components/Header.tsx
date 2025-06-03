@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +7,7 @@ import MobileNavigation from './MobileNavigation';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
-  onSearchChange: (query: string) => void;
+  onSearchChange?: (query: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
@@ -10,20 +11,29 @@ import MobileFilterDrawer from '@/components/MobileFilterDrawer';
 import MobileNavigation from '@/components/MobileNavigation';
 import AnimatedCategoryText from '@/components/AnimatedCategoryText';
 import { useRaffleData } from '@/hooks/useRaffleData';
-import { applyFilters, applySorting } from '@/utils/raffleUtils';
 
 const Index = () => {
   const [featuredRaffles, setFeaturedRaffles] = useState([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const { raffles, isLoading: rafflesLoading, error } = useRaffleData();
   
-  const [filters, setFilters] = useState({
-    category: 'all',
-    prizeRange: [0, 100000],
-    organization: 'all'
-  });
-  
-  const [sortBy, setSortBy] = useState('newest');
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortOption,
+    setSortOption,
+    selectedCategories,
+    setSelectedCategories,
+    priceRange,
+    setPriceRange,
+    betRange,
+    setBetRange,
+    winRateRange,
+    setWinRateRange,
+    filteredRaffles,
+    maxPrize,
+    maxBet,
+    isLoading,
+  } = useRaffleData();
 
   // Fetch featured raffles from database
   useEffect(() => {
@@ -53,7 +63,7 @@ const Index = () => {
           endDate: raffle.end_date,
           organization: raffle.organization,
           location: raffle.location,
-          image: raffle.image_url,
+          imageUrl: raffle.image_url,
           externalJoinUrl: raffle.external_join_url,
           organizerFacebookUrl: raffle.organizer_facebook_url,
           entriesLeft: raffle.entries_left,
@@ -70,27 +80,14 @@ const Index = () => {
     fetchFeaturedRaffles();
   }, []);
 
-  const filteredRaffles = applyFilters(raffles, filters);
-  const sortedRaffles = applySorting(filteredRaffles, sortBy);
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to load raffles</h2>
-            <p className="text-gray-600">Please try again later.</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const hasActiveFilters = selectedCategories.length > 0 || 
+    priceRange[0] > 0 || priceRange[1] < maxPrize ||
+    betRange[0] > 0 || betRange[1] < maxBet ||
+    winRateRange[0] > 0 || winRateRange[1] < 0.02;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
-      <Header />
+      <Header onSearchChange={setSearchQuery} />
       
       {/* Hero Section */}
       <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
@@ -117,7 +114,6 @@ const Index = () => {
                 <RaffleCard
                   key={raffle.id}
                   raffle={raffle}
-                  isFeatured={true}
                 />
               ))}
             </div>
@@ -131,33 +127,46 @@ const Index = () => {
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">All Raffles</h2>
             <div className="flex items-center gap-4">
-              <SortOptions sortBy={sortBy} onSortChange={setSortBy} />
-              <MobileFilterButton onClick={() => setIsMobileFilterOpen(true)} />
+              <SortOptions sortOption={sortOption} onSortChange={setSortOption} />
+              <MobileFilterButton 
+                onClick={() => setIsMobileFilterOpen(true)}
+                selectedCategories={selectedCategories}
+                hasActiveFilters={hasActiveFilters}
+              />
             </div>
           </div>
           
           <div className="flex gap-8">
             <FilterSidebar 
-              filters={filters} 
-              onFiltersChange={setFilters}
-              raffles={raffles}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              maxPrize={maxPrize}
+              selectedCategories={selectedCategories}
+              setSelectedCategories={setSelectedCategories}
+              betRange={betRange}
+              setBetRange={setBetRange}
+              maxBet={maxBet}
+              winRateRange={winRateRange}
+              setWinRateRange={setWinRateRange}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
             />
             
             <div className="flex-1">
-              {rafflesLoading ? (
+              {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
                   ))}
                 </div>
-              ) : sortedRaffles.length === 0 ? (
+              ) : filteredRaffles.length === 0 ? (
                 <div className="text-center py-12">
                   <h3 className="text-xl font-semibold text-gray-600 mb-2">No raffles found</h3>
                   <p className="text-gray-500">Try adjusting your filters or check back later for new raffles.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {sortedRaffles.map((raffle) => (
+                  {filteredRaffles.map((raffle) => (
                     <RaffleCard key={raffle.id} raffle={raffle} />
                   ))}
                 </div>
@@ -173,9 +182,16 @@ const Index = () => {
       <MobileFilterDrawer
         isOpen={isMobileFilterOpen}
         onClose={() => setIsMobileFilterOpen(false)}
-        filters={filters}
-        onFiltersChange={setFilters}
-        raffles={raffles}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        maxPrize={maxPrize}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+        betRange={betRange}
+        setBetRange={setBetRange}
+        maxBet={maxBet}
+        winRateRange={winRateRange}
+        setWinRateRange={setWinRateRange}
       />
     </div>
   );
