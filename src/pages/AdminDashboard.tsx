@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,19 +86,18 @@ const AdminDashboard = () => {
     try {
       console.log('Starting approval process for submission:', submission.id);
 
-      // First, check if this submission is already approved in the approved_raffles table
-      const { data: existingApproval, error: checkError } = await supabase
+      // First, check if this submission is already approved
+      const { data: existingApprovals, error: checkError } = await supabase
         .from('approved_raffles')
         .select('id')
-        .eq('submission_id', submission.id)
-        .maybeSingle();
+        .eq('submission_id', submission.id);
 
       if (checkError) {
         console.error('Error checking existing approval:', checkError);
         throw checkError;
       }
 
-      if (existingApproval) {
+      if (existingApprovals && existingApprovals.length > 0) {
         toast({
           title: "Already Approved",
           description: "This submission has already been approved",
@@ -159,8 +157,19 @@ const AdminDashboard = () => {
         description: "Raffle approved and published successfully!",
       });
 
-      // Close modal and refresh submissions
+      // Update the local state immediately
+      setSubmissions(prevSubmissions => 
+        prevSubmissions.map(sub => 
+          sub.id === submission.id 
+            ? { ...sub, status: 'approved' as const }
+            : sub
+        )
+      );
+
+      // Close modal
       setSelectedSubmission(null);
+      
+      // Refresh the list to ensure consistency
       await fetchSubmissions();
       
     } catch (error) {
@@ -192,6 +201,15 @@ const AdminDashboard = () => {
         title: "Success",
         description: "Submission rejected",
       });
+
+      // Update local state immediately
+      setSubmissions(prevSubmissions => 
+        prevSubmissions.map(sub => 
+          sub.id === submission.id 
+            ? { ...sub, status: 'rejected' as const }
+            : sub
+        )
+      );
 
       setSelectedSubmission(null);
       await fetchSubmissions();

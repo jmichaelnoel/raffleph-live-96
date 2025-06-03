@@ -4,79 +4,97 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ImageUploadProps {
-  onImageUpload: (url: string) => void;
-  currentImageUrl?: string;
+  onImageUpload: (urls: string[]) => void;
+  currentImageUrls?: string[];
   disabled?: boolean;
+  label?: string;
+  allowMultiple?: boolean;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload, currentImageUrl, disabled = false }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ 
+  onImageUpload, 
+  currentImageUrls = [], 
+  disabled = false,
+  label = "Images",
+  allowMultiple = false
+}) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(currentImageUrl || '');
+  const [imageUrls, setImageUrls] = useState<string[]>(currentImageUrls);
+  const [newUrlInput, setNewUrlInput] = useState('');
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validate file type
+    // Validate file types and sizes
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a JPEG, PNG, WebP, or GIF image.",
-        variant: "destructive"
-      });
-      return;
-    }
+    const maxSize = 5 * 1024 * 1024; // 5MB
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 5MB.",
-        variant: "destructive"
-      });
-      return;
+    for (const file of Array.from(files)) {
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: `${file.name}: Please upload a JPEG, PNG, WebP, or GIF image.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast({
+          title: "File too large",
+          description: `${file.name}: Please upload an image smaller than 5MB.`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsUploading(true);
 
     try {
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      // Upload to Supabase storage
-      const { data, error } = await supabase.storage
-        .from('raffle-images')
-        .upload(fileName, file);
+        // Upload to Supabase storage
+        const { data, error } = await supabase.storage
+          .from('raffle-images')
+          .upload(fileName, file);
 
-      if (error) {
-        throw error;
-      }
+        if (error) {
+          throw error;
+        }
 
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('raffle-images')
-        .getPublicUrl(data.path);
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('raffle-images')
+          .getPublicUrl(data.path);
 
-      const imageUrl = publicUrlData.publicUrl;
-      setPreviewUrl(imageUrl);
-      onImageUpload(imageUrl);
+        return publicUrlData.publicUrl;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      
+      const newImageUrls = allowMultiple ? [...imageUrls, ...uploadedUrls] : uploadedUrls;
+      setImageUrls(newImageUrls);
+      onImageUpload(newImageUrls);
 
       toast({
-        title: "Image uploaded successfully!",
-        description: "Your raffle image has been uploaded.",
+        title: "Images uploaded successfully!",
+        description: `${uploadedUrls.length} image(s) have been uploaded.`,
       });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
+        description: "Failed to upload image(s). Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -84,41 +102,68 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload, currentImageUr
     }
   };
 
-  const handleUrlInput = (url: string) => {
-    setPreviewUrl(url);
-    onImageUpload(url);
+  const handleUrlAdd = () => {
+    if (!newUrlInput.trim()) return;
+    
+    const newImageUrls = allowMultiple ? [...imageUrls, newUrlInput.trim()] : [newUrlInput.trim()];
+    setImageUrls(newImageUrls);
+    onImageUpload(newImageUrls);
+    setNewUrlInput('');
   };
 
-  const clearImage = () => {
-    setPreviewUrl('');
-    onImageUpload('');
+  const removeImage = (index: number) => {
+    const newImageUrls = imageUrls.filter((_, i) => i !== index);
+    setImageUrls(newImageUrls);
+    onImageUpload(newImageUrls);
+  };
+
+  const clearAllImages = () => {
+    setImageUrls([]);
+    onImageUpload([]);
   };
 
   return (
     <div className="space-y-4">
-      <Label className="text-lg font-semibold flex items-center">
-        <span className="mr-2 text-xl">📸</span>
-        Raffle Image
-      </Label>
-      
-      {/* Image Preview */}
-      {previewUrl && (
-        <div className="relative inline-block">
-          <img 
-            src={previewUrl} 
-            alt="Raffle preview" 
-            className="w-32 h-32 object-cover rounded-lg border-2 border-purple-200"
-          />
+      <div className="flex items-center justify-between">
+        <Label className="text-lg font-semibold flex items-center">
+          <span className="mr-2 text-xl">📸</span>
+          {label}
+        </Label>
+        {imageUrls.length > 0 && allowMultiple && (
           <Button
             type="button"
-            variant="destructive"
+            variant="outline"
             size="sm"
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-            onClick={clearImage}
+            onClick={clearAllImages}
             disabled={disabled}
           >
-            <X className="h-3 w-3" />
+            Clear All
           </Button>
+        )}
+      </div>
+      
+      {/* Image Previews */}
+      {imageUrls.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {imageUrls.map((url, index) => (
+            <div key={index} className="relative group">
+              <img 
+                src={url} 
+                alt={`Preview ${index + 1}`} 
+                className="w-full h-32 object-cover rounded-lg border-2 border-purple-200"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removeImage(index)}
+                disabled={disabled}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -126,7 +171,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload, currentImageUr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* File Upload */}
         <div>
-          <Label className="text-sm font-medium text-gray-600 mb-2 block">Upload Image</Label>
+          <Label className="text-sm font-medium text-gray-600 mb-2 block">
+            {allowMultiple ? 'Upload Images' : 'Upload Image'}
+          </Label>
           <div className="relative">
             <Input
               type="file"
@@ -135,6 +182,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload, currentImageUr
               disabled={disabled || isUploading}
               className="hidden"
               id="image-upload"
+              multiple={allowMultiple}
             />
             <Label
               htmlFor="image-upload"
@@ -152,25 +200,40 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload, currentImageUr
               ) : (
                 <>
                   <Upload className="h-4 w-4" />
-                  <span>Choose File</span>
+                  <span>Choose {allowMultiple ? 'Files' : 'File'}</span>
                 </>
               )}
             </Label>
           </div>
-          <p className="text-xs text-gray-500 mt-1">JPEG, PNG, WebP, GIF (max 5MB)</p>
+          <p className="text-xs text-gray-500 mt-1">
+            JPEG, PNG, WebP, GIF (max 5MB each)
+            {allowMultiple && ' - Select multiple files at once'}
+          </p>
         </div>
 
         {/* URL Input */}
         <div>
-          <Label className="text-sm font-medium text-gray-600 mb-2 block">Or Enter Image URL</Label>
-          <Input
-            type="url"
-            placeholder="https://example.com/image.jpg"
-            value={previewUrl}
-            onChange={(e) => handleUrlInput(e.target.value)}
-            disabled={disabled}
-            className="h-12 border-2 border-purple-200 focus:border-purple-500 rounded-lg"
-          />
+          <Label className="text-sm font-medium text-gray-600 mb-2 block">
+            Or Enter Image URL
+          </Label>
+          <div className="flex gap-2">
+            <Input
+              type="url"
+              placeholder="https://example.com/image.jpg"
+              value={newUrlInput}
+              onChange={(e) => setNewUrlInput(e.target.value)}
+              disabled={disabled}
+              className="h-12 border-2 border-purple-200 focus:border-purple-500 rounded-lg"
+            />
+            <Button
+              type="button"
+              onClick={handleUrlAdd}
+              disabled={disabled || !newUrlInput.trim()}
+              className="h-12 px-3"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

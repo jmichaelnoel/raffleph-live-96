@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,18 +30,18 @@ const SubmitRafflePage = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    prizeDetails: '',
     prize: '',
     category: '',
     bettingCost: '',
     drawDate: '',
-    location: '',
     organization: '',
     organizerFacebookUrl: '',
     raffleDetailsUrl: '',
     slotInquiryUrl: '',
     totalSlots: '',
     convertibleToCash: false,
-    imageUrl: ''
+    imageUrls: [] as string[]
   });
 
   const [bundlePricing, setBundlePricing] = useState<BundlePricing[]>([
@@ -49,7 +50,7 @@ const SubmitRafflePage = () => {
 
   const [isBundlePricingOpen, setIsBundlePricingOpen] = useState(false);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -106,14 +107,13 @@ const SubmitRafflePage = () => {
         betting_cost: formData.bettingCost ? parseFloat(formData.bettingCost) : null,
         bundle_pricing: validBundlePricing,
         draw_date: formData.drawDate || null,
-        location: formData.location || null,
         organization: formData.organization || null,
         organizer_facebook_url: formData.organizerFacebookUrl || null,
         raffle_details_url: formData.raffleDetailsUrl || null,
         slot_inquiry_url: formData.slotInquiryUrl || null,
         entries_left: formData.totalSlots ? parseInt(formData.totalSlots) : null,
         convertible_to_cash: formData.convertibleToCash,
-        image_url: formData.imageUrl || null
+        image_url: formData.imageUrls[0] || null // For now, store the first image
       };
 
       const { data, error } = await supabase
@@ -143,18 +143,18 @@ const SubmitRafflePage = () => {
       setFormData({
         title: '',
         description: '',
+        prizeDetails: '',
         prize: '',
         category: '',
         bettingCost: '',
         drawDate: '',
-        location: '',
         organization: '',
         organizerFacebookUrl: '',
         raffleDetailsUrl: '',
         slotInquiryUrl: '',
         totalSlots: '',
         convertibleToCash: false,
-        imageUrl: ''
+        imageUrls: []
       });
 
       setBundlePricing([{ slots: '', price: '' }]);
@@ -254,120 +254,183 @@ const SubmitRafflePage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Title */}
-                <div className="md:col-span-2">
-                  <Label htmlFor="title" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🏆</span>
-                    Raffle Title *
-                  </Label>
-                  <Input
-                    id="title"
-                    placeholder="e.g., iPhone 15 Pro Max Giveaway"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+              {/* Basic Information Section */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-800 border-b pb-2">📋 Basic Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Title */}
+                  <div className="md:col-span-2">
+                    <Label htmlFor="title" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">🏆</span>
+                      Raffle Title *
+                    </Label>
+                    <Input
+                      id="title"
+                      placeholder="e.g., iPhone 15 Pro Max Giveaway"
+                      value={formData.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-                {/* Image Upload */}
-                <div className="md:col-span-2">
-                  <ImageUpload
-                    onImageUpload={(url) => handleInputChange('imageUrl', url)}
-                    currentImageUrl={formData.imageUrl}
-                    disabled={isSubmitting}
-                  />
-                </div>
+                  {/* Category */}
+                  <div>
+                    <Label htmlFor="category" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">🎯</span>
+                      Category *
+                    </Label>
+                    <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)} disabled={isSubmitting}>
+                      <SelectTrigger className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Gadgets">🎮 Gadgets</SelectItem>
+                        <SelectItem value="Cars">🚗 Cars</SelectItem>
+                        <SelectItem value="Cash">💰 Cash</SelectItem>
+                        <SelectItem value="Motorcycle">🏍️ Motorcycle</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Description */}
-                <div className="md:col-span-2">
-                  <Label htmlFor="description" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">📝</span>
-                    Description *
-                  </Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe your raffle, what participants can win, and any special details..."
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="mt-2 min-h-[120px] text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+                  {/* Prize Value */}
+                  <div>
+                    <Label htmlFor="prize" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">💰</span>
+                      Prize Value (₱) *
+                    </Label>
+                    <Input
+                      id="prize"
+                      type="number"
+                      placeholder="50000"
+                      value={formData.prize}
+                      onChange={(e) => handleInputChange('prize', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-                {/* Prize Value */}
-                <div>
-                  <Label htmlFor="prize" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">💰</span>
-                    Prize Value (₱) *
-                  </Label>
-                  <Input
-                    id="prize"
-                    type="number"
-                    placeholder="50000"
-                    value={formData.prize}
-                    onChange={(e) => handleInputChange('prize', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+                  {/* Description */}
+                  <div className="md:col-span-2">
+                    <Label htmlFor="description" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">📝</span>
+                      General Description *
+                    </Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Brief overview of your raffle..."
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      className="mt-2 min-h-[100px] text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-                {/* Category */}
-                <div>
-                  <Label htmlFor="category" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🎯</span>
-                    Category *
-                  </Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)} disabled={isSubmitting}>
-                    <SelectTrigger className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Gadgets">🎮 Gadgets</SelectItem>
-                      <SelectItem value="Cars">🚗 Cars</SelectItem>
-                      <SelectItem value="Cash">💰 Cash</SelectItem>
-                      <SelectItem value="Motorcycle">🏍️ Motorcycle</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {/* Prize Details */}
+                  <div className="md:col-span-2">
+                    <Label htmlFor="prizeDetails" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">🎁</span>
+                      Prize Details
+                    </Label>
+                    <Textarea
+                      id="prizeDetails"
+                      placeholder="Detailed information about the prize (specifications, condition, brand, model, etc.)"
+                      value={formData.prizeDetails}
+                      onChange={(e) => handleInputChange('prizeDetails', e.target.value)}
+                      className="mt-2 min-h-[120px] text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
                 </div>
+              </div>
 
-                {/* Betting Cost */}
-                <div>
-                  <Label htmlFor="bettingCost" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🎫</span>
-                    Entry Cost (₱)
-                  </Label>
-                  <Input
-                    id="bettingCost"
-                    type="number"
-                    placeholder="20"
-                    value={formData.bettingCost}
-                    onChange={(e) => handleInputChange('bettingCost', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+              {/* Prize Images Section */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-800 border-b pb-2">📸 Prize Images</h3>
+                <ImageUpload
+                  onImageUpload={(urls) => handleInputChange('imageUrls', urls)}
+                  currentImageUrls={formData.imageUrls}
+                  disabled={isSubmitting}
+                  label="Prize Images"
+                  allowMultiple={true}
+                />
+              </div>
 
-                {/* Total Slots - Updated label */}
-                <div>
-                  <Label htmlFor="totalSlots" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🎟️</span>
-                    Total Slots (available & taken)
-                  </Label>
-                  <Input
-                    id="totalSlots"
-                    type="number"
-                    placeholder="1000 (leave empty for unlimited)"
-                    value={formData.totalSlots}
-                    onChange={(e) => handleInputChange('totalSlots', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
+              {/* Raffle Configuration Section */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-800 border-b pb-2">⚙️ Raffle Configuration</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Entry Cost */}
+                  <div>
+                    <Label htmlFor="bettingCost" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">🎫</span>
+                      Entry Cost (₱)
+                    </Label>
+                    <Input
+                      id="bettingCost"
+                      type="number"
+                      placeholder="20"
+                      value={formData.bettingCost}
+                      onChange={(e) => handleInputChange('bettingCost', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* Total Slots */}
+                  <div>
+                    <Label htmlFor="totalSlots" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">🎟️</span>
+                      Total Slots (available & taken)
+                    </Label>
+                    <Input
+                      id="totalSlots"
+                      type="number"
+                      placeholder="1000 (leave empty for unlimited)"
+                      value={formData.totalSlots}
+                      onChange={(e) => handleInputChange('totalSlots', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* Draw Date */}
+                  <div>
+                    <Label htmlFor="drawDate" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">📅</span>
+                      Draw Date
+                    </Label>
+                    <Input
+                      id="drawDate"
+                      type="date"
+                      value={formData.drawDate}
+                      onChange={(e) => handleInputChange('drawDate', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {/* Cash Convertible */}
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-200">
+                    <input
+                      type="checkbox"
+                      id="convertibleToCash"
+                      checked={formData.convertibleToCash}
+                      onChange={(e) => handleInputChange('convertibleToCash', e.target.checked)}
+                      className="w-5 h-5 rounded"
+                      disabled={isSubmitting}
+                    />
+                    <Label htmlFor="convertibleToCash" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">💵</span>
+                      Prize can be converted to cash
+                    </Label>
+                  </div>
                 </div>
 
                 {/* Bundle Pricing Section */}
-                <div className="md:col-span-2">
+                <div>
                   <Collapsible open={isBundlePricingOpen} onOpenChange={setIsBundlePricingOpen}>
                     <CollapsibleTrigger asChild>
                       <Button 
@@ -443,117 +506,76 @@ const SubmitRafflePage = () => {
                     </CollapsibleContent>
                   </Collapsible>
                 </div>
+              </div>
 
-                {/* Draw Date */}
-                <div>
-                  <Label htmlFor="drawDate" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">📅</span>
-                    Draw Date
-                  </Label>
-                  <Input
-                    id="drawDate"
-                    type="date"
-                    value={formData.drawDate}
-                    onChange={(e) => handleInputChange('drawDate', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+              {/* Organization & Contact Section */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-800 border-b pb-2">🏢 Organization & Contact</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Organization */}
+                  <div>
+                    <Label htmlFor="organization" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">🏢</span>
+                      Organization/Facebook Page Name
+                    </Label>
+                    <Input
+                      id="organization"
+                      placeholder="Your organization name"
+                      value={formData.organization}
+                      onChange={(e) => handleInputChange('organization', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-                {/* Location */}
-                <div>
-                  <Label htmlFor="location" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">📍</span>
-                    Location
-                  </Label>
-                  <Input
-                    id="location"
-                    placeholder="Metro Manila"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+                  {/* Facebook URL */}
+                  <div>
+                    <Label htmlFor="organizerFacebookUrl" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">📘</span>
+                      Facebook Page URL
+                    </Label>
+                    <Input
+                      id="organizerFacebookUrl"
+                      placeholder="https://facebook.com/yourpage"
+                      value={formData.organizerFacebookUrl}
+                      onChange={(e) => handleInputChange('organizerFacebookUrl', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-                {/* Organization */}
-                <div>
-                  <Label htmlFor="organization" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">🏢</span>
-                    Organization/Facebook Page Name
-                  </Label>
-                  <Input
-                    id="organization"
-                    placeholder="Your organization name"
-                    value={formData.organization}
-                    onChange={(e) => handleInputChange('organization', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
+                  {/* Raffle Details URL */}
+                  <div>
+                    <Label htmlFor="raffleDetailsUrl" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">📋</span>
+                      Raffle Full Details & Images
+                    </Label>
+                    <Input
+                      id="raffleDetailsUrl"
+                      placeholder="facebook.com/post/raffledetails"
+                      value={formData.raffleDetailsUrl}
+                      onChange={(e) => handleInputChange('raffleDetailsUrl', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-                {/* Facebook URL */}
-                <div>
-                  <Label htmlFor="organizerFacebookUrl" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">📘</span>
-                    Facebook Page URL
-                  </Label>
-                  <Input
-                    id="organizerFacebookUrl"
-                    placeholder="https://facebook.com/yourpage"
-                    value={formData.organizerFacebookUrl}
-                    onChange={(e) => handleInputChange('organizerFacebookUrl', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* Raffle Details URL */}
-                <div>
-                  <Label htmlFor="raffleDetailsUrl" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">📋</span>
-                    Raffle Full Details & Images
-                  </Label>
-                  <Input
-                    id="raffleDetailsUrl"
-                    placeholder="facebook.com/post/raffledetails"
-                    value={formData.raffleDetailsUrl}
-                    onChange={(e) => handleInputChange('raffleDetailsUrl', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* Slot Inquiry URL */}
-                <div>
-                  <Label htmlFor="slotInquiryUrl" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">💬</span>
-                    Slot Inquiry/Buying URL
-                  </Label>
-                  <Input
-                    id="slotInquiryUrl"
-                    placeholder="messenger.com/slotinquiry"
-                    value={formData.slotInquiryUrl}
-                    onChange={(e) => handleInputChange('slotInquiryUrl', e.target.value)}
-                    className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                {/* Cash Convertible */}
-                <div className="md:col-span-2 flex items-center space-x-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border-2 border-yellow-200">
-                  <input
-                    type="checkbox"
-                    id="convertibleToCash"
-                    checked={formData.convertibleToCash}
-                    onChange={(e) => handleInputChange('convertibleToCash', e.target.checked)}
-                    className="w-5 h-5 rounded"
-                    disabled={isSubmitting}
-                  />
-                  <Label htmlFor="convertibleToCash" className="text-lg font-semibold flex items-center">
-                    <span className="mr-2 text-xl">💵</span>
-                    Prize can be converted to cash
-                  </Label>
+                  {/* Slot Inquiry URL */}
+                  <div>
+                    <Label htmlFor="slotInquiryUrl" className="text-lg font-semibold flex items-center">
+                      <span className="mr-2 text-xl">💬</span>
+                      Slot Inquiry/Buying URL
+                    </Label>
+                    <Input
+                      id="slotInquiryUrl"
+                      placeholder="messenger.com/slotinquiry"
+                      value={formData.slotInquiryUrl}
+                      onChange={(e) => handleInputChange('slotInquiryUrl', e.target.value)}
+                      className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  </div>
                 </div>
               </div>
 

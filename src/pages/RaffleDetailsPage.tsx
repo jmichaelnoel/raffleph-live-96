@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { raffles } from '@/data/raffles';
+import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import RaffleHeader from '@/components/raffle-details/RaffleHeader';
@@ -13,14 +13,98 @@ import FAQSection from '@/components/raffle-details/FAQSection';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+interface ApprovedRaffle {
+  id: string;
+  title: string;
+  description: string;
+  image_url: string;
+  category: string;
+  prize: number;
+  betting_cost: number;
+  winning_percentage: number;
+  end_date: string;
+  organization: string;
+  location: string;
+  external_join_url: string;
+  organizer_facebook_url: string;
+  entries_left: number | null;
+  convertible_to_cash: boolean;
+  featured: boolean;
+  created_at: string;
+}
+
 const RaffleDetailsPage = () => {
   const { raffleId } = useParams<{ raffleId: string }>();
+  const [raffle, setRaffle] = useState<ApprovedRaffle | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   
-  const raffle = raffles.find(r => r.id === raffleId);
-  
-  if (!raffle) {
+  useEffect(() => {
+    const fetchRaffle = async () => {
+      if (!raffleId) {
+        setNotFound(true);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('approved_raffles')
+          .select('*')
+          .eq('id', raffleId)
+          .single();
+
+        if (error || !data) {
+          console.error('Error fetching raffle:', error);
+          setNotFound(true);
+        } else {
+          setRaffle(data);
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        setNotFound(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRaffle();
+  }, [raffleId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading raffle details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound || !raffle) {
     return <Navigate to="/404" replace />;
   }
+
+  // Convert the approved raffle data to match the expected Raffle interface
+  const raffleData = {
+    id: raffle.id,
+    title: raffle.title,
+    description: raffle.description,
+    imageUrl: raffle.image_url,
+    category: raffle.category,
+    prize: raffle.prize,
+    bettingCost: raffle.betting_cost,
+    winningPercentage: raffle.winning_percentage,
+    endDate: raffle.end_date,
+    organization: raffle.organization,
+    location: raffle.location,
+    externalJoinUrl: raffle.external_join_url,
+    organizerFacebookUrl: raffle.organizer_facebook_url,
+    entriesLeft: raffle.entries_left,
+    convertibleToCash: raffle.convertible_to_cash,
+    featured: raffle.featured
+  };
 
   // Empty search handler since we don't need search on detail pages
   const handleSearchChange = () => {};
@@ -55,18 +139,18 @@ const RaffleDetailsPage = () => {
         </div>
 
         {/* Raffle Header */}
-        <RaffleHeader raffle={raffle} />
+        <RaffleHeader raffle={raffleData} />
         
         {/* Stats Bar */}
-        <StatsBar raffle={raffle} />
+        <StatsBar raffle={raffleData} />
         
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
-            <DetailsSection raffle={raffle} />
+            <DetailsSection raffle={raffleData} />
           </div>
           <div>
-            <WhatYouWinSection raffle={raffle} />
+            <WhatYouWinSection raffle={raffleData} />
           </div>
         </div>
         
