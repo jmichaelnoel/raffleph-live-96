@@ -15,15 +15,15 @@ const faqs = [
   },
   {
     question: "Can I buy multiple entries?",
-    answer: "This depends on the specific raffle's mechanics set by the organizer. Please check the 'Raffle Mechanics' section or the organizer's official page."
+    answer: "This depends on the specific raffle rules set by the organizer. Please check with the organizer directly for their entry policies."
   },
   {
     question: "How will I know if I win?",
-    answer: "Winners are typically announced by the organizer on their specified drawing date and platform (e.g., Facebook Live, official website). Refer to the 'Drawing Date' information."
+    answer: "Winners are typically announced by the organizer on their specified drawing date. Check the organizer's official page or contact them directly for winner announcement details."
   },
   {
-    question: "What if I’m outside Manila?",
-    answer: "Many raffles offer nationwide shipping or digital prizes. Check the 'Delivery' details for information on prize fulfillment for your location."
+    question: "How do I contact the organizer?",
+    answer: "You can contact the organizer through their provided Facebook page or external join URL. All communication and transactions are handled directly with the organizer."
   }
 ];
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,12 +46,9 @@ const Header: React.FC<HeaderProps> = ({
             <MobileNavigation />
             <div className="flex items-center ml-2 md:ml-0">
               <h1 className="text-2xl lg:text-3xl font-bold group cursor-pointer flex items-center" onClick={() => navigate('/')}>
-                <span className="text-ph-red animate-pulse">🎊</span>
                 <span className="text-ph-red animate-pulse">Raffle</span>
                 <span className="text-ph-blue group-hover:animate-bounce">PH</span>
                 <span className="text-xs lg:text-sm font-sans font-bold text-gray-600 tracking-tight transform rotate-90 origin-center whitespace-nowrap -ml-1 mr-0.5" style={{ fontSize: '0.6rem', lineHeight: '2.4rem', letterSpacing: '0.02em' }}>.com</span>
-                <span className="text-ph-yellow animate-ping inline-block w-2 h-2 rounded-full">.</span>
-                <span className="text-2xl ml-2 animate-bounce delay-100">🎊</span>
               </h1>
             </div>
           </div>

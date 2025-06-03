@@ -17,11 +17,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
       
       <div className="space-y-2 text-gray-700">
         <p><strong>Organized by:</strong> {raffle.organization}</p>
-        <p><strong>Raffle Mechanics:</strong> One entry = one chance. Multiple entries allowed.</p>
-        <p><strong>Delivery:</strong> Prize will be shipped nationwide. No claiming needed.</p>
         <p className="flex items-center">
           <CalendarDays className="mr-2 h-5 w-5 text-ph-blue" /> 
-          <strong>Drawing Date:</strong> {drawingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} via Facebook Live
+          <strong>Drawing Date:</strong> {drawingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
     </div>

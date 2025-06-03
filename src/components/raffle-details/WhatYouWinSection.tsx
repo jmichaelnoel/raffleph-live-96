@@ -21,18 +21,9 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
         />
         <div className="md:w-2/3">
           <h3 className="text-xl font-medium text-ph-blue mb-2">{raffle.title}</h3>
-          <p className="text-gray-600 mb-3">
-            Get ready to win this amazing prize! 
+          <p className="text-gray-600">
+            {raffle.description}
           </p>
-          <div className="bg-white p-4 rounded-lg border">
-            <h4 className="font-semibold text-gray-800 mb-2">Prize Details</h4>
-            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-              <li>Condition: Brand New</li>
-              <li>Color: As specified by organizer</li>
-              <li>Warranty: Included if applicable</li>
-              <li>Additional details provided by organizer upon inquiry</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
