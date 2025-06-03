@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,8 +29,6 @@ interface Submission {
   entries_left: number | null;
   convertible_to_cash: boolean | null;
   image_url: string | null;
-  isOptimistic?: boolean;
-  optimisticStatus?: 'pending' | 'approved' | 'rejected';
 }
 
 const AdminDashboard = () => {
@@ -66,26 +65,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Only update non-optimistic items to prevent overwriting pending operations
-      setSubmissions(prev => {
-        const optimisticItems = prev.filter(item => item.isOptimistic);
-        const freshData = data || [];
-        
-        // Create a map of fresh data by ID for efficient lookup
-        const freshDataMap = new Map(freshData.map(item => [item.id, item]));
-        
-        // Keep optimistic items and merge with fresh data
-        const merged = [...optimisticItems];
-        
-        // Add fresh data only if not already present as optimistic
-        freshData.forEach(item => {
-          if (!optimisticItems.some(opt => opt.id === item.id)) {
-            merged.push(item);
-          }
-        });
-        
-        return merged;
-      });
+      setSubmissions(data || []);
       
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -94,37 +74,32 @@ const AdminDashboard = () => {
     }
   };
 
-  // Only fetch when authenticated, not when filter changes
   useEffect(() => {
     if (isAuthenticated) {
       fetchSubmissions();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, statusFilter]);
 
   const handleApproveSubmission = async (submission: Submission) => {
-    // Prevent double-clicking
     if (processingIds.has(submission.id)) {
-      console.log('Approval already in progress for:', submission.id);
       return;
     }
     
     setProcessingIds(prev => new Set(prev).add(submission.id));
     
-    // Apply optimistic update immediately
+    // Optimistic update
     setSubmissions(prev => prev.map(s => 
       s.id === submission.id 
-        ? { ...s, status: 'approved' as const, isOptimistic: true, optimisticStatus: 'approved' as const }
+        ? { ...s, status: 'approved' as const }
         : s
     ));
 
     toast({
       title: "Processing...",
-      description: "Approving submission, please wait...",
+      description: "Approving submission...",
     });
     
     try {
-      console.log('Starting approval process for submission:', submission.id);
-
       // Check if already approved
       const { data: existingApprovals } = await supabase
         .from('approved_raffles')
@@ -135,7 +110,7 @@ const AdminDashboard = () => {
         // Revert optimistic update
         setSubmissions(prev => prev.map(s => 
           s.id === submission.id 
-            ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
+            ? { ...s, status: 'pending' as const }
             : s
         ));
         
@@ -178,7 +153,7 @@ const AdminDashboard = () => {
         throw approveError;
       }
 
-      // Update submission status
+      // Update submission status - simplified without function calls
       const { error: updateError } = await supabase
         .from('raffle_submissions')
         .update({
@@ -192,13 +167,6 @@ const AdminDashboard = () => {
         throw updateError;
       }
 
-      // Confirm optimistic update by removing optimistic flags
-      setSubmissions(prev => prev.map(s => 
-        s.id === submission.id 
-          ? { ...s, status: 'approved' as const, isOptimistic: false, optimisticStatus: undefined }
-          : s
-      ));
-
       toast({
         title: "Success! 🎉",
         description: "Raffle approved and published successfully!",
@@ -206,13 +174,16 @@ const AdminDashboard = () => {
 
       setSelectedSubmission(null);
       
+      // Refresh the list to ensure consistency
+      await fetchSubmissions();
+      
     } catch (error) {
       console.error('Error approving submission:', error);
       
       // Revert optimistic update on error
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
-          ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
+          ? { ...s, status: 'pending' as const }
           : s
       ));
       
@@ -238,7 +209,7 @@ const AdminDashboard = () => {
     // Optimistic update
     setSubmissions(prev => prev.map(s => 
       s.id === submission.id 
-        ? { ...s, status: 'rejected' as const, isOptimistic: true, optimisticStatus: 'rejected' as const }
+        ? { ...s, status: 'rejected' as const }
         : s
     ));
 
@@ -254,13 +225,6 @@ const AdminDashboard = () => {
         throw error;
       }
 
-      // Confirm optimistic update
-      setSubmissions(prev => prev.map(s => 
-        s.id === submission.id 
-          ? { ...s, status: 'rejected' as const, isOptimistic: false, optimisticStatus: undefined }
-          : s
-      ));
-
       toast({
         title: "Success",
         description: "Submission rejected",
@@ -268,13 +232,16 @@ const AdminDashboard = () => {
 
       setSelectedSubmission(null);
       
+      // Refresh the list to ensure consistency
+      await fetchSubmissions();
+      
     } catch (error) {
       console.error('Error rejecting submission:', error);
       
       // Revert optimistic update
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
-          ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
+          ? { ...s, status: 'pending' as const }
           : s
       ));
       
@@ -292,17 +259,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Manual refresh function
-  const handleRefresh = () => {
-    // Clear all optimistic updates before refreshing
-    setSubmissions(prev => prev.filter(s => !s.isOptimistic));
-    fetchSubmissions();
-    toast({
-      title: "Refreshed",
-      description: "Submissions list has been refreshed",
-    });
-  };
-
   if (!isAuthenticated) {
     return <AdminAuth onAuthenticated={() => setIsAuthenticated(true)} />;
   }
@@ -312,11 +268,6 @@ const AdminDashboard = () => {
       submission.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       submission.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // For optimistic items, show them regardless of filter if they match search
-    if (submission.isOptimistic) {
-      return matchesSearch;
-    }
-
     if (statusFilter === 'all') {
       return matchesSearch;
     }
@@ -325,10 +276,9 @@ const AdminDashboard = () => {
   });
 
   const stats = {
-    pending: submissions.filter(s => s.status === 'pending' && !s.isOptimistic).length,
-    approved: submissions.filter(s => s.status === 'approved' && !s.isOptimistic).length + 
-              submissions.filter(s => s.isOptimistic && s.optimisticStatus === 'approved').length,
-    total: submissions.filter(s => !s.isOptimistic).length
+    pending: submissions.filter(s => s.status === 'pending').length,
+    approved: submissions.filter(s => s.status === 'approved').length,
+    total: submissions.length
   };
 
   return (
@@ -341,7 +291,7 @@ const AdminDashboard = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
               <p className="text-gray-600">Manage raffle submissions and approvals</p>
             </div>
-            <Button onClick={handleRefresh} variant="outline" size="sm">
+            <Button onClick={fetchSubmissions} variant="outline" size="sm">
               Refresh
             </Button>
           </div>
@@ -422,26 +372,23 @@ const AdminDashboard = () => {
               <div className="space-y-4">
                 {filteredSubmissions.map((submission) => {
                   const isProcessing = processingIds.has(submission.id);
-                  const isOptimistic = submission.isOptimistic;
-                  const displayStatus = isOptimistic ? submission.optimisticStatus : submission.status;
                   
                   return (
                     <div 
                       key={submission.id} 
                       className={`border rounded-lg p-4 bg-white transition-all ${
-                        isOptimistic ? 'ring-2 ring-blue-200 bg-blue-50' : ''
-                      } ${isProcessing ? 'opacity-75' : ''}`}
+                        isProcessing ? 'opacity-75' : ''
+                      }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-lg">{submission.title}</h3>
                             <Badge variant={
-                              displayStatus === 'pending' ? 'secondary' :
-                              displayStatus === 'approved' ? 'default' : 'destructive'
+                              submission.status === 'pending' ? 'secondary' :
+                              submission.status === 'approved' ? 'default' : 'destructive'
                             }>
-                              {displayStatus}
-                              {isOptimistic && ' (processing...)'}
+                              {submission.status}
                             </Badge>
                             {isProcessing && (
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -465,7 +412,7 @@ const AdminDashboard = () => {
                             <Eye className="h-4 w-4 mr-1" />
                             Review
                           </Button>
-                          {(submission.status === 'pending' && !isOptimistic) && (
+                          {submission.status === 'pending' && (
                             <>
                               <Button
                                 variant="default"
