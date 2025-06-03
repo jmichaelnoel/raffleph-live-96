@@ -4,13 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, Check, X, Users, Clock, CheckCircle, Settings, Star } from 'lucide-react';
+import { Eye, Check, X, Users, Clock, CheckCircle } from 'lucide-react';
 import AdminSubmissionModal from '@/components/admin/AdminSubmissionModal';
 import AdminAuth from '@/components/admin/AdminAuth';
-import PasswordChangeForm from '@/components/admin/PasswordChangeForm';
-import FeaturedRafflesManager from '@/components/admin/FeaturedRafflesManager';
 
 interface Submission {
   id: string;
@@ -342,7 +339,7 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage raffle submissions, featured raffles, and admin settings</p>
+              <p className="text-gray-600">Manage raffle submissions and approvals</p>
             </div>
             <Button onClick={handleRefresh} variant="outline" size="sm">
               Refresh
@@ -383,176 +380,126 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="submissions" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Submissions
-            </TabsTrigger>
-            <TabsTrigger value="featured" className="flex items-center gap-2">
-              <Star className="h-4 w-4" />
-              Featured Raffles
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
+        {/* Filters and Search */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Submissions</CardTitle>
+            <CardDescription>Review and manage raffle submissions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <Input
+                placeholder="Search submissions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1"
+              />
+              <div className="flex gap-2">
+                {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+                  <Button
+                    key={status}
+                    variant={statusFilter === status ? 'default' : 'outline'}
+                    onClick={() => setStatusFilter(status)}
+                    size="sm"
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
 
-          <TabsContent value="submissions">
-            {/* Submissions Management */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Submissions</CardTitle>
-                <CardDescription>Review and manage raffle submissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                  <Input
-                    placeholder="Search submissions..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1"
-                  />
-                  <div className="flex gap-2">
-                    {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
-                      <Button
-                        key={status}
-                        variant={statusFilter === status ? 'default' : 'outline'}
-                        onClick={() => setStatusFilter(status)}
-                        size="sm"
-                      >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Submissions List */}
-                {isLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Loading submissions...</p>
-                  </div>
-                ) : filteredSubmissions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-600">No submissions found</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredSubmissions.map((submission) => {
-                      const isProcessing = processingIds.has(submission.id);
-                      const isOptimistic = submission.isOptimistic;
-                      const displayStatus = isOptimistic ? submission.optimisticStatus : submission.status;
-                      
-                      return (
-                        <div 
-                          key={submission.id} 
-                          className={`border rounded-lg p-4 bg-white transition-all ${
-                            isOptimistic ? 'ring-2 ring-blue-200 bg-blue-50' : ''
-                          } ${isProcessing ? 'opacity-75' : ''}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="font-semibold text-lg">{submission.title}</h3>
-                                <Badge variant={
-                                  displayStatus === 'pending' ? 'secondary' :
-                                  displayStatus === 'approved' ? 'default' : 'destructive'
-                                }>
-                                  {displayStatus}
-                                  {isOptimistic && ' (processing...)'}
-                                </Badge>
-                                {isProcessing && (
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                )}
-                              </div>
-                              <p className="text-gray-600 mb-2">{submission.description.substring(0, 100)}...</p>
-                              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                                <span>Prize: ₱{submission.prize?.toLocaleString()}</span>
-                                <span>Category: {submission.category}</span>
-                                <span>Organization: {submission.organization || 'N/A'}</span>
-                                <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedSubmission(submission)}
-                                disabled={isProcessing}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Review
-                              </Button>
-                              {(submission.status === 'pending' && !isOptimistic) && (
-                                <>
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={() => handleApproveSubmission(submission)}
-                                    disabled={isProcessing}
-                                  >
-                                    {isProcessing ? (
-                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                                    ) : (
-                                      <Check className="h-4 w-4 mr-1" />
-                                    )}
-                                    {isProcessing ? 'Processing...' : 'Approve'}
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleRejectSubmission(submission)}
-                                    disabled={isProcessing}
-                                  >
-                                    <X className="h-4 w-4 mr-1" />
-                                    Reject
-                                  </Button>
-                                </>
-                              )}
-                            </div>
+            {/* Submissions List */}
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Loading submissions...</p>
+              </div>
+            ) : filteredSubmissions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No submissions found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredSubmissions.map((submission) => {
+                  const isProcessing = processingIds.has(submission.id);
+                  const isOptimistic = submission.isOptimistic;
+                  const displayStatus = isOptimistic ? submission.optimisticStatus : submission.status;
+                  
+                  return (
+                    <div 
+                      key={submission.id} 
+                      className={`border rounded-lg p-4 bg-white transition-all ${
+                        isOptimistic ? 'ring-2 ring-blue-200 bg-blue-50' : ''
+                      } ${isProcessing ? 'opacity-75' : ''}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg">{submission.title}</h3>
+                            <Badge variant={
+                              displayStatus === 'pending' ? 'secondary' :
+                              displayStatus === 'approved' ? 'default' : 'destructive'
+                            }>
+                              {displayStatus}
+                              {isOptimistic && ' (processing...)'}
+                            </Badge>
+                            {isProcessing && (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-2">{submission.description.substring(0, 100)}...</p>
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                            <span>Prize: ₱{submission.prize?.toLocaleString()}</span>
+                            <span>Category: {submission.category}</span>
+                            <span>Organization: {submission.organization || 'N/A'}</span>
+                            <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="featured">
-            <FeaturedRafflesManager />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PasswordChangeForm />
-              <Card>
-                <CardHeader>
-                  <CardTitle>Admin Information</CardTitle>
-                  <CardDescription>Current admin settings and system information</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-sm space-y-2">
-                    <p><strong>Session:</strong> Active</p>
-                    <p><strong>Last Login:</strong> {new Date().toLocaleString()}</p>
-                    <p><strong>Admin Level:</strong> Super Admin</p>
-                    <p><strong>System Status:</strong> <span className="text-green-600">Operational</span></p>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <p className="text-xs text-gray-500">
-                      All admin actions are logged for security purposes. 
-                      Please contact support if you need assistance.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedSubmission(submission)}
+                            disabled={isProcessing}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                          {(submission.status === 'pending' && !isOptimistic) && (
+                            <>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleApproveSubmission(submission)}
+                                disabled={isProcessing}
+                              >
+                                {isProcessing ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                                ) : (
+                                  <Check className="h-4 w-4 mr-1" />
+                                )}
+                                {isProcessing ? 'Processing...' : 'Approve'}
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleRejectSubmission(submission)}
+                                disabled={isProcessing}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Submission Modal */}
