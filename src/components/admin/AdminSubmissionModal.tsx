@@ -47,6 +47,7 @@ interface AdminSubmissionModalProps {
   onClose: () => void;
   onApprove: () => void;
   onReject: () => void;
+  isApproving?: boolean;
 }
 
 const AdminSubmissionModal: React.FC<AdminSubmissionModalProps> = ({
@@ -55,6 +56,7 @@ const AdminSubmissionModal: React.FC<AdminSubmissionModalProps> = ({
   onClose,
   onApprove,
   onReject,
+  isApproving = false,
 }) => {
   const bundlePricing = Array.isArray(submission.bundle_pricing) 
     ? submission.bundle_pricing 
@@ -243,11 +245,29 @@ const AdminSubmissionModal: React.FC<AdminSubmissionModalProps> = ({
           {/* Actions */}
           {submission.status === 'pending' && (
             <div className="flex gap-4 pt-4 border-t">
-              <Button onClick={onApprove} className="flex-1">
-                <Check className="h-4 w-4 mr-2" />
-                Approve & Publish
+              <Button 
+                onClick={onApprove} 
+                className="flex-1"
+                disabled={isApproving}
+              >
+                {isApproving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Approve & Publish
+                  </>
+                )}
               </Button>
-              <Button onClick={onReject} variant="destructive" className="flex-1">
+              <Button 
+                onClick={onReject} 
+                variant="destructive" 
+                className="flex-1"
+                disabled={isApproving}
+              >
                 <X className="h-4 w-4 mr-2" />
                 Reject
               </Button>

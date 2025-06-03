@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +38,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [isApproving, setIsApproving] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchSubmissions = async () => {
@@ -78,12 +80,40 @@ const AdminDashboard = () => {
   }, [isAuthenticated, statusFilter]);
 
   const handleApproveSubmission = async (submission: Submission) => {
+    if (isApproving === submission.id) return; // Prevent double clicks
+    
+    setIsApproving(submission.id);
+    
     try {
+      console.log('Starting approval process for submission:', submission.id);
+
+      // First, check if this submission is already approved in the approved_raffles table
+      const { data: existingApproval, error: checkError } = await supabase
+        .from('approved_raffles')
+        .select('id')
+        .eq('submission_id', submission.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing approval:', checkError);
+        throw checkError;
+      }
+
+      if (existingApproval) {
+        toast({
+          title: "Already Approved",
+          description: "This submission has already been approved",
+          variant: "destructive",
+        });
+        setIsApproving(null);
+        return;
+      }
+
       // Calculate end date (30 days from now as default)
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
 
-      // Create approved raffle with the submission's image
+      // Create approved raffle entry
       const { error: approveError } = await supabase
         .from('approved_raffles')
         .insert({
@@ -110,7 +140,7 @@ const AdminDashboard = () => {
         throw approveError;
       }
 
-      // Update submission status
+      // Update submission status to approved
       const { error: updateError } = await supabase
         .from('raffle_submissions')
         .update({
@@ -126,18 +156,22 @@ const AdminDashboard = () => {
 
       toast({
         title: "Success",
-        description: "Raffle approved and published!",
+        description: "Raffle approved and published successfully!",
       });
 
+      // Close modal and refresh submissions
       setSelectedSubmission(null);
-      fetchSubmissions();
+      await fetchSubmissions();
+      
     } catch (error) {
       console.error('Error approving submission:', error);
       toast({
         title: "Error",
-        description: "Failed to approve submission. Check console for details.",
+        description: "Failed to approve submission. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsApproving(null);
     }
   };
 
@@ -160,7 +194,7 @@ const AdminDashboard = () => {
       });
 
       setSelectedSubmission(null);
-      fetchSubmissions();
+      await fetchSubmissions();
     } catch (error) {
       console.error('Error rejecting submission:', error);
       toast({
@@ -305,9 +339,14 @@ const AdminDashboard = () => {
                               variant="default"
                               size="sm"
                               onClick={() => handleApproveSubmission(submission)}
+                              disabled={isApproving === submission.id}
                             >
-                              <Check className="h-4 w-4 mr-1" />
-                              Approve
+                              {isApproving === submission.id ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                              ) : (
+                                <Check className="h-4 w-4 mr-1" />
+                              )}
+                              {isApproving === submission.id ? 'Approving...' : 'Approve'}
                             </Button>
                             <Button
                               variant="destructive"
@@ -337,6 +376,7 @@ const AdminDashboard = () => {
           onClose={() => setSelectedSubmission(null)}
           onApprove={() => handleApproveSubmission(selectedSubmission)}
           onReject={() => handleRejectSubmission(selectedSubmission)}
+          isApproving={isApproving === selectedSubmission.id}
         />
       )}
     </div>
