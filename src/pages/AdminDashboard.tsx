@@ -28,6 +28,7 @@ interface Submission {
   entries_left: number | null;
   convertible_to_cash: boolean | null;
   image_url: string | null;
+  isOptimistic?: boolean; // For tracking optimistic updates
 }
 
 const AdminDashboard = () => {
@@ -37,7 +38,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
-  const [isApproving, setIsApproving] = useState<string | null>(null);
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const fetchSubmissions = async () => {
@@ -79,9 +80,23 @@ const AdminDashboard = () => {
   }, [isAuthenticated, statusFilter]);
 
   const handleApproveSubmission = async (submission: Submission) => {
-    if (isApproving === submission.id) return;
+    if (processingIds.has(submission.id)) return;
     
-    setIsApproving(submission.id);
+    // Start processing
+    setProcessingIds(prev => new Set(prev).add(submission.id));
+    
+    // Optimistic update: immediately update the local state
+    setSubmissions(prev => prev.map(s => 
+      s.id === submission.id 
+        ? { ...s, status: 'approved' as const, isOptimistic: true }
+        : s
+    ));
+
+    // Show immediate feedback
+    toast({
+      title: "Processing...",
+      description: "Approving submission, please wait...",
+    });
     
     try {
       console.log('Starting approval process for submission:', submission.id);
@@ -93,12 +108,18 @@ const AdminDashboard = () => {
         .eq('submission_id', submission.id);
 
       if (existingApprovals && existingApprovals.length > 0) {
+        // Revert optimistic update
+        setSubmissions(prev => prev.map(s => 
+          s.id === submission.id 
+            ? { ...s, status: 'pending' as const, isOptimistic: false }
+            : s
+        ));
+        
         toast({
           title: "Already Approved",
           description: "This submission has already been approved",
           variant: "destructive",
         });
-        setIsApproving(null);
         return;
       }
 
@@ -147,28 +168,68 @@ const AdminDashboard = () => {
         throw updateError;
       }
 
+      // Success - confirm the optimistic update
+      setSubmissions(prev => prev.map(s => 
+        s.id === submission.id 
+          ? { ...s, status: 'approved' as const, isOptimistic: false }
+          : s
+      ));
+
       toast({
-        title: "Success",
+        title: "Success! 🎉",
         description: "Raffle approved and published successfully!",
       });
 
-      // Close modal and refresh data
+      // Close modal
       setSelectedSubmission(null);
-      await fetchSubmissions(); // Simple refetch to ensure UI is updated
+
+      // Smart filter handling: if we're on pending filter, switch to all to show the approved item
+      if (statusFilter === 'pending') {
+        setTimeout(() => {
+          setStatusFilter('all');
+          toast({
+            title: "Filter Updated",
+            description: "Switched to 'All' submissions to show your approved raffle",
+          });
+        }, 2000);
+      }
       
     } catch (error) {
       console.error('Error approving submission:', error);
+      
+      // Revert optimistic update on error
+      setSubmissions(prev => prev.map(s => 
+        s.id === submission.id 
+          ? { ...s, status: 'pending' as const, isOptimistic: false }
+          : s
+      ));
+      
       toast({
         title: "Error",
         description: "Failed to approve submission. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsApproving(null);
+      setProcessingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(submission.id);
+        return newSet;
+      });
     }
   };
 
   const handleRejectSubmission = async (submission: Submission) => {
+    if (processingIds.has(submission.id)) return;
+    
+    setProcessingIds(prev => new Set(prev).add(submission.id));
+    
+    // Optimistic update
+    setSubmissions(prev => prev.map(s => 
+      s.id === submission.id 
+        ? { ...s, status: 'rejected' as const, isOptimistic: true }
+        : s
+    ));
+
     try {
       const { error } = await supabase
         .from('raffle_submissions')
@@ -181,19 +242,47 @@ const AdminDashboard = () => {
         throw error;
       }
 
+      // Confirm optimistic update
+      setSubmissions(prev => prev.map(s => 
+        s.id === submission.id 
+          ? { ...s, status: 'rejected' as const, isOptimistic: false }
+          : s
+      ));
+
       toast({
         title: "Success",
         description: "Submission rejected",
       });
 
       setSelectedSubmission(null);
-      await fetchSubmissions(); // Simple refetch to ensure UI is updated
+      
+      // Smart filter handling for rejected items too
+      if (statusFilter === 'pending') {
+        setTimeout(() => {
+          setStatusFilter('all');
+        }, 2000);
+      }
+      
     } catch (error) {
       console.error('Error rejecting submission:', error);
+      
+      // Revert optimistic update
+      setSubmissions(prev => prev.map(s => 
+        s.id === submission.id 
+          ? { ...s, status: 'pending' as const, isOptimistic: false }
+          : s
+      ));
+      
       toast({
         title: "Error",
         description: "Failed to reject submission",
         variant: "destructive",
+      });
+    } finally {
+      setProcessingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(submission.id);
+        return newSet;
       });
     }
   };
@@ -202,11 +291,22 @@ const AdminDashboard = () => {
     return <AdminAuth onAuthenticated={() => setIsAuthenticated(true)} />;
   }
 
-  const filteredSubmissions = submissions.filter(submission =>
-    submission.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    submission.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    submission.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSubmissions = submissions.filter(submission => {
+    const matchesSearch = submission.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      submission.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      submission.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Show optimistically updated items even if they don't match the current filter
+    if (submission.isOptimistic) {
+      return matchesSearch;
+    }
+
+    if (statusFilter === 'all') {
+      return matchesSearch;
+    }
+
+    return matchesSearch && submission.status === statusFilter;
+  });
 
   const stats = {
     pending: submissions.filter(s => s.status === 'pending').length,
@@ -296,65 +396,81 @@ const AdminDashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredSubmissions.map((submission) => (
-                  <div key={submission.id} className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg">{submission.title}</h3>
-                          <Badge variant={
-                            submission.status === 'pending' ? 'secondary' :
-                            submission.status === 'approved' ? 'default' : 'destructive'
-                          }>
-                            {submission.status}
-                          </Badge>
+                {filteredSubmissions.map((submission) => {
+                  const isProcessing = processingIds.has(submission.id);
+                  const isOptimistic = submission.isOptimistic;
+                  
+                  return (
+                    <div 
+                      key={submission.id} 
+                      className={`border rounded-lg p-4 bg-white transition-all ${
+                        isOptimistic ? 'ring-2 ring-blue-200 bg-blue-50' : ''
+                      } ${isProcessing ? 'opacity-75' : ''}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg">{submission.title}</h3>
+                            <Badge variant={
+                              submission.status === 'pending' ? 'secondary' :
+                              submission.status === 'approved' ? 'default' : 'destructive'
+                            }>
+                              {submission.status}
+                              {isOptimistic && ' (processing...)'}
+                            </Badge>
+                            {isProcessing && (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-2">{submission.description.substring(0, 100)}...</p>
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                            <span>Prize: ₱{submission.prize?.toLocaleString()}</span>
+                            <span>Category: {submission.category}</span>
+                            <span>Organization: {submission.organization || 'N/A'}</span>
+                            <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                          </div>
                         </div>
-                        <p className="text-gray-600 mb-2">{submission.description.substring(0, 100)}...</p>
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                          <span>Prize: ₱{submission.prize?.toLocaleString()}</span>
-                          <span>Category: {submission.category}</span>
-                          <span>Organization: {submission.organization || 'N/A'}</span>
-                          <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedSubmission(submission)}
+                            disabled={isProcessing}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                          {submission.status === 'pending' && !isOptimistic && (
+                            <>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleApproveSubmission(submission)}
+                                disabled={isProcessing}
+                              >
+                                {isProcessing ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                                ) : (
+                                  <Check className="h-4 w-4 mr-1" />
+                                )}
+                                {isProcessing ? 'Processing...' : 'Approve'}
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleRejectSubmission(submission)}
+                                disabled={isProcessing}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedSubmission(submission)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Review
-                        </Button>
-                        {submission.status === 'pending' && (
-                          <>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleApproveSubmission(submission)}
-                              disabled={isApproving === submission.id}
-                            >
-                              {isApproving === submission.id ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                              ) : (
-                                <Check className="h-4 w-4 mr-1" />
-                              )}
-                              {isApproving === submission.id ? 'Approving...' : 'Approve'}
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleRejectSubmission(submission)}
-                            >
-                              <X className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -369,7 +485,7 @@ const AdminDashboard = () => {
           onClose={() => setSelectedSubmission(null)}
           onApprove={() => handleApproveSubmission(selectedSubmission)}
           onReject={() => handleRejectSubmission(selectedSubmission)}
-          isApproving={isApproving === selectedSubmission.id}
+          isApproving={processingIds.has(selectedSubmission.id)}
         />
       )}
     </div>
