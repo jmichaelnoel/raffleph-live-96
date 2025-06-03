@@ -40,10 +40,9 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
-  const [lastRefetch, setLastRefetch] = useState<number>(Date.now());
   const { toast } = useToast();
 
-  const fetchSubmissions = async (forceRefresh = false) => {
+  const fetchSubmissions = async () => {
     setIsLoading(true);
     try {
       let query = supabase
@@ -67,27 +66,27 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Merge with existing optimistic updates if not forcing refresh
-      if (!forceRefresh) {
-        setSubmissions(prev => {
-          const optimisticItems = prev.filter(item => item.isOptimistic);
-          const freshData = data || [];
-          
-          // Keep optimistic items and merge with fresh data
-          const merged = [...optimisticItems];
-          freshData.forEach(item => {
-            if (!optimisticItems.some(opt => opt.id === item.id)) {
-              merged.push(item);
-            }
-          });
-          
-          return merged;
+      // Only update non-optimistic items to prevent overwriting pending operations
+      setSubmissions(prev => {
+        const optimisticItems = prev.filter(item => item.isOptimistic);
+        const freshData = data || [];
+        
+        // Create a map of fresh data by ID for efficient lookup
+        const freshDataMap = new Map(freshData.map(item => [item.id, item]));
+        
+        // Keep optimistic items and merge with fresh data
+        const merged = [...optimisticItems];
+        
+        // Add fresh data only if not already present as optimistic
+        freshData.forEach(item => {
+          if (!optimisticItems.some(opt => opt.id === item.id)) {
+            merged.push(item);
+          }
         });
-      } else {
-        setSubmissions(data || []);
-      }
+        
+        return merged;
+      });
       
-      setLastRefetch(Date.now());
     } catch (error) {
       console.error('Unexpected error:', error);
     } finally {
@@ -95,32 +94,23 @@ const AdminDashboard = () => {
     }
   };
 
-  // Only refetch when authenticated changes, not when statusFilter changes
+  // Only fetch when authenticated, not when filter changes
   useEffect(() => {
     if (isAuthenticated) {
-      fetchSubmissions(true);
+      fetchSubmissions();
     }
   }, [isAuthenticated]);
 
-  // Debounced refetch mechanism - only refetch if no operations in progress for 5 seconds
-  useEffect(() => {
-    if (!isAuthenticated || processingIds.size > 0) return;
-
-    const timer = setTimeout(() => {
-      if (processingIds.size === 0) {
-        fetchSubmissions(false);
-      }
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [lastRefetch, processingIds.size, isAuthenticated]);
-
   const handleApproveSubmission = async (submission: Submission) => {
-    if (processingIds.has(submission.id)) return;
+    // Prevent double-clicking
+    if (processingIds.has(submission.id)) {
+      console.log('Approval already in progress for:', submission.id);
+      return;
+    }
     
     setProcessingIds(prev => new Set(prev).add(submission.id));
     
-    // Optimistic update with better tracking
+    // Apply optimistic update immediately
     setSubmissions(prev => prev.map(s => 
       s.id === submission.id 
         ? { ...s, status: 'approved' as const, isOptimistic: true, optimisticStatus: 'approved' as const }
@@ -202,7 +192,7 @@ const AdminDashboard = () => {
         throw updateError;
       }
 
-      // Confirm the optimistic update with real data
+      // Confirm optimistic update by removing optimistic flags
       setSubmissions(prev => prev.map(s => 
         s.id === submission.id 
           ? { ...s, status: 'approved' as const, isOptimistic: false, optimisticStatus: undefined }
@@ -215,9 +205,6 @@ const AdminDashboard = () => {
       });
 
       setSelectedSubmission(null);
-
-      // If we're on pending filter and item is now approved, keep it visible with success indication
-      // Don't automatically switch filters to prevent confusion
       
     } catch (error) {
       console.error('Error approving submission:', error);
@@ -307,7 +294,9 @@ const AdminDashboard = () => {
 
   // Manual refresh function
   const handleRefresh = () => {
-    fetchSubmissions(true);
+    // Clear all optimistic updates before refreshing
+    setSubmissions(prev => prev.filter(s => !s.isOptimistic));
+    fetchSubmissions();
     toast({
       title: "Refreshed",
       description: "Submissions list has been refreshed",
@@ -336,9 +325,10 @@ const AdminDashboard = () => {
   });
 
   const stats = {
-    pending: submissions.filter(s => s.status === 'pending' || (s.isOptimistic && s.optimisticStatus === 'pending')).length,
-    approved: submissions.filter(s => s.status === 'approved' || (s.isOptimistic && s.optimisticStatus === 'approved')).length,
-    total: submissions.length
+    pending: submissions.filter(s => s.status === 'pending' && !s.isOptimistic).length,
+    approved: submissions.filter(s => s.status === 'approved' && !s.isOptimistic).length + 
+              submissions.filter(s => s.isOptimistic && s.optimisticStatus === 'approved').length,
+    total: submissions.filter(s => !s.isOptimistic).length
   };
 
   return (
@@ -475,7 +465,7 @@ const AdminDashboard = () => {
                             <Eye className="h-4 w-4 mr-1" />
                             Review
                           </Button>
-                          {(displayStatus === 'pending' && !isOptimistic) && (
+                          {(submission.status === 'pending' && !isOptimistic) && (
                             <>
                               <Button
                                 variant="default"
