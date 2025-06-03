@@ -13,7 +13,7 @@ import FAQSection from '@/components/raffle-details/FAQSection';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { Raffle } from '@/types/raffle';
+import { Raffle, RaffleCategory } from '@/types/raffle';
 
 interface ApprovedRaffle {
   id: string;
@@ -94,7 +94,7 @@ const RaffleDetailsPage = () => {
     title: raffle.title,
     description: raffle.description,
     imageUrl: raffle.image_url,
-    category: raffle.category,
+    category: raffle.category as RaffleCategory,
     prize: raffle.prize,
     bettingCost: raffle.betting_cost,
     winningPercentage: raffle.winning_percentage,

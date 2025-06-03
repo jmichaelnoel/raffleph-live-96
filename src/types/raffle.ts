@@ -1,14 +1,16 @@
 
+export type RaffleCategory = 'Gadgets' | 'Cars' | 'Cash' | 'Motorcycle';
+
 export interface Raffle {
   id: string;
   title: string;
   description: string;
   imageUrl: string;
-  category: string;
+  category: RaffleCategory;
   prize: number;
   bettingCost: number;
   winningPercentage: number;
-  drawDate: string | null; // Changed from endDate to drawDate
+  drawDate: string | null;
   organization: string;
   location: string;
   externalJoinUrl: string;
