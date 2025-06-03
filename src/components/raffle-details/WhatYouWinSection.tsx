@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Raffle } from '@/types/raffle';
+import { Raffle } from '@/hooks/useRaffleData';
 import { Package } from 'lucide-react';
 
 interface WhatYouWinSectionProps {

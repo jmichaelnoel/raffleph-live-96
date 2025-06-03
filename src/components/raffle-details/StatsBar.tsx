@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Raffle } from '@/types/raffle';
+import { Raffle } from '@/hooks/useRaffleData';
 import { DollarSign, Percent, CalendarDays, BarChartBig, Users } from 'lucide-react';
 
 interface StatsBarProps {
@@ -16,9 +16,7 @@ const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string
 );
 
 const StatsBar: React.FC<StatsBarProps> = ({ raffle }) => {
-  const daysLeft = raffle.drawDate 
-    ? Math.max(0, Math.ceil((new Date(raffle.drawDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-    : 'TBD';
+  const daysLeft = Math.max(0, Math.ceil((new Date(raffle.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 my-8">

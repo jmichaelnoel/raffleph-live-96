@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Raffle } from '@/types/raffle';
+import { Raffle } from '@/data/raffles';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tag, Award, MapPin, Clock, Gift, DollarSign, Percent, Users, ExternalLink, Facebook } from 'lucide-react';
@@ -10,9 +10,7 @@ interface RaffleHeaderProps {
 }
 
 const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
-  const daysLeft = raffle.drawDate 
-    ? Math.max(0, Math.ceil((new Date(raffle.drawDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-    : 'TBD';
+  const daysLeft = Math.max(0, Math.ceil((new Date(raffle.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
   const handleJoinClick = () => {
     window.open(raffle.externalJoinUrl, '_blank');
@@ -51,8 +49,7 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
             <MapPin className="inline mr-1 h-4 w-4" /> {raffle.location}
           </div>
           <div className="absolute bottom-4 right-4 bg-black/70 text-white p-2 rounded text-sm">
-            <Clock className="inline mr-1 h-4 w-4" /> 
-            {typeof daysLeft === 'number' ? `Ends in ${daysLeft} days` : 'Draw date TBD'}
+            <Clock className="inline mr-1 h-4 w-4" /> Ends in {daysLeft} days
           </div>
         </div>
 

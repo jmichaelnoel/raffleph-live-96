@@ -1,9 +1,8 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Check, X } from 'lucide-react';
-import DrawDateBadge from '@/components/DrawDateBadge';
-import DrawDateEditor from '@/components/admin/DrawDateEditor';
 
 interface Submission {
   id: string;
@@ -100,9 +99,6 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
                   }>
                     {submission.status}
                   </Badge>
-                  {submission.status === 'approved' && submission.draw_date !== undefined && (
-                    <DrawDateBadge drawDate={submission.draw_date} />
-                  )}
                   {isProcessing && (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                   )}
@@ -113,9 +109,6 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
                   <span>Category: {submission.category}</span>
                   <span>Organization: {submission.organization || 'N/A'}</span>
                   <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
-                  {submission.draw_date && (
-                    <span>Draw: {new Date(submission.draw_date).toLocaleDateString()}</span>
-                  )}
                 </div>
               </div>
               <div className="flex gap-2">
@@ -128,16 +121,6 @@ const SubmissionsList: React.FC<SubmissionsListProps> = ({
                   <Eye className="h-4 w-4 mr-1" />
                   Review
                 </Button>
-                {submission.status === 'approved' && submission.draw_date !== undefined && (
-                  <DrawDateEditor
-                    raffleId={submission.id}
-                    currentDate={submission.draw_date}
-                    onUpdate={(newDate) => {
-                      // Update the submission in the parent component
-                      // This would need to be passed as a prop or handled via state management
-                    }}
-                  />
-                )}
                 {submission.status === 'pending' && (
                   <>
                     <Button
