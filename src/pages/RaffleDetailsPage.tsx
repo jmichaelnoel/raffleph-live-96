@@ -12,6 +12,7 @@ import TrustVerificationSection from '@/components/raffle-details/TrustVerificat
 import FAQSection from '@/components/raffle-details/FAQSection';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Raffle, RaffleCategory } from '@/hooks/useRaffleData';
 
 interface ApprovedRaffle {
   id: string;
@@ -52,7 +53,7 @@ const RaffleDetailsPage = () => {
           .from('approved_raffles')
           .select('*')
           .eq('id', raffleId)
-          .single();
+          .maybeSingle();
 
         if (error || !data) {
           console.error('Error fetching raffle:', error);
@@ -87,12 +88,12 @@ const RaffleDetailsPage = () => {
   }
 
   // Convert the approved raffle data to match the expected Raffle interface
-  const raffleData = {
+  const raffleData: Raffle = {
     id: raffle.id,
     title: raffle.title,
     description: raffle.description,
     imageUrl: raffle.image_url,
-    category: raffle.category,
+    category: raffle.category as RaffleCategory,
     prize: raffle.prize,
     bettingCost: raffle.betting_cost,
     winningPercentage: raffle.winning_percentage,
