@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { MobileNavigation } from './MobileNavigation';
+import MobileNavigation from './MobileNavigation';
 import { UserCircle, LogIn, Shield } from 'lucide-react';
 
 const Header: React.FC = () => {
