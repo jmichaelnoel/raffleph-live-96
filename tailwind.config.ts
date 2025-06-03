@@ -85,6 +85,11 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			spacing: {
+				'18': '4.5rem',
+				'88': '22rem',
+				'128': '32rem',
+			},
 			keyframes: {
 				// ... keep existing code (accordion and fade-in keyframes)
 				'accordion-down': {
@@ -124,6 +129,18 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-8px)' },
         },
+        'slide-up-fade': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.9)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
         // GradientText keyframes
         "gradient-border": {
           "0%, 100%": { borderRadius: "37% 29% 27% 27% / 28% 25% 41% 37%" },
@@ -160,6 +177,9 @@ export default {
         'button-hover-pop': 'button-hover-pop 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards',
         'sparkle': 'sparkle 1.5s infinite alternate ease-in-out',
         'float-gently': 'float-gently 3s infinite alternate ease-in-out',
+        'slide-up-fade': 'slide-up-fade 0.6s ease-out',
+        'scale-in': 'scale-in 0.4s ease-out',
+        'shimmer': 'shimmer 2s infinite linear',
 			}
 		}
 	},

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +11,7 @@ import TrustVerificationSection from '@/components/raffle-details/TrustVerificat
 import FAQSection from '@/components/raffle-details/FAQSection';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Raffle, RaffleCategory } from '@/hooks/useRaffleData';
 
 interface ApprovedRaffle {
@@ -116,25 +116,41 @@ const RaffleDetailsPage = () => {
       
       <main className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 mb-6 text-sm text-gray-600">
-          <Link to="/" className="hover:text-ph-blue transition-colors">
-            <Home className="h-4 w-4" />
-          </Link>
-          <span>/</span>
-          <span className="text-gray-400">Raffles</span>
-          <span>/</span>
-          <span className="text-gray-800 font-medium">{raffle.title}</span>
-        </nav>
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="flex items-center hover:text-ph-blue transition-colors">
+                  <Home className="h-4 w-4" />
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="hover:text-ph-blue transition-colors">
+                  Raffles
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-gray-800 font-medium line-clamp-1">
+                {raffle.title}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Return to Raffle Lists Button */}
         <div className="mb-8">
           <Link to="/">
             <Button 
               variant="outline" 
-              className="bg-white hover:bg-gray-50 border-2 border-ph-blue text-ph-blue hover:text-ph-blue font-semibold transition-all duration-300 hover:shadow-md"
+              className="bg-white hover:bg-gray-50 border-2 border-ph-blue text-ph-blue hover:text-ph-blue font-semibold transition-all duration-300 hover:shadow-md hover:scale-105"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Return to Raffle Lists
+              Back to All Raffles
             </Button>
           </Link>
         </div>
