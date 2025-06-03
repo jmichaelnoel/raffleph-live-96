@@ -24,7 +24,7 @@ interface ApprovedRaffle {
   prize: number;
   betting_cost: number;
   winning_percentage: number;
-  draw_date: string | null; // Changed from end_date to draw_date
+  draw_date: string | null;
   organization: string;
   location: string;
   external_join_url: string;
@@ -98,7 +98,7 @@ const RaffleDetailsPage = () => {
     prize: raffle.prize,
     bettingCost: raffle.betting_cost,
     winningPercentage: raffle.winning_percentage,
-    drawDate: raffle.draw_date, // Changed from endDate to drawDate
+    drawDate: raffle.draw_date,
     organization: raffle.organization,
     location: raffle.location,
     externalJoinUrl: raffle.external_join_url,

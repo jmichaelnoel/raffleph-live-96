@@ -1,7 +1,8 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { sortRaffles } from '@/utils/raffleUtils';
+import { sortRaffles, SortOption } from '@/utils/raffleUtils';
 
 export type RaffleCategory = 'Gadgets' | 'Cars' | 'Cash' | 'Motorcycle';
 
@@ -14,7 +15,7 @@ export interface Raffle {
   prize: number;
   bettingCost: number;
   winningPercentage: number;
-  drawDate: string | null; // Changed from endDate to drawDate
+  drawDate: string | null;
   organization: string;
   location: string;
   externalJoinUrl: string;
@@ -24,14 +25,12 @@ export interface Raffle {
   featured: boolean;
 }
 
-export type SortOption = 'featured' | 'prize-high' | 'prize-low' | 'win-rate-high' | 'win-rate-low' | 'cost-low' | 'cost-high' | 'draw-date';
-
 export const useRaffleData = () => {
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('featured');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<RaffleCategory[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [betRange, setBetRange] = useState<[number, number]>([0, 0]);
   const [winRateRange, setWinRateRange] = useState<[number, number]>([0, 0.02]);
@@ -64,7 +63,7 @@ export const useRaffleData = () => {
           prize: raffle.prize,
           bettingCost: raffle.betting_cost,
           winningPercentage: raffle.winning_percentage || 0.001,
-          drawDate: raffle.draw_date, // Changed from end_date to draw_date
+          drawDate: raffle.draw_date,
           organization: raffle.organization,
           location: raffle.location || 'Philippines',
           externalJoinUrl: raffle.external_join_url,
