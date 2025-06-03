@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, Check, X, Users, Clock, CheckCircle } from 'lucide-react';
+import { Eye, Check, X, Users, Clock, CheckCircle, LogOut } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminSubmissionModal from '@/components/admin/AdminSubmissionModal';
 import AdminAuth from '@/components/admin/AdminAuth';
+import { AuditLogger } from '@/utils/auditLogger';
 
 interface Submission {
   id: string;
@@ -28,19 +31,62 @@ interface Submission {
   entries_left: number | null;
   convertible_to_cash: boolean | null;
   image_url: string | null;
-  isOptimistic?: boolean;
-  optimisticStatus?: 'pending' | 'approved' | 'rejected';
+}
+
+interface AuditLog {
+  id: string;
+  action: string;
+  table_name: string;
+  record_id: string;
+  old_values: any;
+  new_values: any;
+  ip_address: string;
+  user_agent: string;
+  created_at: string;
 }
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [auditLoading, setAuditLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+
+  const handleAuthentication = (token: string) => {
+    setSessionToken(token);
+    setIsAuthenticated(true);
+    AuditLogger.setSessionToken(token);
+    
+    // Log successful admin login
+    AuditLogger.logAction({
+      action: 'ADMIN_LOGIN',
+      table_name: 'admin_sessions'
+    });
+  };
+
+  const handleLogout = () => {
+    // Log logout action
+    AuditLogger.logAction({
+      action: 'ADMIN_LOGOUT',
+      table_name: 'admin_sessions'
+    });
+
+    localStorage.removeItem('adminSessionToken');
+    localStorage.removeItem('adminSessionExpires');
+    setIsAuthenticated(false);
+    setSessionToken(null);
+    
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
+  };
 
   const fetchSubmissions = async () => {
     setIsLoading(true);
@@ -66,27 +112,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Only update non-optimistic items to prevent overwriting pending operations
-      setSubmissions(prev => {
-        const optimisticItems = prev.filter(item => item.isOptimistic);
-        const freshData = data || [];
-        
-        // Create a map of fresh data by ID for efficient lookup
-        const freshDataMap = new Map(freshData.map(item => [item.id, item]));
-        
-        // Keep optimistic items and merge with fresh data
-        const merged = [...optimisticItems];
-        
-        // Add fresh data only if not already present as optimistic
-        freshData.forEach(item => {
-          if (!optimisticItems.some(opt => opt.id === item.id)) {
-            merged.push(item);
-          }
-        });
-        
-        return merged;
-      });
-      
+      setSubmissions(data || []);
     } catch (error) {
       console.error('Unexpected error:', error);
     } finally {
@@ -94,59 +120,42 @@ const AdminDashboard = () => {
     }
   };
 
-  // Only fetch when authenticated, not when filter changes
+  const fetchAuditLogs = async () => {
+    if (!sessionToken) return;
+    
+    setAuditLoading(true);
+    try {
+      const logs = await AuditLogger.getAuditLogs(50);
+      setAuditLogs(logs);
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch audit logs",
+        variant: "destructive",
+      });
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchSubmissions();
+      fetchAuditLogs();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, statusFilter]);
 
   const handleApproveSubmission = async (submission: Submission) => {
-    // Prevent double-clicking
-    if (processingIds.has(submission.id)) {
-      console.log('Approval already in progress for:', submission.id);
-      return;
-    }
+    if (processingIds.has(submission.id)) return;
     
     setProcessingIds(prev => new Set(prev).add(submission.id));
     
-    // Apply optimistic update immediately
-    setSubmissions(prev => prev.map(s => 
-      s.id === submission.id 
-        ? { ...s, status: 'approved' as const, isOptimistic: true, optimisticStatus: 'approved' as const }
-        : s
-    ));
-
-    toast({
-      title: "Processing...",
-      description: "Approving submission, please wait...",
-    });
-    
     try {
-      console.log('Starting approval process for submission:', submission.id);
-
-      // Check if already approved
-      const { data: existingApprovals } = await supabase
-        .from('approved_raffles')
-        .select('id')
-        .eq('submission_id', submission.id);
-
-      if (existingApprovals && existingApprovals.length > 0) {
-        // Revert optimistic update
-        setSubmissions(prev => prev.map(s => 
-          s.id === submission.id 
-            ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
-            : s
-        ));
-        
-        toast({
-          title: "Already Approved",
-          description: "This submission has already been approved",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      // Log the approval action with old/new values
+      const oldValues = { status: submission.status };
+      const newValues = { status: 'approved' };
+      
       // Calculate end date (30 days from now)
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
@@ -192,12 +201,14 @@ const AdminDashboard = () => {
         throw updateError;
       }
 
-      // Confirm optimistic update by removing optimistic flags
-      setSubmissions(prev => prev.map(s => 
-        s.id === submission.id 
-          ? { ...s, status: 'approved' as const, isOptimistic: false, optimisticStatus: undefined }
-          : s
-      ));
+      // Log the approval action
+      await AuditLogger.logAction({
+        action: 'SUBMISSION_APPROVED',
+        table_name: 'raffle_submissions',
+        record_id: submission.id,
+        old_values: oldValues,
+        new_values: newValues
+      });
 
       toast({
         title: "Success! 🎉",
@@ -205,17 +216,10 @@ const AdminDashboard = () => {
       });
 
       setSelectedSubmission(null);
+      fetchSubmissions();
       
     } catch (error) {
       console.error('Error approving submission:', error);
-      
-      // Revert optimistic update on error
-      setSubmissions(prev => prev.map(s => 
-        s.id === submission.id 
-          ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
-          : s
-      ));
-      
       toast({
         title: "Error",
         description: "Failed to approve submission. Please try again.",
@@ -235,14 +239,10 @@ const AdminDashboard = () => {
     
     setProcessingIds(prev => new Set(prev).add(submission.id));
     
-    // Optimistic update
-    setSubmissions(prev => prev.map(s => 
-      s.id === submission.id 
-        ? { ...s, status: 'rejected' as const, isOptimistic: true, optimisticStatus: 'rejected' as const }
-        : s
-    ));
-
     try {
+      const oldValues = { status: submission.status };
+      const newValues = { status: 'rejected' };
+
       const { error } = await supabase
         .from('raffle_submissions')
         .update({
@@ -254,12 +254,14 @@ const AdminDashboard = () => {
         throw error;
       }
 
-      // Confirm optimistic update
-      setSubmissions(prev => prev.map(s => 
-        s.id === submission.id 
-          ? { ...s, status: 'rejected' as const, isOptimistic: false, optimisticStatus: undefined }
-          : s
-      ));
+      // Log the rejection action
+      await AuditLogger.logAction({
+        action: 'SUBMISSION_REJECTED',
+        table_name: 'raffle_submissions',
+        record_id: submission.id,
+        old_values: oldValues,
+        new_values: newValues
+      });
 
       toast({
         title: "Success",
@@ -267,17 +269,10 @@ const AdminDashboard = () => {
       });
 
       setSelectedSubmission(null);
+      fetchSubmissions();
       
     } catch (error) {
       console.error('Error rejecting submission:', error);
-      
-      // Revert optimistic update
-      setSubmissions(prev => prev.map(s => 
-        s.id === submission.id 
-          ? { ...s, status: 'pending' as const, isOptimistic: false, optimisticStatus: undefined }
-          : s
-      ));
-      
       toast({
         title: "Error",
         description: "Failed to reject submission",
@@ -292,30 +287,14 @@ const AdminDashboard = () => {
     }
   };
 
-  // Manual refresh function
-  const handleRefresh = () => {
-    // Clear all optimistic updates before refreshing
-    setSubmissions(prev => prev.filter(s => !s.isOptimistic));
-    fetchSubmissions();
-    toast({
-      title: "Refreshed",
-      description: "Submissions list has been refreshed",
-    });
-  };
-
   if (!isAuthenticated) {
-    return <AdminAuth onAuthenticated={() => setIsAuthenticated(true)} />;
+    return <AdminAuth onAuthenticated={handleAuthentication} />;
   }
 
   const filteredSubmissions = submissions.filter(submission => {
     const matchesSearch = submission.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       submission.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       submission.category.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // For optimistic items, show them regardless of filter if they match search
-    if (submission.isOptimistic) {
-      return matchesSearch;
-    }
 
     if (statusFilter === 'all') {
       return matchesSearch;
@@ -325,10 +304,9 @@ const AdminDashboard = () => {
   });
 
   const stats = {
-    pending: submissions.filter(s => s.status === 'pending' && !s.isOptimistic).length,
-    approved: submissions.filter(s => s.status === 'approved' && !s.isOptimistic).length + 
-              submissions.filter(s => s.isOptimistic && s.optimisticStatus === 'approved').length,
-    total: submissions.filter(s => !s.isOptimistic).length
+    pending: submissions.filter(s => s.status === 'pending').length,
+    approved: submissions.filter(s => s.status === 'approved').length,
+    total: submissions.length
   };
 
   return (
@@ -339,167 +317,224 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage raffle submissions and approvals</p>
+              <p className="text-gray-600">Manage raffle submissions and monitor system activity</p>
             </div>
-            <Button onClick={handleRefresh} variant="outline" size="sm">
-              Refresh
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
-              <Clock className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.pending}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Approved Raffles</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
-              <Users className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <Tabs defaultValue="submissions" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="submissions">Submissions</TabsTrigger>
+            <TabsTrigger value="audit-logs">Audit Logs</TabsTrigger>
+          </TabsList>
 
-        {/* Filters and Search */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Submissions</CardTitle>
-            <CardDescription>Review and manage raffle submissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <Input
-                placeholder="Search submissions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-              />
-              <div className="flex gap-2">
-                {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
-                  <Button
-                    key={status}
-                    variant={statusFilter === status ? 'default' : 'outline'}
-                    onClick={() => setStatusFilter(status)}
-                    size="sm"
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </Button>
-                ))}
-              </div>
+          <TabsContent value="submissions">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
+                  <Clock className="h-4 w-4 text-orange-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">{stats.pending}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Approved Raffles</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
+                  <Users className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Submissions List */}
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Loading submissions...</p>
-              </div>
-            ) : filteredSubmissions.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">No submissions found</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredSubmissions.map((submission) => {
-                  const isProcessing = processingIds.has(submission.id);
-                  const isOptimistic = submission.isOptimistic;
-                  const displayStatus = isOptimistic ? submission.optimisticStatus : submission.status;
-                  
-                  return (
-                    <div 
-                      key={submission.id} 
-                      className={`border rounded-lg p-4 bg-white transition-all ${
-                        isOptimistic ? 'ring-2 ring-blue-200 bg-blue-50' : ''
-                      } ${isProcessing ? 'opacity-75' : ''}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-lg">{submission.title}</h3>
-                            <Badge variant={
-                              displayStatus === 'pending' ? 'secondary' :
-                              displayStatus === 'approved' ? 'default' : 'destructive'
-                            }>
-                              {displayStatus}
-                              {isOptimistic && ' (processing...)'}
-                            </Badge>
-                            {isProcessing && (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                            )}
-                          </div>
-                          <p className="text-gray-600 mb-2">{submission.description.substring(0, 100)}...</p>
-                          <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                            <span>Prize: ₱{submission.prize?.toLocaleString()}</span>
-                            <span>Category: {submission.category}</span>
-                            <span>Organization: {submission.organization || 'N/A'}</span>
-                            <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedSubmission(submission)}
-                            disabled={isProcessing}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Review
-                          </Button>
-                          {(submission.status === 'pending' && !isOptimistic) && (
-                            <>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleApproveSubmission(submission)}
-                                disabled={isProcessing}
-                              >
-                                {isProcessing ? (
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                                ) : (
-                                  <Check className="h-4 w-4 mr-1" />
+            {/* Filters and Search */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Submissions</CardTitle>
+                <CardDescription>Review and manage raffle submissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <Input
+                    placeholder="Search submissions..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                  />
+                  <div className="flex gap-2">
+                    {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+                      <Button
+                        key={status}
+                        variant={statusFilter === status ? 'default' : 'outline'}
+                        onClick={() => setStatusFilter(status)}
+                        size="sm"
+                      >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submissions List */}
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading submissions...</p>
+                  </div>
+                ) : filteredSubmissions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">No submissions found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredSubmissions.map((submission) => {
+                      const isProcessing = processingIds.has(submission.id);
+                      
+                      return (
+                        <div 
+                          key={submission.id} 
+                          className={`border rounded-lg p-4 bg-white transition-all ${
+                            isProcessing ? 'opacity-75' : ''
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="font-semibold text-lg">{submission.title}</h3>
+                                <Badge variant={
+                                  submission.status === 'pending' ? 'secondary' :
+                                  submission.status === 'approved' ? 'default' : 'destructive'
+                                }>
+                                  {submission.status}
+                                </Badge>
+                                {isProcessing && (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                                 )}
-                                {isProcessing ? 'Processing...' : 'Approve'}
-                              </Button>
+                              </div>
+                              <p className="text-gray-600 mb-2">{submission.description.substring(0, 100)}...</p>
+                              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                                <span>Prize: ₱{submission.prize?.toLocaleString()}</span>
+                                <span>Category: {submission.category}</span>
+                                <span>Organization: {submission.organization || 'N/A'}</span>
+                                <span>Submitted: {new Date(submission.submitted_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
                               <Button
-                                variant="destructive"
+                                variant="outline"
                                 size="sm"
-                                onClick={() => handleRejectSubmission(submission)}
+                                onClick={() => setSelectedSubmission(submission)}
                                 disabled={isProcessing}
                               >
-                                <X className="h-4 w-4 mr-1" />
-                                Reject
+                                <Eye className="h-4 w-4 mr-1" />
+                                Review
                               </Button>
-                            </>
-                          )}
+                              {submission.status === 'pending' && (
+                                <>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleApproveSubmission(submission)}
+                                    disabled={isProcessing}
+                                  >
+                                    {isProcessing ? (
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                                    ) : (
+                                      <Check className="h-4 w-4 mr-1" />
+                                    )}
+                                    {isProcessing ? 'Processing...' : 'Approve'}
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleRejectSubmission(submission)}
+                                    disabled={isProcessing}
+                                  >
+                                    <X className="h-4 w-4 mr-1" />
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="audit-logs">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Audit Logs</CardTitle>
+                    <CardDescription>System activity and security monitoring</CardDescription>
+                  </div>
+                  <Button onClick={fetchAuditLogs} variant="outline" size="sm" disabled={auditLoading}>
+                    {auditLoading ? 'Loading...' : 'Refresh'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {auditLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading audit logs...</p>
+                  </div>
+                ) : auditLogs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">No audit logs found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {auditLogs.map((log) => (
+                      <div key={log.id} className="border rounded-lg p-4 bg-gray-50">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-sm">{log.action}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(log.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        {log.table_name && (
+                          <p className="text-sm text-gray-600">Table: {log.table_name}</p>
+                        )}
+                        {log.record_id && (
+                          <p className="text-sm text-gray-600">Record ID: {log.record_id}</p>
+                        )}
+                        {log.ip_address && (
+                          <p className="text-xs text-gray-500">IP: {log.ip_address}</p>
+                        )}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Submission Modal */}
