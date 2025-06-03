@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +28,6 @@ interface Submission {
   entries_left: number | null;
   convertible_to_cash: boolean | null;
   image_url: string | null;
-  prize_details: string | null;
 }
 
 const AdminDashboard = () => {
