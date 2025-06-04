@@ -24,10 +24,10 @@ export const useAuditLog = () => {
       });
 
       if (error) {
-        console.error('Failed to log audit event:', error);
+        // Silent error handling - no console logging
       }
     } catch (error) {
-      console.error('Unexpected error logging audit event:', error);
+      // Silent error handling - no console logging
     }
   };
 

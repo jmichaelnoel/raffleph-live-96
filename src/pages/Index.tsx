@@ -1,147 +1,180 @@
-
-import React, { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import React, { useState, useMemo } from 'react';
+import Layout from '@/components/Layout';
+import RaffleCard from '@/components/RaffleCard';
 import FilterSidebar from '@/components/FilterSidebar';
 import SortOptions from '@/components/SortOptions';
-import RaffleCard from '@/components/RaffleCard';
-import MobileFilterDrawer from '@/components/MobileFilterDrawer';
 import MobileFilterButton from '@/components/MobileFilterButton';
-import { useToast } from '@/hooks/use-toast';
+import MobileFilterDrawer from '@/components/MobileFilterDrawer';
+import AnimatedCategoryText from '@/components/AnimatedCategoryText';
 import { useRaffleData } from '@/hooks/useRaffleData';
+import { RaffleCategory } from '@/data/raffles';
 import { SortOption } from '@/utils/raffleUtils';
 
-const Index = () => {
-  const { toast } = useToast();
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const {
-    searchQuery,
-    setSearchQuery,
-    sortOption,
-    setSortOption,
-    selectedCategories,
-    setSelectedCategories,
-    priceRange,
-    setPriceRange,
-    betRange,
-    setBetRange,
-    winRateRange,
-    setWinRateRange,
-    filteredRaffles,
-    maxPrize,
-    maxBet,
-    isLoading
-  } = useRaffleData();
-  
-  const handleSortChange = (option: SortOption) => {
-    setSortOption(option);
-    toast({
-      title: "Sort Applied",
-      description: `Sorting raffles by ${option.replace(/-/g, ' ')}`,
-      duration: 2000
+const Index: React.FC = () => {
+  const { raffles, loading, error } = useRaffleData();
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000000]);
+  const [selectedCategories, setSelectedCategories] = useState<RaffleCategory[]>([]);
+  const [betRange, setBetRange] = useState<[number, number]>([0, 1000]);
+  const [winRateRange, setWinRateRange] = useState<[number, number]>([0, 0.02]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>('featured');
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  const maxPrize = useMemo(() => {
+    if (!raffles || raffles.length === 0) return 2000000;
+    return Math.max(...raffles.map(r => r.prizeValue));
+  }, [raffles]);
+
+  const maxBet = useMemo(() => {
+    if (!raffles || raffles.length === 0) return 1000;
+    return Math.max(...raffles.map(r => r.ticketPrice));
+  }, [raffles]);
+
+  const filteredRaffles = useMemo(() => {
+    if (!raffles) return [];
+
+    return raffles.filter(raffle => {
+      const priceCheck = raffle.prizeValue >= priceRange[0] && raffle.prizeValue <= priceRange[1];
+      const categoryCheck = selectedCategories.length === 0 || selectedCategories.includes(raffle.category);
+      const betCheck = raffle.ticketPrice >= betRange[0] && raffle.ticketPrice <= betRange[1];
+      const winRateCheck = raffle.winRate >= winRateRange[0] && raffle.winRate <= winRateRange[1];
+      const searchCheck = raffle.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return priceCheck && categoryCheck && betCheck && winRateCheck && searchCheck;
     });
-  };
-  
-  const hasActiveFilters = () => {
-    return priceRange[0] > 0 || priceRange[1] < maxPrize || betRange[0] > 0 || betRange[1] < maxBet || winRateRange[0] > 0 || winRateRange[1] < 0.02;
-  };
-  
+  }, [raffles, priceRange, selectedCategories, betRange, winRateRange, searchQuery]);
+
+  const sortedRaffles = useMemo(() => {
+    if (!filteredRaffles) return [];
+
+    switch (sortOption) {
+      case 'priceAsc':
+        return [...filteredRaffles].sort((a, b) => a.prizeValue - b.prizeValue);
+      case 'priceDesc':
+        return [...filteredRaffles].sort((a, b) => b.prizeValue - a.prizeValue);
+      case 'ticketAsc':
+        return [...filteredRaffles].sort((a, b) => a.ticketPrice - b.ticketPrice);
+      case 'ticketDesc':
+        return [...filteredRaffles].sort((a, b) => b.ticketPrice - a.ticketPrice);
+      case 'winRateAsc':
+        return [...filteredRaffles].sort((a, b) => a.winRate - b.winRate);
+      case 'winRateDesc':
+        return [...filteredRaffles].sort((a, b) => b.winRate - a.winRate);
+      default:
+        return filteredRaffles;
+    }
+  }, [filteredRaffles, sortOption]);
+
+  const filteredAndSortedRaffles = sortedRaffles;
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-lg">Loading raffles...</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-lg text-red-600">Error loading raffles: {error}</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onSearchChange={setSearchQuery} />
-      
-      <main className="container mx-auto px-4 py-6 lg:py-12">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Desktop Sidebar Filters */}
-          <aside className="lg:w-1/4 hidden lg:block lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
-            <FilterSidebar 
-              priceRange={priceRange} 
-              setPriceRange={setPriceRange} 
-              maxPrize={maxPrize} 
-              selectedCategories={selectedCategories} 
-              setSelectedCategories={setSelectedCategories} 
-              betRange={betRange} 
-              setBetRange={setBetRange} 
-              maxBet={maxBet} 
-              winRateRange={winRateRange} 
+    <Layout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Welcome to RafflePH
+          </h1>
+          <p className="text-xl text-gray-600 mb-6">
+            Discover exciting raffles and win amazing prizes!
+          </p>
+          <AnimatedCategoryText />
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="hidden lg:block lg:w-80">
+            <FilterSidebar
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              maxPrize={maxPrize}
+              selectedCategories={selectedCategories}
+              setSelectedCategories={setSelectedCategories}
+              betRange={betRange}
+              setBetRange={setBetRange}
+              maxBet={maxBet}
+              winRateRange={winRateRange}
               setWinRateRange={setWinRateRange}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
             />
           </aside>
-          
-          {/* Main Content */}
-          <div className="lg:w-3/4">
-            <div className="sticky top-0 bg-gray-50 z-10 py-2 lg:py-3 mb-4 lg:mb-6">
-              <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
-                {/* Sort Options */}
-                <div className="w-full">
-                  <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
+
+          <main className="flex-1">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <div className="flex items-center gap-4">
+                <h2 className="text-2xl font-semibold">
+                  Available Raffles ({filteredAndSortedRaffles.length})
+                </h2>
+                <div className="lg:hidden">
+                  <MobileFilterButton 
+                    onOpenFilter={() => setMobileFilterOpen(true)}
+                    activeFiltersCount={selectedCategories.length}
+                  />
                 </div>
               </div>
+              
+              <SortOptions 
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+              />
             </div>
-            
-            <div className="mb-4 flex justify-between items-center">
-              <p className="text-gray-500 font-medium text-sm lg:text-base">
-                {isLoading ? (
-                  "Loading raffles..."
-                ) : (
-                  <>
-                    Showing <span className="font-bold text-gray-800">{filteredRaffles.length}</span> results 
-                    {searchQuery && <span> for "<span className="italic">{searchQuery}</span>"</span>}
-                  </>
-                )}
-              </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredAndSortedRaffles.map((raffle) => (
+                <RaffleCard key={raffle.id} raffle={raffle} />
+              ))}
             </div>
-            
-            {isLoading ? (
-              <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">Loading raffles...</h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Getting the latest raffles for you!
-                </p>
-              </div>
-            ) : filteredRaffles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
-                {filteredRaffles.map((raffle, index) => (
-                  <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
-                    <RaffleCard raffle={raffle} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">No raffles found</h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Try adjusting your filters or search query to find more raffles.
-                </p>
+
+            {filteredAndSortedRaffles.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">No raffles match your current filters.</p>
+                <p className="text-gray-400 mt-2">Try adjusting your search criteria.</p>
               </div>
             )}
-          </div>
+          </main>
         </div>
-      </main>
 
-      {/* Mobile Filter Components */}
-      <MobileFilterButton onClick={() => setIsMobileFilterOpen(true)} selectedCategories={selectedCategories} hasActiveFilters={hasActiveFilters()} />
-
-      <MobileFilterDrawer 
-        isOpen={isMobileFilterOpen} 
-        onClose={() => setIsMobileFilterOpen(false)} 
-        priceRange={priceRange} 
-        setPriceRange={setPriceRange} 
-        maxPrize={maxPrize} 
-        selectedCategories={selectedCategories} 
-        setSelectedCategories={setSelectedCategories} 
-        betRange={betRange} 
-        setBetRange={setBetRange} 
-        maxBet={maxBet} 
-        winRateRange={winRateRange} 
-        setWinRateRange={setWinRateRange} 
-      />
-      
-      <Footer />
-    </div>
+        <MobileFilterDrawer
+          isOpen={mobileFilterOpen}
+          onClose={() => setMobileFilterOpen(false)}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          maxPrize={maxPrize}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+          betRange={betRange}
+          setBetRange={setBetRange}
+          maxBet={maxBet}
+          winRateRange={winRateRange}
+          setWinRateRange={setWinRateRange}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+      </div>
+    </Layout>
   );
 };
 

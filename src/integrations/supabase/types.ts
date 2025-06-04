@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_config: {
+        Row: {
+          config_key: string
+          config_value: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      admin_sessions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          session_token: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          session_token: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          session_token?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       approved_raffles: {
         Row: {
           betting_cost: number
@@ -16,7 +67,7 @@ export type Database = {
           convertible_to_cash: boolean | null
           created_at: string | null
           description: string
-          end_date: string
+          draw_date: string | null
           entries_left: number | null
           external_join_url: string
           featured: boolean | null
@@ -37,7 +88,7 @@ export type Database = {
           convertible_to_cash?: boolean | null
           created_at?: string | null
           description: string
-          end_date: string
+          draw_date?: string | null
           entries_left?: number | null
           external_join_url: string
           featured?: boolean | null
@@ -58,7 +109,7 @@ export type Database = {
           convertible_to_cash?: boolean | null
           created_at?: string | null
           description?: string
-          end_date?: string
+          draw_date?: string | null
           entries_left?: number | null
           external_join_url?: string
           featured?: boolean | null
@@ -82,77 +133,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      audit_logs: {
-        Row: {
-          action: string
-          created_at: string | null
-          id: string
-          ip_address: unknown | null
-          new_values: Json | null
-          old_values: Json | null
-          record_id: string | null
-          table_name: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          id?: string
-          ip_address?: unknown | null
-          new_values?: Json | null
-          old_values?: Json | null
-          record_id?: string | null
-          table_name?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          id?: string
-          ip_address?: unknown | null
-          new_values?: Json | null
-          old_values?: Json | null
-          record_id?: string | null
-          table_name?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          email: string
-          full_name: string | null
-          id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          full_name?: string | null
-          id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          full_name?: string | null
-          id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       raffle_submissions: {
         Row: {
@@ -232,53 +212,36 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_assigned_by_fkey"
-            columns: ["assigned_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      create_admin_session: {
+        Args: { password: string; ip_addr?: unknown; user_agent_str?: string }
+        Returns: {
+          success: boolean
+          session_token: string
+          expires_at: string
+        }[]
+      }
       create_admin_user: {
         Args: { admin_user_id: string }
         Returns: boolean
+      }
+      get_audit_logs: {
+        Args: { session_token: string; limit_count?: number }
+        Returns: {
+          id: string
+          action: string
+          table_name: string
+          record_id: string
+          old_values: Json
+          new_values: Json
+          ip_address: unknown
+          user_agent: string
+          created_at: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -292,14 +255,41 @@ export type Database = {
         Returns: boolean
       }
       log_audit_event: {
-        Args: {
-          p_action: string
-          p_table_name?: string
-          p_record_id?: string
-          p_old_values?: Json
-          p_new_values?: Json
-        }
+        Args:
+          | {
+              p_action: string
+              p_table_name?: string
+              p_record_id?: string
+              p_old_values?: Json
+              p_new_values?: Json
+            }
+          | {
+              p_action: string
+              p_table_name?: string
+              p_record_id?: string
+              p_old_values?: Json
+              p_new_values?: Json
+              p_session_token?: string
+              p_ip_address?: unknown
+              p_user_agent?: string
+            }
         Returns: string
+      }
+      toggle_raffle_featured: {
+        Args: { raffle_id: string; featured_status: boolean }
+        Returns: boolean
+      }
+      update_admin_password: {
+        Args: { current_password: string; new_password: string }
+        Returns: boolean
+      }
+      validate_admin_password: {
+        Args: { password_input: string }
+        Returns: boolean
+      }
+      validate_admin_session: {
+        Args: { session_token: string }
+        Returns: boolean
       }
     }
     Enums: {
