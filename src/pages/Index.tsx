@@ -1,250 +1,127 @@
 
-import React, { useState, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import Layout from '@/components/Layout';
-import RaffleCard from '@/components/RaffleCard';
+import React, { useState } from 'react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import FilterSidebar from '@/components/FilterSidebar';
+import SortOptions from '@/components/SortOptions';
+import RaffleCard from '@/components/RaffleCard';
 import MobileFilterDrawer from '@/components/MobileFilterDrawer';
 import MobileFilterButton from '@/components/MobileFilterButton';
-import SortOptions, { SortOption } from '@/components/SortOptions';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useRaffleData } from '@/hooks/useRaffleData';
+import { SortOption } from '@/utils/raffleUtils';
 
-interface Filters {
-  categories: string[];
-  prizeRange: [number, number];
-  ticketPriceRange: [number, number];
-  location: string;
-  searchTerm: string;
-}
-
-const Index: React.FC = () => {
-  const [filters, setFilters] = useState<Filters>({
-    categories: [],
-    prizeRange: [0, 1000000],
-    ticketPriceRange: [0, 10000],
-    location: '',
-    searchTerm: '',
-  });
-
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const { toast } = useToast();
-
-  const { data: raffles, isLoading, error } = useQuery({
-    queryKey: ['raffles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('approved_raffles')
-        .select('*');
-      
-      if (error) {
-        throw error;
-      }
-      
-      return data || [];
-    },
-  });
-
-  const filterRaffles = useCallback((raffleData: any[]) => {
-    return raffleData.filter(raffle => {
-      // Category filter
-      if (filters.categories.length > 0 && !filters.categories.includes(raffle.category)) {
-        return false;
-      }
-
-      // Prize range filter
-      if (raffle.prize < filters.prizeRange[0] || raffle.prize > filters.prizeRange[1]) {
-        return false;
-      }
-
-      // Ticket price range filter
-      if (raffle.betting_cost < filters.ticketPriceRange[0] || raffle.betting_cost > filters.ticketPriceRange[1]) {
-        return false;
-      }
-
-      // Search term filter
-      if (filters.searchTerm && 
-          !raffle.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
-          !raffle.description?.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
-        return false;
-      }
-
-      return true;
+const Index = () => {
+  const {
+    toast
+  } = useToast();
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortOption,
+    setSortOption,
+    selectedCategories,
+    setSelectedCategories,
+    priceRange,
+    setPriceRange,
+    betRange,
+    setBetRange,
+    winRateRange,
+    setWinRateRange,
+    filteredRaffles,
+    maxPrize,
+    maxBet
+  } = useRaffleData();
+  
+  const handleSortChange = (option: SortOption) => {
+    setSortOption(option);
+    toast({
+      title: "Sort Applied",
+      description: `Sorting raffles by ${option.replace(/-/g, ' ')}`,
+      duration: 2000
     });
-  }, [filters]);
-
-  const sortRaffles = useCallback((raffleData: any[], sortOption: SortOption) => {
-    const sorted = [...raffleData];
-    
-    switch (sortOption) {
-      case 'newest':
-        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      case 'ending-soon':
-        return sorted.sort((a, b) => new Date(a.draw_date).getTime() - new Date(b.draw_date).getTime());
-      case 'highest-prize':
-        return sorted.sort((a, b) => b.prize - a.prize);
-      case 'lowest-prize':
-        return sorted.sort((a, b) => a.prize - b.prize);
-      case 'highest-win-rate':
-        return sorted.sort((a, b) => (b.winning_percentage || 0) - (a.winning_percentage || 0));
-      case 'lowest-win-rate':
-        return sorted.sort((a, b) => (a.winning_percentage || 0) - (b.winning_percentage || 0));
-      case 'ticket-low-to-high':
-        return sorted.sort((a, b) => a.betting_cost - b.betting_cost);
-      case 'ticket-high-to-low':
-        return sorted.sort((a, b) => b.betting_cost - a.betting_cost);
-      case 'win-rate-high-to-low':
-        return sorted.sort((a, b) => (b.winning_percentage || 0) - (a.winning_percentage || 0));
-      case 'win-rate-low-to-high':
-        return sorted.sort((a, b) => (a.winning_percentage || 0) - (b.winning_percentage || 0));
-      default:
-        return sorted;
-    }
-  }, []);
-
-  const filteredAndSortedRaffles = raffles ? sortRaffles(filterRaffles(raffles), sortBy) : [];
-
-  const getActiveFilterCount = useCallback(() => {
-    let count = 0;
-    if (filters.categories && filters.categories.length > 0) count++;
-    if (filters.location && filters.location.trim()) count++;
-    if (filters.searchTerm && filters.searchTerm.trim()) count++;
-    if (filters.prizeRange[0] > 0 || filters.prizeRange[1] < 1000000) count++;
-    if (filters.ticketPriceRange[0] > 0 || filters.ticketPriceRange[1] < 10000) count++;
-    return count;
-  }, [filters]);
-
-  // Handle error in useEffect to avoid render loop
-  React.useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load raffles. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
-
-  const handlePriceRangeChange = useCallback((range: [number, number]) => {
-    setFilters(prev => ({ ...prev, prizeRange: range }));
-  }, []);
-
-  const handleTicketPriceRangeChange = useCallback((range: [number, number]) => {
-    setFilters(prev => ({ ...prev, ticketPriceRange: range }));
-  }, []);
-
-  const handleCategoriesChange = useCallback((categories: string[]) => {
-    setFilters(prev => ({ ...prev, categories }));
-  }, []);
-
-  const handleSearchChange = useCallback((query: string) => {
-    setFilters(prev => ({ ...prev, searchTerm: query }));
-  }, []);
-
-  const clearAllFilters = useCallback(() => {
-    setFilters({
-      categories: [],
-      prizeRange: [0, 1000000],
-      ticketPriceRange: [0, 10000],
-      location: '',
-      searchTerm: '',
-    });
-  }, []);
-
-  return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Desktop Sidebar */}
-            <div className="hidden lg:block lg:w-80 shrink-0">
-              <FilterSidebar 
-                priceRange={filters.prizeRange}
-                setPriceRange={handlePriceRangeChange}
-                maxPrize={1000000}
-                selectedCategories={filters.categories as any[]}
-                setSelectedCategories={handleCategoriesChange}
-                betRange={filters.ticketPriceRange}
-                setBetRange={handleTicketPriceRangeChange}
-                maxBet={10000}
-                winRateRange={[0, 0.02]}
-                setWinRateRange={() => {}}
-                searchQuery={filters.searchTerm}
-                setSearchQuery={handleSearchChange}
-              />
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Active Raffles
-                  </h1>
-                  <p className="text-gray-600 mt-2">
-                    {filteredAndSortedRaffles.length} raffle(s) available
-                  </p>
+  };
+  
+  const hasActiveFilters = () => {
+    return priceRange[0] > 0 || priceRange[1] < maxPrize || betRange[0] > 0 || betRange[1] < maxBet || winRateRange[0] > 0 || winRateRange[1] < 0.02;
+  };
+  
+  return <div className="min-h-screen bg-gray-50">
+      <Header onSearchChange={setSearchQuery} />
+      
+      <main className="container mx-auto px-4 py-6 lg:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Desktop Sidebar Filters */}
+          <aside className="lg:w-1/4 hidden lg:block lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
+            <FilterSidebar 
+              priceRange={priceRange} 
+              setPriceRange={setPriceRange} 
+              maxPrize={maxPrize} 
+              selectedCategories={selectedCategories} 
+              setSelectedCategories={setSelectedCategories} 
+              betRange={betRange} 
+              setBetRange={setBetRange} 
+              maxBet={maxBet} 
+              winRateRange={winRateRange} 
+              setWinRateRange={setWinRateRange}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </aside>
+          
+          {/* Main Content */}
+          <div className="lg:w-3/4">
+            <div className="sticky top-0 bg-gray-50 z-10 py-2 lg:py-3 mb-4 lg:mb-6">
+              <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
+                {/* Sort Options */}
+                <div className="w-full">
+                  <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                 </div>
-                
-                <SortOptions 
-                  sortOption={sortBy} 
-                  onSortChange={setSortBy} 
-                />
               </div>
-
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="bg-gray-200 rounded-lg h-96"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : filteredAndSortedRaffles.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredAndSortedRaffles.map((raffle) => (
-                    <RaffleCard key={raffle.id} raffle={raffle} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No raffles match your current filters.</p>
-                  <button
-                    onClick={clearAllFilters}
-                    className="mt-4 text-purple-600 hover:text-purple-700 underline"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
             </div>
+            
+            <div className="mb-4 flex justify-between items-center">
+              <p className="text-gray-500 font-medium text-sm lg:text-base">
+                Showing <span className="font-bold text-gray-800">{filteredRaffles.length}</span> results 
+                {searchQuery && <span> for "<span className="italic">{searchQuery}</span>"</span>}
+              </p>
+            </div>
+            
+            {filteredRaffles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
+                {filteredRaffles.map((raffle, index) => <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
+                    <RaffleCard raffle={raffle} />
+                  </div>)}
+              </div> : <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
+                <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">No raffles found</h3>
+                <p className="text-gray-600 text-sm lg:text-base">
+                  Try adjusting your filters or search query to find more raffles.
+                </p>
+              </div>}
           </div>
         </div>
+      </main>
 
-        {/* Mobile Filter Components */}
-        <MobileFilterDrawer
-          isOpen={isFilterDrawerOpen}
-          onClose={() => setIsFilterDrawerOpen(false)}
-          priceRange={filters.prizeRange}
-          setPriceRange={handlePriceRangeChange}
-          maxPrize={1000000}
-          selectedCategories={filters.categories as any[]}
-          setSelectedCategories={handleCategoriesChange}
-          betRange={filters.ticketPriceRange}
-          setBetRange={handleTicketPriceRangeChange}
-          maxBet={10000}
-          winRateRange={[0, 0.02]}
-          setWinRateRange={() => {}}
-        />
-        
-        <MobileFilterButton
-          onClick={() => setIsFilterDrawerOpen(true)}
-          activeFiltersCount={getActiveFilterCount()}
-        />
-      </div>
-    </Layout>
-  );
+      {/* Mobile Filter Components */}
+      <MobileFilterButton onClick={() => setIsMobileFilterOpen(true)} selectedCategories={selectedCategories} hasActiveFilters={hasActiveFilters()} />
+
+      <MobileFilterDrawer 
+        isOpen={isMobileFilterOpen} 
+        onClose={() => setIsMobileFilterOpen(false)} 
+        priceRange={priceRange} 
+        setPriceRange={setPriceRange} 
+        maxPrize={maxPrize} 
+        selectedCategories={selectedCategories} 
+        setSelectedCategories={setSelectedCategories} 
+        betRange={betRange} 
+        setBetRange={setBetRange} 
+        maxBet={maxBet} 
+        winRateRange={winRateRange} 
+        setWinRateRange={setWinRateRange} 
+      />
+      
+      <Footer />
+    </div>;
 };
 
 export default Index;

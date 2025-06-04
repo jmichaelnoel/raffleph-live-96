@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Slider } from '@/components/ui/slider';
 import { RaffleCategory, raffleCategories } from '@/data/raffles';
@@ -30,15 +29,15 @@ interface MobileFilterDrawerProps {
 const MobileFilterDrawer: React.FC<MobileFilterDrawerProps> = ({
   isOpen,
   onClose,
-  priceRange = [0, 1000000],
+  priceRange,
   setPriceRange,
   maxPrize,
-  selectedCategories = [],
+  selectedCategories,
   setSelectedCategories,
-  betRange = [0, 10000],
+  betRange,
   setBetRange,
   maxBet,
-  winRateRange = [0, 0.02],
+  winRateRange,
   setWinRateRange
 }) => {
   const handleCategoryChange = (category: RaffleCategory) => {

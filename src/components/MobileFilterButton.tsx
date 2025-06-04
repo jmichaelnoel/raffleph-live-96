@@ -3,16 +3,28 @@ import React from 'react';
 import { Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RaffleCategory } from '@/data/raffles';
 
 interface MobileFilterButtonProps {
   onClick: () => void;
-  activeFiltersCount: number;
+  selectedCategories: RaffleCategory[];
+  hasActiveFilters: boolean;
 }
 
 const MobileFilterButton: React.FC<MobileFilterButtonProps> = ({
   onClick,
-  activeFiltersCount
+  selectedCategories,
+  hasActiveFilters
 }) => {
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (selectedCategories.length > 0) count += selectedCategories.length;
+    if (hasActiveFilters) count += 1;
+    return count;
+  };
+
+  const activeCount = getActiveFilterCount();
+
   return (
     <Button
       onClick={onClick}
@@ -21,9 +33,9 @@ const MobileFilterButton: React.FC<MobileFilterButtonProps> = ({
     >
       <div className="relative">
         <Filter className="h-6 w-6 text-white" />
-        {activeFiltersCount > 0 && (
+        {activeCount > 0 && (
           <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-red-500 hover:bg-red-500 text-white rounded-full flex items-center justify-center">
-            {activeFiltersCount}
+            {activeCount}
           </Badge>
         )}
       </div>
