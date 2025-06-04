@@ -36,8 +36,7 @@ const Index: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('approved_raffles')
-        .select('*')
-        .eq('status', 'active');
+        .select('*');
       
       if (error) {
         throw error;
@@ -65,14 +64,14 @@ const Index: React.FC = () => {
       }
 
       // Location filter
-      if (filters.location && !raffle.location.toLowerCase().includes(filters.location.toLowerCase())) {
+      if (filters.location && !raffle.location?.toLowerCase().includes(filters.location.toLowerCase())) {
         return false;
       }
 
       // Search term filter
       if (filters.searchTerm && 
-          !raffle.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
-          !raffle.description.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
+          !raffle.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
+          !raffle.description?.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
         return false;
       }
 
@@ -93,17 +92,17 @@ const Index: React.FC = () => {
       case 'lowest-prize':
         return sorted.sort((a, b) => a.prize - b.prize);
       case 'highest-win-rate':
-        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
+        return sorted.sort((a, b) => (b.winning_percentage || 0) - (a.winning_percentage || 0));
       case 'lowest-win-rate':
-        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
+        return sorted.sort((a, b) => (a.winning_percentage || 0) - (b.winning_percentage || 0));
       case 'ticket-low-to-high':
         return sorted.sort((a, b) => a.betting_cost - b.betting_cost);
       case 'ticket-high-to-low':
         return sorted.sort((a, b) => b.betting_cost - a.betting_cost);
       case 'win-rate-high-to-low':
-        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
+        return sorted.sort((a, b) => (b.winning_percentage || 0) - (a.winning_percentage || 0));
       case 'win-rate-low-to-high':
-        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
+        return sorted.sort((a, b) => (a.winning_percentage || 0) - (b.winning_percentage || 0));
       default:
         return sorted;
     }
@@ -132,6 +131,22 @@ const Index: React.FC = () => {
     }
   }, [error, toast]);
 
+  const handlePriceRangeChange = (range: [number, number]) => {
+    setFilters(prev => ({ ...prev, priceRange: range }));
+  };
+
+  const handleTicketPriceRangeChange = (range: [number, number]) => {
+    setFilters(prev => ({ ...prev, ticketPriceRange: range }));
+  };
+
+  const handleCategoriesChange = (categories: string[]) => {
+    setFilters(prev => ({ ...prev, categories }));
+  };
+
+  const handleSearchChange = (query: string) => {
+    setFilters(prev => ({ ...prev, searchTerm: query }));
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
@@ -140,18 +155,18 @@ const Index: React.FC = () => {
             {/* Desktop Sidebar */}
             <div className="hidden lg:block lg:w-80 shrink-0">
               <FilterSidebar 
-                priceRange={filters.prizeRange}
-                setPriceRange={(range) => setFilters(prev => ({ ...prev, priceRange: range }))}
+                priceRange={filters.priceRange}
+                setPriceRange={handlePriceRangeChange}
                 maxPrize={1000000}
                 selectedCategories={filters.categories as any[]}
-                setSelectedCategories={(categories) => setFilters(prev => ({ ...prev, categories: categories as string[] }))}
+                setSelectedCategories={handleCategoriesChange}
                 betRange={filters.ticketPriceRange}
-                setBetRange={(range) => setFilters(prev => ({ ...prev, ticketPriceRange: range }))}
+                setBetRange={handleTicketPriceRangeChange}
                 maxBet={10000}
                 winRateRange={[0, 0.02]}
                 setWinRateRange={() => {}}
                 searchQuery={filters.searchTerm}
-                setSearchQuery={(query) => setFilters(prev => ({ ...prev, searchTerm: query }))}
+                setSearchQuery={handleSearchChange}
               />
             </div>
 
@@ -193,7 +208,7 @@ const Index: React.FC = () => {
                   <button
                     onClick={() => setFilters({
                       categories: [],
-                      prizeRange: [0, 1000000],
+                      priceRange: [0, 1000000],
                       ticketPriceRange: [0, 10000],
                       location: '',
                       searchTerm: '',
@@ -213,12 +228,12 @@ const Index: React.FC = () => {
           isOpen={isFilterDrawerOpen}
           onClose={() => setIsFilterDrawerOpen(false)}
           priceRange={filters.priceRange}
-          setPriceRange={(range) => setFilters(prev => ({ ...prev, prizeRange: range }))}
+          setPriceRange={handlePriceRangeChange}
           maxPrize={1000000}
           selectedCategories={filters.categories as any[]}
-          setSelectedCategories={(categories) => setFilters(prev => ({ ...prev, categories: categories as string[] }))}
+          setSelectedCategories={handleCategoriesChange}
           betRange={filters.ticketPriceRange}
-          setBetRange={(range) => setFilters(prev => ({ ...prev, ticketPriceRange: range }))}
+          setBetRange={handleTicketPriceRangeChange}
           maxBet={10000}
           winRateRange={[0, 0.02]}
           setWinRateRange={() => {}}
