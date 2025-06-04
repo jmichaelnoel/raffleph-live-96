@@ -12,14 +12,16 @@ import {
 import { Sparkles, Trophy, Target, DollarSign, Clock } from 'lucide-react';
 
 export type SortOption = 
-  | 'prize-high-to-low'
-  | 'prize-low-to-high'
-  | 'win-high-to-low'
-  | 'win-low-to-high'
-  | 'bet-high-to-low'
-  | 'bet-low-to-high'
-  | 'end-date-asc'
-  | 'end-date-desc';
+  | 'newest'
+  | 'ending-soon' 
+  | 'highest-prize'
+  | 'lowest-prize'
+  | 'highest-win-rate'
+  | 'lowest-win-rate'
+  | 'ticket-low-to-high'
+  | 'ticket-high-to-low'
+  | 'win-rate-high-to-low'
+  | 'win-rate-low-to-high';
 
 interface SortOptionsProps {
   sortOption: SortOption;
@@ -29,13 +31,13 @@ interface SortOptionsProps {
 const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
   const getSortIcon = (option: SortOption) => {
     switch (option) {
-      case 'prize-high-to-low':
+      case 'highest-prize':
         return <Trophy className="h-2 w-2 lg:h-2.5 lg:w-2.5" />;
-      case 'win-high-to-low':
+      case 'highest-win-rate':
         return <Target className="h-2 w-2 lg:h-2.5 lg:w-2.5" />;
-      case 'bet-low-to-high':
+      case 'ticket-low-to-high':
         return <DollarSign className="h-2 w-2 lg:h-2.5 lg:w-2.5" />;
-      case 'end-date-asc':
+      case 'ending-soon':
         return <Clock className="h-2 w-2 lg:h-2.5 lg:w-2.5" />;
       default:
         return <Sparkles className="h-2 w-2 lg:h-2.5 lg:w-2.5" />;
@@ -44,13 +46,13 @@ const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) =
 
   const getSortEmoji = (option: SortOption) => {
     switch (option) {
-      case 'prize-high-to-low':
+      case 'highest-prize':
         return '🏆';
-      case 'win-high-to-low':
+      case 'highest-win-rate':
         return '🎯';
-      case 'bet-low-to-high':
+      case 'ticket-low-to-high':
         return '💰';
-      case 'end-date-asc':
+      case 'ending-soon':
         return '⏰';
       default:
         return '✨';
@@ -58,10 +60,10 @@ const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) =
   };
 
   const sortButtons = [
-    { option: 'prize-high-to-low' as SortOption, label: 'Highest Prize', gradient: 'from-yellow-400 to-orange-500', bgColor: 'bg-yellow-50', textColor: 'text-yellow-800', hoverColor: 'hover:bg-yellow-100' },
-    { option: 'win-high-to-low' as SortOption, label: 'Best Odds', gradient: 'from-blue-400 to-indigo-500', bgColor: 'bg-blue-50', textColor: 'text-blue-800', hoverColor: 'hover:bg-blue-100' },
-    { option: 'bet-low-to-high' as SortOption, label: 'Lowest Cost', gradient: 'from-green-400 to-emerald-500', bgColor: 'bg-green-50', textColor: 'text-green-800', hoverColor: 'hover:bg-green-100' },
-    { option: 'end-date-asc' as SortOption, label: 'Ending Soon', gradient: 'from-red-400 to-pink-500', bgColor: 'bg-red-50', textColor: 'text-red-800', hoverColor: 'hover:bg-red-100' }
+    { option: 'highest-prize' as SortOption, label: 'Highest Prize', gradient: 'from-yellow-400 to-orange-500', bgColor: 'bg-yellow-50', textColor: 'text-yellow-800', hoverColor: 'hover:bg-yellow-100' },
+    { option: 'highest-win-rate' as SortOption, label: 'Best Odds', gradient: 'from-blue-400 to-indigo-500', bgColor: 'bg-blue-50', textColor: 'text-blue-800', hoverColor: 'hover:bg-blue-100' },
+    { option: 'ticket-low-to-high' as SortOption, label: 'Lowest Cost', gradient: 'from-green-400 to-emerald-500', bgColor: 'bg-green-50', textColor: 'text-green-800', hoverColor: 'hover:bg-green-100' },
+    { option: 'ending-soon' as SortOption, label: 'Ending Soon', gradient: 'from-red-400 to-pink-500', bgColor: 'bg-red-50', textColor: 'text-red-800', hoverColor: 'hover:bg-red-100' }
   ];
 
   return (
@@ -136,23 +138,23 @@ const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) =
           <SelectContent className="rounded-xl border-2 border-purple-100 shadow-xl">
             <SelectGroup>
               <SelectLabel className="text-purple-600 font-semibold">🏆 Prize</SelectLabel>
-              <SelectItem value="prize-high-to-low">Highest Prize First</SelectItem>
-              <SelectItem value="prize-low-to-high">Lowest Prize First</SelectItem>
+              <SelectItem value="highest-prize">Highest Prize First</SelectItem>
+              <SelectItem value="lowest-prize">Lowest Prize First</SelectItem>
             </SelectGroup>
             <SelectGroup>
               <SelectLabel className="text-blue-600 font-semibold">🎯 Winning Chance</SelectLabel>
-              <SelectItem value="win-high-to-low">Best Odds First</SelectItem>
-              <SelectItem value="win-low-to-high">Lowest Odds First</SelectItem>
+              <SelectItem value="highest-win-rate">Best Odds First</SelectItem>
+              <SelectItem value="lowest-win-rate">Lowest Odds First</SelectItem>
             </SelectGroup>
             <SelectGroup>
               <SelectLabel className="text-green-600 font-semibold">💰 Betting Cost</SelectLabel>
-              <SelectItem value="bet-high-to-low">Highest Cost First</SelectItem>
-              <SelectItem value="bet-low-to-high">Lowest Cost First</SelectItem>
+              <SelectItem value="ticket-high-to-low">Highest Cost First</SelectItem>
+              <SelectItem value="ticket-low-to-high">Lowest Cost First</SelectItem>
             </SelectGroup>
             <SelectGroup>
               <SelectLabel className="text-red-600 font-semibold">⏰ End Date</SelectLabel>
-              <SelectItem value="end-date-asc">Ending Soon</SelectItem>
-              <SelectItem value="end-date-desc">Ending Later</SelectItem>
+              <SelectItem value="ending-soon">Ending Soon</SelectItem>
+              <SelectItem value="newest">Newest First</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>

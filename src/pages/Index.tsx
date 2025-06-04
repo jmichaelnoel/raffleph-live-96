@@ -6,11 +6,9 @@ import RaffleCard from '@/components/RaffleCard';
 import FilterSidebar from '@/components/FilterSidebar';
 import MobileFilterDrawer from '@/components/MobileFilterDrawer';
 import MobileFilterButton from '@/components/MobileFilterButton';
-import SortOptions from '@/components/SortOptions';
+import SortOptions, { SortOption } from '@/components/SortOptions';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-type SortOption = 'newest' | 'ending-soon' | 'highest-prize' | 'lowest-prize' | 'highest-win-rate' | 'lowest-win-rate' | 'ticket-low-to-high' | 'ticket-high-to-low' | 'win-rate-high-to-low' | 'win-rate-low-to-high';
 
 interface Filters {
   categories: string[];
@@ -33,7 +31,7 @@ const Index: React.FC = () => {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data, isLoading, error } = useQuery({
+  const { data: raffles, isLoading, error } = useQuery({
     queryKey: ['raffles'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -45,12 +43,12 @@ const Index: React.FC = () => {
         throw error;
       }
       
-      return data;
+      return data || [];
     },
   });
 
-  const filterRaffles = (raffles: any[]) => {
-    return raffles.filter(raffle => {
+  const filterRaffles = (raffleData: any[]) => {
+    return raffleData.filter(raffle => {
       // Category filter
       if (filters.categories.length > 0 && !filters.categories.includes(raffle.category)) {
         return false;
@@ -82,8 +80,8 @@ const Index: React.FC = () => {
     });
   };
 
-  const sortRaffles = (raffles: any[], sortOption: SortOption) => {
-    const sorted = [...raffles];
+  const sortRaffles = (raffleData: any[], sortOption: SortOption) => {
+    const sorted = [...raffleData];
     
     switch (sortOption) {
       case 'newest':
@@ -111,7 +109,7 @@ const Index: React.FC = () => {
     }
   };
 
-  const filteredAndSortedRaffles = data ? sortRaffles(filterRaffles(data), sortBy) : [];
+  const filteredAndSortedRaffles = raffles ? sortRaffles(filterRaffles(raffles), sortBy) : [];
 
   const getActiveFilterCount = () => {
     let count = 0;
@@ -123,13 +121,16 @@ const Index: React.FC = () => {
     return count;
   };
 
-  if (error) {
-    toast({
-      title: "Error",
-      description: "Failed to load raffles. Please try again.",
-      variant: "destructive",
-    });
-  }
+  // Handle error in useEffect to avoid render loop
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load raffles. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   return (
     <Layout>
@@ -140,7 +141,7 @@ const Index: React.FC = () => {
             <div className="hidden lg:block lg:w-80 shrink-0">
               <FilterSidebar 
                 priceRange={filters.prizeRange}
-                setPriceRange={(range) => setFilters(prev => ({ ...prev, prizeRange: range }))}
+                setPriceRange={(range) => setFilters(prev => ({ ...prev, priceRange: range }))}
                 maxPrize={1000000}
                 selectedCategories={filters.categories as any[]}
                 setSelectedCategories={(categories) => setFilters(prev => ({ ...prev, categories: categories as string[] }))}
@@ -149,6 +150,8 @@ const Index: React.FC = () => {
                 maxBet={10000}
                 winRateRange={[0, 0.02]}
                 setWinRateRange={() => {}}
+                searchQuery={filters.searchTerm}
+                setSearchQuery={(query) => setFilters(prev => ({ ...prev, searchTerm: query }))}
               />
             </div>
 
@@ -166,7 +169,7 @@ const Index: React.FC = () => {
                 
                 <SortOptions 
                   sortOption={sortBy} 
-                  onSortChange={(option) => setSortBy(option)} 
+                  onSortChange={setSortBy} 
                 />
               </div>
 
@@ -209,7 +212,7 @@ const Index: React.FC = () => {
         <MobileFilterDrawer
           isOpen={isFilterDrawerOpen}
           onClose={() => setIsFilterDrawerOpen(false)}
-          priceRange={filters.prizeRange}
+          priceRange={filters.priceRange}
           setPriceRange={(range) => setFilters(prev => ({ ...prev, prizeRange: range }))}
           maxPrize={1000000}
           selectedCategories={filters.categories as any[]}
