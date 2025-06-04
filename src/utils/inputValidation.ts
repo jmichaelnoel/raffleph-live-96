@@ -69,3 +69,68 @@ export const validateBettingCost = (cost: number): boolean => {
 export const validateEntriesLeft = (entries: number): boolean => {
   return typeof entries === 'number' && entries >= 0 && entries <= 1000000; // Max 1M entries
 };
+
+export const validateExternalUrl = (url: string): boolean => {
+  return validateUrl(url);
+};
+
+export const validateFacebookUrl = (url: string): boolean => {
+  return validateUrl(url) && url.toLowerCase().includes('facebook.com');
+};
+
+export const validateRaffleForm = (formData: any): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+
+  if (!formData.title || formData.title.trim().length === 0) {
+    errors.push('Title is required');
+  }
+
+  if (!formData.description || formData.description.trim().length === 0) {
+    errors.push('Description is required');
+  }
+
+  if (!formData.imageUrl || formData.imageUrl.trim().length === 0) {
+    errors.push('Image is required');
+  }
+
+  if (!formData.category || formData.category.trim().length === 0) {
+    errors.push('Category is required');
+  }
+
+  if (!validatePrize(formData.prize)) {
+    errors.push('Invalid prize value');
+  }
+
+  if (!validateBettingCost(formData.bettingCost)) {
+    errors.push('Invalid ticket price');
+  }
+
+  if (!formData.drawDate || formData.drawDate.trim().length === 0) {
+    errors.push('Draw date is required');
+  }
+
+  if (!formData.organization || formData.organization.trim().length === 0) {
+    errors.push('Organization is required');
+  }
+
+  if (!formData.location || formData.location.trim().length === 0) {
+    errors.push('Location is required');
+  }
+
+  if (!validateEntriesLeft(formData.entriesLeft)) {
+    errors.push('Invalid entries count');
+  }
+
+  if (!validateExternalUrl(formData.externalJoinUrl)) {
+    errors.push('Invalid registration URL');
+  }
+
+  if (!validateFacebookUrl(formData.organizerFacebookUrl)) {
+    errors.push('Invalid Facebook URL');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};

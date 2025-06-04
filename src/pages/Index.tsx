@@ -1,173 +1,207 @@
-
-import React, { useState } from 'react';
-import { useRaffleData } from '@/hooks/useRaffleData';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import Layout from '@/components/Layout';
 import RaffleCard from '@/components/RaffleCard';
 import FilterSidebar from '@/components/FilterSidebar';
-import SortOptions from '@/components/SortOptions';
-import MobileFilterButton from '@/components/MobileFilterButton';
 import MobileFilterDrawer from '@/components/MobileFilterDrawer';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import Layout from '@/components/Layout';
+import MobileFilterButton from '@/components/MobileFilterButton';
+import SortOptions from '@/components/SortOptions';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+type SortOption = 'newest' | 'ending-soon' | 'highest-prize' | 'lowest-prize' | 'highest-win-rate' | 'lowest-win-rate' | 'ticket-low-to-high' | 'ticket-high-to-low' | 'win-rate-high-to-low' | 'win-rate-low-to-high';
+
+interface Filters {
+  categories: string[];
+  prizeRange: [number, number];
+  ticketPriceRange: [number, number];
+  location: string;
+  searchTerm: string;
+}
 
 const Index: React.FC = () => {
-  const {
-    searchQuery,
-    setSearchQuery,
-    sortOption,
-    setSortOption,
-    selectedCategories,
-    setSelectedCategories,
-    priceRange,
-    setPriceRange,
-    betRange,
-    setBetRange,
-    winRateRange,
-    setWinRateRange,
-    filteredRaffles,
-    maxPrize,
-    maxBet,
-    isLoading,
-  } = useRaffleData();
+  const [filters, setFilters] = useState<Filters>({
+    categories: [],
+    prizeRange: [0, 1000000],
+    ticketPriceRange: [0, 10000],
+    location: '',
+    searchTerm: '',
+  });
 
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const { toast } = useToast();
 
-  const handleOpenFilter = () => {
-    setIsFilterDrawerOpen(true);
-  };
-
-  const handleCloseFilter = () => {
-    setIsFilterDrawerOpen(false);
-  };
-
-  const activeFiltersCount = selectedCategories.length + 
-    (priceRange[0] > 0 || priceRange[1] < maxPrize ? 1 : 0) +
-    (betRange[0] > 0 || betRange[1] < maxBet ? 1 : 0) +
-    (winRateRange[0] > 0 || winRateRange[1] < 0.02 ? 1 : 0);
-
-  const getSortLabel = () => {
+  const sortRaffles = (raffles: any[], sortOption: SortOption) => {
+    const sorted = [...raffles];
+    
     switch (sortOption) {
-      case 'prize-high-to-low':
-        return 'Price: High to Low';
-      case 'prize-low-to-high':
-        return 'Price: Low to High';
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      case 'ending-soon':
+        return sorted.sort((a, b) => new Date(a.end_date).getTime() - new Date(b.end_date).getTime());
+      case 'highest-prize':
+        return sorted.sort((a, b) => b.prize - a.prize);
+      case 'lowest-prize':
+        return sorted.sort((a, b) => a.prize - b.prize);
+      case 'highest-win-rate':
+        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
+      case 'lowest-win-rate':
+        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
       case 'ticket-low-to-high':
-        return 'Ticket: Low to High';
+        return sorted.sort((a, b) => a.betting_cost - b.betting_cost);
       case 'ticket-high-to-low':
-        return 'Ticket: High to Low';
+        return sorted.sort((a, b) => b.betting_cost - a.betting_cost);
       case 'win-rate-high-to-low':
-        return 'Win Rate: High to Low';
+        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
       case 'win-rate-low-to-high':
-        return 'Win Rate: Low to High';
+        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
       default:
-        return 'Featured';
+        return sorted;
     }
   };
+
+  const filteredAndSortedRaffles = data ? sortRaffles(filterRaffles(data), sortBy) : [];
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.categories && filters.categories.length > 0) count++;
+    if (filters.location && filters.location.trim()) count++;
+    if (filters.searchTerm && filters.searchTerm.trim()) count++;
+    if (filters.prizeRange[0] > 0 || filters.prizeRange[1] < 1000000) count++;
+    if (filters.ticketPriceRange[0] > 0 || filters.ticketPriceRange[1] < 10000) count++;
+    return count;
+  };
+
+  const filterRaffles = (raffles: any[]) => {
+    return raffles.filter(raffle => {
+      // Category filter
+      if (filters.categories.length > 0 && !filters.categories.includes(raffle.category)) {
+        return false;
+      }
+
+      // Prize range filter
+      if (raffle.prize < filters.prizeRange[0] || raffle.prize > filters.prizeRange[1]) {
+        return false;
+      }
+
+      // Ticket price range filter
+      if (raffle.betting_cost < filters.ticketPriceRange[0] || raffle.betting_cost > filters.ticketPriceRange[1]) {
+        return false;
+      }
+
+      // Location filter
+      if (filters.location && !raffle.location.toLowerCase().includes(filters.location.toLowerCase())) {
+        return false;
+      }
+
+      // Search term filter
+      if (filters.searchTerm && 
+          !raffle.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
+          !raffle.description.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['raffles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('raffles')
+        .select('*')
+        .eq('status', 'active');
+      
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+  });
+
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load raffles. Please try again.",
+      variant: "destructive",
+    });
+  }
 
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
         <div className="container mx-auto px-4 py-8">
-          {/* Search Bar */}
-          <div className="mb-8">
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                placeholder="Search raffles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-3 text-lg border-2 border-purple-200 focus:border-purple-400 rounded-xl shadow-lg"
-              />
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block lg:w-80 shrink-0">
+              <FilterSidebar filters={filters} onFiltersChange={setFilters} />
             </div>
-          </div>
-
-          <div className="flex gap-8">
-            {/* Desktop Filter Sidebar */}
-            <aside className="hidden lg:block w-80 sticky top-4 h-fit">
-              <FilterSidebar
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                selectedCategories={selectedCategories}
-                setSelectedCategories={setSelectedCategories}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-                maxPrize={maxPrize}
-                betRange={betRange}
-                setBetRange={setBetRange}
-                maxBet={maxBet}
-                winRateRange={winRateRange}
-                setWinRateRange={setWinRateRange}
-              />
-            </aside>
 
             {/* Main Content */}
-            <main className="flex-1">
-              {/* Mobile Filter Button and Sort Options */}
-              <div className="flex justify-between items-center mb-6">
-                <div className="lg:hidden">
-                  <MobileFilterButton
-                    onClick={handleOpenFilter}
-                    activeFiltersCount={activeFiltersCount}
-                  />
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Active Raffles
+                  </h1>
+                  <p className="text-gray-600 mt-2">
+                    {filteredAndSortedRaffles.length} raffle(s) available
+                  </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-gray-600 text-sm">Sort by:</span>
-                  <SortOptions
-                    sortOption={sortOption}
-                    onSortChange={setSortOption}
-                  />
-                </div>
+                
+                <SortOptions sortBy={sortBy} onSortChange={setSortBy} />
               </div>
 
-              {/* Results Count */}
-              <div className="mb-6">
-                <p className="text-gray-600">
-                  {isLoading ? 'Loading...' : `${filteredRaffles.length} raffle${filteredRaffles.length !== 1 ? 's' : ''} found`}
-                </p>
-              </div>
-
-              {/* Raffle Grid */}
               {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, index) => (
-                    <div key={index} className="animate-pulse">
-                      <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
-                      <div className="bg-gray-200 h-4 rounded mb-2"></div>
-                      <div className="bg-gray-200 h-4 rounded w-3/4"></div>
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gray-200 rounded-lg h-96"></div>
                     </div>
                   ))}
                 </div>
-              ) : filteredRaffles.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No raffles found matching your criteria.</p>
-                  <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search terms.</p>
-                </div>
-              ) : (
+              ) : filteredAndSortedRaffles.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredRaffles.map((raffle) => (
+                  {filteredAndSortedRaffles.map((raffle) => (
                     <RaffleCard key={raffle.id} raffle={raffle} />
                   ))}
                 </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-lg">No raffles match your current filters.</p>
+                  <button
+                    onClick={() => setFilters({
+                      categories: [],
+                      prizeRange: [0, 1000000],
+                      ticketPriceRange: [0, 10000],
+                      location: '',
+                      searchTerm: '',
+                    })}
+                    className="mt-4 text-purple-600 hover:text-purple-700 underline"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
               )}
-            </main>
+            </div>
           </div>
-
-          {/* Mobile Filter Drawer */}
-          <MobileFilterDrawer
-            isOpen={isFilterDrawerOpen}
-            onClose={handleCloseFilter}
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            maxPrize={maxPrize}
-            selectedCategories={selectedCategories}
-            setSelectedCategories={setSelectedCategories}
-            betRange={betRange}
-            setBetRange={setBetRange}
-            maxBet={maxBet}
-            winRateRange={winRateRange}
-            setWinRateRange={setWinRateRange}
-          />
         </div>
+
+        {/* Mobile Filter Components */}
+        <MobileFilterDrawer
+          isOpen={isFilterDrawerOpen}
+          onClose={() => setIsFilterDrawerOpen(false)}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
+        
+        <MobileFilterButton
+          onClick={() => setIsFilterDrawerOpen(true)}
+          activeFiltersCount={getActiveFilterCount()}
+        />
       </div>
     </Layout>
   );

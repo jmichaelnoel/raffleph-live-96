@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -226,7 +225,6 @@ const SubmitRafflePage: React.FC = () => {
                     <Label>Raffle Image *</Label>
                     <ImageUpload
                       onImageUpload={handleImageUpload}
-                      maxImages={1}
                       currentImages={formData.imageUrl ? [formData.imageUrl] : []}
                     />
                     {formData.imageUrl && (
