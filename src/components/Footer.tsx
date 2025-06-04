@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Trophy, Target, Zap, Home, Star, Plus, HelpCircle, MessageCircle } from 'lucide-react';
+import { Sparkles, Trophy, Target, Zap, Coins, Plus } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -25,6 +25,9 @@ const Footer = () => {
         </div>
         <div className="absolute top-1/3 right-1/3 animate-float-slow delay-800">
           <Zap className="h-6 w-6 text-orange-300 opacity-60" />
+        </div>
+        <div className="absolute top-3/4 left-1/2 animate-bounce-slow delay-1000">
+          <Coins className="h-5 w-5 text-green-400 opacity-50" />
         </div>
       </div>
       
@@ -73,15 +76,15 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
           <div className="text-center">
             <Link to="/" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-pink-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
-              <Home className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+              <span className="text-3xl group-hover:scale-110 transition-transform duration-300">🏠</span>
               Home
             </Link>
           </div>
           <div className="text-center">
-            <Link to="/?featured=true" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-yellow-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
-              <Star className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+            <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-yellow-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+              <span className="text-3xl group-hover:scale-110 transition-transform duration-300">⭐</span>
               Featured
-            </Link>
+            </a>
           </div>
           <div className="text-center">
             <Link to="/submit-raffle" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
@@ -90,14 +93,14 @@ const Footer = () => {
             </Link>
           </div>
           <div className="text-center">
-            <Link to="/how-it-works" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-blue-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
-              <HelpCircle className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+            <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-blue-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+              <span className="text-3xl group-hover:scale-110 transition-transform duration-300">❓</span>
               How It Works
-            </Link>
+            </a>
           </div>
           <div className="text-center">
-            <a href="#faq" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-purple-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
-              <MessageCircle className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+            <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-purple-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+              <span className="text-3xl group-hover:scale-110 transition-transform duration-300">💬</span>
               FAQ
             </a>
           </div>
@@ -112,7 +115,7 @@ const Footer = () => {
               </div>
               <span className="text-pink-300 font-semibold text-lg">Made with ❤️ in Cebu, Philippines</span>
               <div className="animate-bounce">
-                <Trophy className="h-5 w-5 text-yellow-400" />
+                <Coins className="h-5 w-5 text-yellow-400" />
               </div>
             </div>
           </div>
