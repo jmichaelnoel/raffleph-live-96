@@ -85,6 +85,8 @@ const Index: React.FC = () => {
             {/* Desktop Filter Sidebar */}
             <aside className="hidden lg:block w-80 sticky top-4 h-fit">
               <FilterSidebar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
                 selectedCategories={selectedCategories}
                 setSelectedCategories={setSelectedCategories}
                 priceRange={priceRange}

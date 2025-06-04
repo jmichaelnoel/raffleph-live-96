@@ -1,5 +1,5 @@
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     try {
       // For now, we'll use a simple check against user email or metadata
-      // Since user_roles table doesn't exist in current schema
       const isAdminUser = user.email === 'admin@raffle.com' || 
                          user.user_metadata?.role === 'admin' ||
                          user.app_metadata?.role === 'admin';
