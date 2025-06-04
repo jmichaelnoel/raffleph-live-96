@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -72,7 +72,7 @@ const MobileNavigation: React.FC = () => {
               background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
             }}
           >
-            🎯 Browse Raffles
+            Browse Raffles
           </Button>
           <Button 
             onClick={() => handleNavigation('/submit-raffle')}
@@ -81,7 +81,7 @@ const MobileNavigation: React.FC = () => {
               background: 'linear-gradient(220.55deg, #FF3F3F 0%, #063CFF 100%)'
             }}
           >
-            🎁 Submit Raffle
+            Submit Raffle
           </Button>
         </nav>
       </SheetContent>
