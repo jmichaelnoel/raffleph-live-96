@@ -10,6 +10,8 @@ import MobileFilterButton from '@/components/MobileFilterButton';
 import { useToast } from '@/hooks/use-toast';
 import { useRaffleData } from '@/hooks/useRaffleData';
 import { SortOption } from '@/utils/raffleUtils';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 const Index = () => {
   const {
@@ -53,21 +55,36 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Desktop Sidebar Filters */}
-          <aside className="lg:w-1/4 hidden lg:block lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
-            <FilterSidebar 
-              priceRange={priceRange} 
-              setPriceRange={setPriceRange} 
-              maxPrize={maxPrize} 
-              selectedCategories={selectedCategories} 
-              setSelectedCategories={setSelectedCategories} 
-              betRange={betRange} 
-              setBetRange={setBetRange} 
-              maxBet={maxBet} 
-              winRateRange={winRateRange} 
-              setWinRateRange={setWinRateRange}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-            />
+          <aside className="lg:w-1/4 hidden lg:block">
+            {/* Sticky Search Bar */}
+            <div className="sticky top-4 mb-6 z-20">
+              <div className="relative group">
+                <Input 
+                  type="text" 
+                  placeholder="🔍 Search raffles..." 
+                  className="pl-10 pr-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 w-full text-base shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02] bg-white" 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)} 
+                />
+                <Search className="absolute left-3 top-3 h-5 w-5 text-purple-400 animate-pulse" />
+              </div>
+            </div>
+            
+            {/* Filter Sidebar */}
+            <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto">
+              <FilterSidebar 
+                priceRange={priceRange} 
+                setPriceRange={setPriceRange} 
+                maxPrize={maxPrize} 
+                selectedCategories={selectedCategories} 
+                setSelectedCategories={setSelectedCategories} 
+                betRange={betRange} 
+                setBetRange={setBetRange} 
+                maxBet={maxBet} 
+                winRateRange={winRateRange} 
+                setWinRateRange={setWinRateRange}
+              />
+            </div>
           </aside>
           
           {/* Main Content */}
