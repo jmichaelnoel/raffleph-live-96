@@ -65,7 +65,7 @@ export const useRaffleData = () => {
           prize: Number(item.prize),
           bettingCost: Number(item.betting_cost),
           winningPercentage: Number(item.winning_percentage),
-          endDate: item.end_date,
+          endDate: item.draw_date, // Use draw_date from the database
           organization: item.organization,
           location: item.location,
           featured: item.featured,

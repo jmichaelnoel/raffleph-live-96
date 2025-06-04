@@ -41,17 +41,8 @@ interface Submission {
   image_url: string | null;
 }
 
-interface AuditLog {
-  id: string;
-  action: string;
-  table_name: string | null;
-  created_at: string;
-  user_id: string;
-}
-
 const SecureAdminDashboard: React.FC = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
@@ -62,7 +53,6 @@ const SecureAdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchSubmissions();
-    fetchAuditLogs();
   }, []);
 
   const fetchSubmissions = async () => {
@@ -87,25 +77,6 @@ const SecureAdminDashboard: React.FC = () => {
       console.error('Unexpected error fetching submissions:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchAuditLogs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('audit_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error('Error fetching audit logs:', error);
-        return;
-      }
-
-      setAuditLogs(data || []);
-    } catch (error) {
-      console.error('Unexpected error fetching audit logs:', error);
     }
   };
 
@@ -163,7 +134,7 @@ const SecureAdminDashboard: React.FC = () => {
           prize: submission.prize,
           betting_cost: submission.betting_cost || 0,
           winning_percentage: winningPercentage,
-          end_date: submission.draw_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          draw_date: submission.draw_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           organization: sanitizedOrganization,
           location: sanitizedLocation,
           featured: false,
@@ -371,9 +342,6 @@ const SecureAdminDashboard: React.FC = () => {
           <TabsTrigger value="rejected">
             Rejected ({rejectedSubmissions.length})
           </TabsTrigger>
-          <TabsTrigger value="audit">
-            Audit Logs
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
@@ -493,40 +461,6 @@ const SecureAdminDashboard: React.FC = () => {
                         <TableCell>
                           <Badge variant="destructive">Rejected</Badge>
                         </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="audit">
-          <Card>
-            <CardHeader>
-              <CardTitle>Audit Logs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {auditLogs.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No audit logs</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Table</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>User</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {auditLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell className="font-medium">{log.action}</TableCell>
-                        <TableCell>{log.table_name || 'N/A'}</TableCell>
-                        <TableCell>{new Date(log.created_at).toLocaleString()}</TableCell>
-                        <TableCell>{log.user_id}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

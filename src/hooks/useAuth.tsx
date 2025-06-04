@@ -40,21 +40,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (!user) return false;
     
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
+      // For now, we'll use a simple check against user email or metadata
+      // Since user_roles table doesn't exist in current schema
+      const isAdminUser = user.email === 'admin@raffle.com' || 
+                         user.user_metadata?.role === 'admin' ||
+                         user.app_metadata?.role === 'admin';
       
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking admin role:', error);
-        return false;
-      }
-      
-      const hasAdminRole = !!data;
-      setIsAdmin(hasAdminRole);
-      return hasAdminRole;
+      setIsAdmin(isAdminUser);
+      return isAdminUser;
     } catch (error) {
       console.error('Unexpected error checking admin role:', error);
       return false;

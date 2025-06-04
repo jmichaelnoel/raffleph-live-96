@@ -1,8 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import RaffleHeader from '@/components/raffle-details/RaffleHeader';
 import StatsBar from '@/components/raffle-details/StatsBar';
 import DetailsSection from '@/components/raffle-details/DetailsSection';
@@ -23,7 +22,7 @@ interface ApprovedRaffle {
   prize: number;
   betting_cost: number;
   winning_percentage: number;
-  end_date: string;
+  draw_date: string;
   organization: string;
   location: string;
   external_join_url: string;
@@ -109,7 +108,7 @@ const RaffleDetailsPage: React.FC = () => {
     prize: raffle.prize,
     bettingCost: raffle.betting_cost,
     winningPercentage: raffle.winning_percentage,
-    endDate: raffle.end_date,
+    endDate: raffle.draw_date,
     organization: raffle.organization,
     location: raffle.location,
     externalJoinUrl: raffle.external_join_url,
@@ -119,14 +118,9 @@ const RaffleDetailsPage: React.FC = () => {
     featured: raffle.featured
   };
 
-  // Empty search handler since we don't need search on detail pages
-  const handleSearchChange = () => {};
-
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-        <Header onSearchChange={handleSearchChange} />
-        
         <main className="container mx-auto px-4 py-8">
           {/* Breadcrumb Navigation */}
           <nav className="flex items-center gap-2 mb-6 text-sm text-gray-600">
@@ -172,9 +166,6 @@ const RaffleDetailsPage: React.FC = () => {
           <TrustVerificationSection />
           <FAQSection />
         </main>
-        
-        {/* Footer */}
-        <Footer />
       </div>
     </Layout>
   );
