@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import RaffleCard from '@/components/RaffleCard';
@@ -46,7 +46,7 @@ const Index: React.FC = () => {
     },
   });
 
-  const filterRaffles = (raffleData: any[]) => {
+  const filterRaffles = useCallback((raffleData: any[]) => {
     return raffleData.filter(raffle => {
       // Category filter
       if (filters.categories.length > 0 && !filters.categories.includes(raffle.category)) {
@@ -63,11 +63,6 @@ const Index: React.FC = () => {
         return false;
       }
 
-      // Location filter
-      if (filters.location && !raffle.location?.toLowerCase().includes(filters.location.toLowerCase())) {
-        return false;
-      }
-
       // Search term filter
       if (filters.searchTerm && 
           !raffle.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
@@ -77,9 +72,9 @@ const Index: React.FC = () => {
 
       return true;
     });
-  };
+  }, [filters]);
 
-  const sortRaffles = (raffleData: any[], sortOption: SortOption) => {
+  const sortRaffles = useCallback((raffleData: any[], sortOption: SortOption) => {
     const sorted = [...raffleData];
     
     switch (sortOption) {
@@ -106,11 +101,11 @@ const Index: React.FC = () => {
       default:
         return sorted;
     }
-  };
+  }, []);
 
   const filteredAndSortedRaffles = raffles ? sortRaffles(filterRaffles(raffles), sortBy) : [];
 
-  const getActiveFilterCount = () => {
+  const getActiveFilterCount = useCallback(() => {
     let count = 0;
     if (filters.categories && filters.categories.length > 0) count++;
     if (filters.location && filters.location.trim()) count++;
@@ -118,7 +113,7 @@ const Index: React.FC = () => {
     if (filters.prizeRange[0] > 0 || filters.prizeRange[1] < 1000000) count++;
     if (filters.ticketPriceRange[0] > 0 || filters.ticketPriceRange[1] < 10000) count++;
     return count;
-  };
+  }, [filters]);
 
   // Handle error in useEffect to avoid render loop
   React.useEffect(() => {
@@ -131,21 +126,31 @@ const Index: React.FC = () => {
     }
   }, [error, toast]);
 
-  const handlePriceRangeChange = (range: [number, number]) => {
-    setFilters(prev => ({ ...prev, priceRange: range }));
-  };
+  const handlePriceRangeChange = useCallback((range: [number, number]) => {
+    setFilters(prev => ({ ...prev, prizeRange: range }));
+  }, []);
 
-  const handleTicketPriceRangeChange = (range: [number, number]) => {
+  const handleTicketPriceRangeChange = useCallback((range: [number, number]) => {
     setFilters(prev => ({ ...prev, ticketPriceRange: range }));
-  };
+  }, []);
 
-  const handleCategoriesChange = (categories: string[]) => {
+  const handleCategoriesChange = useCallback((categories: string[]) => {
     setFilters(prev => ({ ...prev, categories }));
-  };
+  }, []);
 
-  const handleSearchChange = (query: string) => {
+  const handleSearchChange = useCallback((query: string) => {
     setFilters(prev => ({ ...prev, searchTerm: query }));
-  };
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setFilters({
+      categories: [],
+      prizeRange: [0, 1000000],
+      ticketPriceRange: [0, 10000],
+      location: '',
+      searchTerm: '',
+    });
+  }, []);
 
   return (
     <Layout>
@@ -155,7 +160,7 @@ const Index: React.FC = () => {
             {/* Desktop Sidebar */}
             <div className="hidden lg:block lg:w-80 shrink-0">
               <FilterSidebar 
-                priceRange={filters.priceRange}
+                priceRange={filters.prizeRange}
                 setPriceRange={handlePriceRangeChange}
                 maxPrize={1000000}
                 selectedCategories={filters.categories as any[]}
@@ -206,13 +211,7 @@ const Index: React.FC = () => {
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-lg">No raffles match your current filters.</p>
                   <button
-                    onClick={() => setFilters({
-                      categories: [],
-                      priceRange: [0, 1000000],
-                      ticketPriceRange: [0, 10000],
-                      location: '',
-                      searchTerm: '',
-                    })}
+                    onClick={clearAllFilters}
                     className="mt-4 text-purple-600 hover:text-purple-700 underline"
                   >
                     Clear all filters
@@ -227,7 +226,7 @@ const Index: React.FC = () => {
         <MobileFilterDrawer
           isOpen={isFilterDrawerOpen}
           onClose={() => setIsFilterDrawerOpen(false)}
-          priceRange={filters.priceRange}
+          priceRange={filters.prizeRange}
           setPriceRange={handlePriceRangeChange}
           maxPrize={1000000}
           selectedCategories={filters.categories as any[]}
