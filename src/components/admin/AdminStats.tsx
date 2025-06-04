@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, CheckCircle, Users } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface AdminStatsProps {
   stats: {
@@ -10,28 +9,9 @@ interface AdminStatsProps {
     approved: number;
     total: number;
   };
-  isLoading?: boolean;
 }
 
-const AdminStats: React.FC<AdminStatsProps> = ({ stats, isLoading = false }) => {
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {[1, 2, 3].map((index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-4 rounded" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
+const AdminStats: React.FC<AdminStatsProps> = ({ stats }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <Card>
