@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import RaffleCard from '@/components/RaffleCard';
@@ -32,46 +33,21 @@ const Index: React.FC = () => {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const { toast } = useToast();
 
-  const sortRaffles = (raffles: any[], sortOption: SortOption) => {
-    const sorted = [...raffles];
-    
-    switch (sortOption) {
-      case 'newest':
-        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      case 'ending-soon':
-        return sorted.sort((a, b) => new Date(a.end_date).getTime() - new Date(b.end_date).getTime());
-      case 'highest-prize':
-        return sorted.sort((a, b) => b.prize - a.prize);
-      case 'lowest-prize':
-        return sorted.sort((a, b) => a.prize - b.prize);
-      case 'highest-win-rate':
-        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
-      case 'lowest-win-rate':
-        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
-      case 'ticket-low-to-high':
-        return sorted.sort((a, b) => a.betting_cost - b.betting_cost);
-      case 'ticket-high-to-low':
-        return sorted.sort((a, b) => b.betting_cost - a.betting_cost);
-      case 'win-rate-high-to-low':
-        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
-      case 'win-rate-low-to-high':
-        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
-      default:
-        return sorted;
-    }
-  };
-
-  const filteredAndSortedRaffles = data ? sortRaffles(filterRaffles(data), sortBy) : [];
-
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (filters.categories && filters.categories.length > 0) count++;
-    if (filters.location && filters.location.trim()) count++;
-    if (filters.searchTerm && filters.searchTerm.trim()) count++;
-    if (filters.prizeRange[0] > 0 || filters.prizeRange[1] < 1000000) count++;
-    if (filters.ticketPriceRange[0] > 0 || filters.ticketPriceRange[1] < 10000) count++;
-    return count;
-  };
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['raffles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('approved_raffles')
+        .select('*')
+        .eq('status', 'active');
+      
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    },
+  });
 
   const filterRaffles = (raffles: any[]) => {
     return raffles.filter(raffle => {
@@ -106,21 +82,46 @@ const Index: React.FC = () => {
     });
   };
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['raffles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('raffles')
-        .select('*')
-        .eq('status', 'active');
-      
-      if (error) {
-        throw error;
-      }
-      
-      return data;
-    },
-  });
+  const sortRaffles = (raffles: any[], sortOption: SortOption) => {
+    const sorted = [...raffles];
+    
+    switch (sortOption) {
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      case 'ending-soon':
+        return sorted.sort((a, b) => new Date(a.draw_date).getTime() - new Date(b.draw_date).getTime());
+      case 'highest-prize':
+        return sorted.sort((a, b) => b.prize - a.prize);
+      case 'lowest-prize':
+        return sorted.sort((a, b) => a.prize - b.prize);
+      case 'highest-win-rate':
+        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
+      case 'lowest-win-rate':
+        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
+      case 'ticket-low-to-high':
+        return sorted.sort((a, b) => a.betting_cost - b.betting_cost);
+      case 'ticket-high-to-low':
+        return sorted.sort((a, b) => b.betting_cost - a.betting_cost);
+      case 'win-rate-high-to-low':
+        return sorted.sort((a, b) => b.winning_percentage - a.winning_percentage);
+      case 'win-rate-low-to-high':
+        return sorted.sort((a, b) => a.winning_percentage - b.winning_percentage);
+      default:
+        return sorted;
+    }
+  };
+
+  const filteredAndSortedRaffles = data ? sortRaffles(filterRaffles(data), sortBy) : [];
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.categories && filters.categories.length > 0) count++;
+    if (filters.location && filters.location.trim()) count++;
+    if (filters.searchTerm && filters.searchTerm.trim()) count++;
+    if (filters.prizeRange[0] > 0 || filters.prizeRange[1] < 1000000) count++;
+    if (filters.ticketPriceRange[0] > 0 || filters.ticketPriceRange[1] < 10000) count++;
+    return count;
+  };
 
   if (error) {
     toast({
@@ -137,7 +138,18 @@ const Index: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Desktop Sidebar */}
             <div className="hidden lg:block lg:w-80 shrink-0">
-              <FilterSidebar filters={filters} onFiltersChange={setFilters} />
+              <FilterSidebar 
+                priceRange={filters.prizeRange}
+                setPriceRange={(range) => setFilters(prev => ({ ...prev, prizeRange: range }))}
+                maxPrize={1000000}
+                selectedCategories={filters.categories as any[]}
+                setSelectedCategories={(categories) => setFilters(prev => ({ ...prev, categories: categories as string[] }))}
+                betRange={filters.ticketPriceRange}
+                setBetRange={(range) => setFilters(prev => ({ ...prev, ticketPriceRange: range }))}
+                maxBet={10000}
+                winRateRange={[0, 0.02]}
+                setWinRateRange={() => {}}
+              />
             </div>
 
             {/* Main Content */}
@@ -152,7 +164,10 @@ const Index: React.FC = () => {
                   </p>
                 </div>
                 
-                <SortOptions sortBy={sortBy} onSortChange={setSortBy} />
+                <SortOptions 
+                  sortOption={sortBy} 
+                  onSortChange={(option) => setSortBy(option)} 
+                />
               </div>
 
               {isLoading ? (
@@ -194,8 +209,16 @@ const Index: React.FC = () => {
         <MobileFilterDrawer
           isOpen={isFilterDrawerOpen}
           onClose={() => setIsFilterDrawerOpen(false)}
-          filters={filters}
-          onFiltersChange={setFilters}
+          priceRange={filters.prizeRange}
+          setPriceRange={(range) => setFilters(prev => ({ ...prev, prizeRange: range }))}
+          maxPrize={1000000}
+          selectedCategories={filters.categories as any[]}
+          setSelectedCategories={(categories) => setFilters(prev => ({ ...prev, categories: categories as string[] }))}
+          betRange={filters.ticketPriceRange}
+          setBetRange={(range) => setFilters(prev => ({ ...prev, ticketPriceRange: range }))}
+          maxBet={10000}
+          winRateRange={[0, 0.02]}
+          setWinRateRange={() => {}}
         />
         
         <MobileFilterButton

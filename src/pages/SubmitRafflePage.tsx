@@ -65,7 +65,7 @@ const SubmitRafflePage: React.FC = () => {
     if (urls.length > 0) {
       setFormData(prev => ({
         ...prev,
-        imageUrl: urls[0]
+        imageUrl: urls[0] || ''
       }));
     }
   };
@@ -223,9 +223,12 @@ const SubmitRafflePage: React.FC = () => {
 
                   <div className="space-y-2">
                     <Label>Raffle Image *</Label>
-                    <ImageUpload
-                      onImageUpload={handleImageUpload}
-                      currentImages={formData.imageUrl ? [formData.imageUrl] : []}
+                    <ImageUpload 
+                      onImageUpload={(urls) => setFormData(prev => ({
+                        ...prev,
+                        imageUrl: urls[0] || ''
+                      }))}
+                      currentImageUrls={formData.imageUrl ? [formData.imageUrl] : []}
                     />
                     {formData.imageUrl && (
                       <div className="mt-2">
