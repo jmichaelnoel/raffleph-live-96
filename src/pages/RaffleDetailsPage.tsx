@@ -3,7 +3,7 @@ import React from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { raffles } from '@/data/raffles';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import SimpleFooter from '@/components/SimpleFooter';
 import RaffleHeader from '@/components/raffle-details/RaffleHeader';
 import StatsBar from '@/components/raffle-details/StatsBar';
 import DetailsSection from '@/components/raffle-details/DetailsSection';
@@ -76,7 +76,7 @@ const RaffleDetailsPage = () => {
       </main>
       
       {/* Footer */}
-      <Footer />
+      <SimpleFooter />
     </div>
   );
 };

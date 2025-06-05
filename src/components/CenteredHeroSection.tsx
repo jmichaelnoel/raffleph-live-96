@@ -20,12 +20,12 @@ const CenteredHeroSection: React.FC = () => {
             Join a <GradientText>Raffle</GradientText>. Change Your <GradientText>Life</GradientText>. 
           </h2>
           
-          <div className="text-lg lg:text-xl text-gray-600 mb-6 lg:mb-8 animate-fade-in delay-1">
+          <div className="text-lg lg:text-xl text-gray-600 mb-6 lg:mb-8 animate-fade-in delay-1 text-center">
             <p className="mb-2">
-              Browse top online raffles and get a chance to win<AnimatedCategoryText />!
+              Win cars, millions in cash, and more — no sign-up required.
             </p>
-            <p>
-              Join for as low as ₱20.
+            <p className="italic">
+              Para sa pamilya, para sa pangarap — ito na 'yon!
             </p>
           </div>
 

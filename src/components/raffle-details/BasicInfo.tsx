@@ -1,0 +1,46 @@
+
+import React from 'react';
+import { Raffle } from '@/data/raffles';
+import { Badge } from '@/components/ui/badge';
+import { Tag, Award, MapPin, Clock, Facebook } from 'lucide-react';
+
+interface BasicInfoProps {
+  raffle: Raffle;
+  daysLeft: number;
+  onOrganizerClick: () => void;
+}
+
+const BasicInfo: React.FC<BasicInfoProps> = ({ raffle, daysLeft, onOrganizerClick }) => {
+  return (
+    <div className="relative lg:col-span-1">
+      <img 
+        src={raffle.imageUrl} 
+        alt={raffle.title} 
+        className="w-full h-64 lg:h-full object-cover"
+      />
+      <div className="absolute top-4 left-4 space-x-2">
+        <Badge variant="secondary" className="bg-white/90">
+          <Tag className="mr-1 h-3 w-3" /> {raffle.category}
+        </Badge>
+        {raffle.featured && (
+          <Badge className="bg-ph-red text-white">
+            <Award className="mr-1 h-3 w-3" /> Featured
+          </Badge>
+        )}
+        {raffle.convertibleToCash && (
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+            💰 Cash Option
+          </Badge>
+        )}
+      </div>
+      <div className="absolute bottom-4 left-4 bg-black/70 text-white p-2 rounded text-sm">
+        <MapPin className="inline mr-1 h-4 w-4" /> {raffle.location}
+      </div>
+      <div className="absolute bottom-4 right-4 bg-black/70 text-white p-2 rounded text-sm">
+        <Clock className="inline mr-1 h-4 w-4" /> Ends in {daysLeft} days
+      </div>
+    </div>
+  );
+};
+
+export default BasicInfo;
