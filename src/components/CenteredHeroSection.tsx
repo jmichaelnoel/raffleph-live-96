@@ -17,7 +17,8 @@ const CenteredHeroSection: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-4xl mx-auto">
           <h2 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-            Join a <GradientText>Raffle</GradientText>. Change Your <GradientText>Life</GradientText>. 
+            <div>Join a <GradientText>Raffle</GradientText>.</div>
+            <div>Change Your <GradientText>Life</GradientText>.</div>
           </h2>
           
           <div className="text-xl md:text-2xl text-gray-600 mb-8 animate-fade-in delay-1 text-center max-w-4xl mx-auto">
