@@ -33,7 +33,10 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
         {/* Content Section */}
         <div className="lg:col-span-2 p-6 flex flex-col justify-between">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-ph-blue mb-4">{raffle.title}</h1>
+            <h1 className="text-3xl lg:text-4xl font-bold text-ph-blue mb-2">{raffle.title}</h1>
+            
+            {/* Raffle Batch Number */}
+            <p className="text-lg text-gray-600 mb-4">Batch #{raffle.batchNumber || '001'}</p>
             
             <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800 mb-2 flex items-center">
@@ -50,14 +53,26 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
             <RaffleStats raffle={raffle} />
           </div>
           
-          <Button 
-            onClick={handleJoinClick}
-            size="lg" 
-            className="w-full text-lg py-4 bg-gradient-to-r from-ph-yellow to-orange-400 text-ph-blue hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold"
-          >
-            <ExternalLink className="mr-2 h-5 w-5" />
-            Join Raffle Now
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleJoinClick}
+              size="lg" 
+              className="w-full text-lg py-4 bg-gradient-to-r from-ph-yellow to-orange-400 text-ph-blue hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold"
+            >
+              <ExternalLink className="mr-2 h-5 w-5" />
+              Join Raffle Now
+            </Button>
+            
+            {/* Where to Buy Slots Button */}
+            <Button 
+              onClick={() => window.open(`https://m.me/${raffle.organization}`, '_blank')}
+              variant="outline"
+              size="lg" 
+              className="w-full text-lg py-4 border-2 border-ph-blue text-ph-blue hover:bg-ph-blue hover:text-white transition-all duration-300 font-semibold"
+            >
+              💬 Buy Slots via Messenger
+            </Button>
+          </div>
         </div>
       </div>
     </div>

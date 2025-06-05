@@ -1,35 +1,136 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Raffle } from '@/data/raffles';
-import { Package } from 'lucide-react';
+import { Package, ChevronLeft, ChevronRight, Trophy, Gift } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface WhatYouWinSectionProps {
   raffle: Raffle;
 }
 
 const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Mock data for multiple images - in real implementation, this would come from raffle data
+  const grandPrizeImages = [raffle.imageUrl, raffle.imageUrl, raffle.imageUrl];
+  const consolationPrizes = [
+    { name: "2nd Prize: ₱50,000 Cash", images: [raffle.imageUrl] },
+    { name: "3rd Prize: ₱25,000 Cash", images: [raffle.imageUrl] }
+  ];
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % grandPrizeImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + grandPrizeImages.length) % grandPrizeImages.length);
+  };
+
   return (
-    <div className="p-6 bg-slate-50 rounded-lg shadow">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-        <Package className="mr-2 h-6 w-6 text-ph-red" /> What You’ll Win
-      </h2>
-      <div className="flex flex-col md:flex-row items-center gap-6">
-        <img 
-          src={raffle.imageUrl} 
-          alt={`Prize: ${raffle.title}`}
-          className="w-full md:w-1/3 h-auto object-contain rounded-md border p-2 bg-white"
-        />
-        <div className="md:w-2/3">
-          <h3 className="text-xl font-medium text-ph-blue mb-2">{raffle.title}</h3>
-          <p className="text-gray-600 mb-3">
-            Get ready to win this amazing prize! Full details and specifications are outlined by the organizer.
-          </p>
-          {/* Example of specs - this would need to come from raffle data */}
-          <ul className="list-disc list-inside text-sm text-gray-500 space-y-1">
-            <li>Condition: Brand New (Example)</li>
-            <li>Color: As specified by organizer (Example)</li>
-            <li>Warranty: Included if applicable (Example)</li>
-          </ul>
+    <div className="space-y-6">
+      {/* Grand Prize */}
+      <div className="p-6 bg-white rounded-lg shadow-md border border-gray-200">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+          <Trophy className="mr-2 h-6 w-6 text-ph-red" /> Grand Prize
+        </h2>
+        
+        <div className="space-y-4">
+          {/* Image Gallery */}
+          <div className="relative">
+            <img 
+              src={grandPrizeImages[currentImageIndex]} 
+              alt={`Grand Prize: ${raffle.title}`}
+              className="w-full h-64 object-cover rounded-md border"
+            />
+            {grandPrizeImages.length > 1 && (
+              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/80 hover:bg-white"
+                  onClick={prevImage}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/80 hover:bg-white"
+                  onClick={nextImage}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+              {grandPrizeImages.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full ${
+                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-xl font-medium text-ph-blue mb-2">{raffle.title}</h3>
+            <p className="text-gray-600 mb-3">
+              Brand new condition. Full details and specifications are outlined by the organizer.
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-500 space-y-1">
+              <li>Condition: Brand New</li>
+              <li>Warranty: Included if applicable</li>
+              <li>Documentation: Complete papers included</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Consolation Prizes */}
+      {consolationPrizes.length > 0 && (
+        <div className="p-6 bg-slate-50 rounded-lg shadow-md border border-gray-200">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+            <Gift className="mr-2 h-5 w-5 text-ph-blue" /> Consolation Prizes
+          </h2>
+          
+          <div className="space-y-4">
+            {consolationPrizes.map((prize, index) => (
+              <div key={index} className="flex items-center space-x-4 p-4 bg-white rounded-md border">
+                <img 
+                  src={prize.images[0]} 
+                  alt={prize.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div>
+                  <h4 className="font-medium text-gray-800">{prize.name}</h4>
+                  <p className="text-sm text-gray-500">Additional prizes for lucky participants</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Bundle Pricing */}
+      <div className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow-md border border-yellow-200">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">Bundle Pricing</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-white rounded-md border">
+            <p className="text-lg font-semibold text-ph-blue">1 Slot</p>
+            <p className="text-2xl font-bold text-gray-800">₱{raffle.bettingCost.toLocaleString()}</p>
+          </div>
+          <div className="text-center p-4 bg-white rounded-md border border-ph-red">
+            <p className="text-lg font-semibold text-ph-red">5 Slots</p>
+            <p className="text-2xl font-bold text-gray-800">₱{(raffle.bettingCost * 4.5).toLocaleString()}</p>
+            <p className="text-sm text-green-600">Save 10%</p>
+          </div>
+          <div className="text-center p-4 bg-white rounded-md border border-green-500">
+            <p className="text-lg font-semibold text-green-600">10 Slots</p>
+            <p className="text-2xl font-bold text-gray-800">₱{(raffle.bettingCost * 8).toLocaleString()}</p>
+            <p className="text-sm text-green-600">Save 20%</p>
+          </div>
         </div>
       </div>
     </div>
