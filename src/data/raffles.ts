@@ -1,3 +1,4 @@
+
 export type RaffleCategory = 'Cash' | 'Cars' | 'Motorcycle' | 'Gadgets';
 
 export const raffleCategories: RaffleCategory[] = [
@@ -24,6 +25,7 @@ export interface Raffle {
   externalJoinUrl: string;
   organizerFacebookUrl: string;
   convertibleToCash: boolean;
+  batchNumber?: string;
 }
 
 export const raffles: Raffle[] = [
