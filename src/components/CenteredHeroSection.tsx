@@ -16,11 +16,11 @@ const CenteredHeroSection: React.FC = () => {
     <section className="bg-white py-16 lg:py-24">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 lg:mb-6 animate-fade-in">
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
             Join a <GradientText>Raffle</GradientText>. Change Your <GradientText>Life</GradientText>. 
           </h2>
           
-          <div className="text-lg lg:text-xl text-gray-600 mb-6 lg:mb-8 animate-fade-in delay-1 text-center">
+          <div className="text-xl md:text-2xl text-gray-600 mb-8 animate-fade-in delay-1 text-center max-w-4xl mx-auto">
             <p className="mb-2">
               Win cars, millions in cash, and more — no sign-up required.
             </p>
@@ -32,7 +32,7 @@ const CenteredHeroSection: React.FC = () => {
           <div className="animate-fade-in delay-2">
             <Button 
               onClick={handleBrowseRaffles}
-              className="rounded-full text-white font-bold px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform text-lg"
+              className="rounded-full text-white font-bold px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform text-xl"
               style={{
                 background: 'linear-gradient(90deg, hsla(333, 100%, 53%, 1) 0%, hsla(33, 94%, 57%, 1) 100%)'
               }}

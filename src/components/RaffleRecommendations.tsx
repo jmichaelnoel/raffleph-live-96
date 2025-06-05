@@ -2,7 +2,7 @@
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import RaffleCard from './RaffleCard';
-import { Sparkles, TrendingUp, Clock, Eye } from 'lucide-react';
+import { Sparkles, Clock, Eye } from 'lucide-react';
 import useLocalStorageState from 'use-local-storage-state';
 
 interface RaffleRecommendationsProps {
@@ -38,25 +38,6 @@ const RaffleRecommendations: React.FC<RaffleRecommendationsProps> = ({
         const aDiff = Math.abs(a.prize - raffle.prize);
         const bDiff = Math.abs(b.prize - raffle.prize);
         return aDiff - bDiff;
-      })
-      .slice(0, count);
-  };
-
-  // Get trending raffles (featured + high win rate + recent)
-  const getTrendingRaffles = (count: number = 4) => {
-    return raffles
-      .filter(r => !currentRaffle || r.id !== currentRaffle.id)
-      .sort((a, b) => {
-        // Featured raffles first
-        if (a.featured !== b.featured) return b.featured ? 1 : -1;
-        
-        // Then by winning percentage
-        if (a.winningPercentage !== b.winningPercentage) {
-          return b.winningPercentage - a.winningPercentage;
-        }
-        
-        // Then by prize value
-        return b.prize - a.prize;
       })
       .slice(0, count);
   };
@@ -115,7 +96,6 @@ const RaffleRecommendations: React.FC<RaffleRecommendationsProps> = ({
   };
 
   const similarRaffles = currentRaffle ? getSimilarRaffles(currentRaffle) : [];
-  const trendingRaffles = getTrendingRaffles();
   const endingSoonRaffles = getEndingSoonRaffles();
   const recentlyViewedRaffles = getRecentlyViewedRaffles();
 
@@ -129,13 +109,6 @@ const RaffleRecommendations: React.FC<RaffleRecommendationsProps> = ({
           gradient="from-purple-500 to-pink-500"
         />
       )}
-
-      <RecommendationSection
-        title="Trending Raffles"
-        icon={TrendingUp}
-        raffles={trendingRaffles}
-        gradient="from-blue-500 to-indigo-500"
-      />
 
       <RecommendationSection
         title="Ending Soon - Don't Miss Out!"
