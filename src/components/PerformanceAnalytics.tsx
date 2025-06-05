@@ -1,6 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
 import ReactGA from 'react-ga4';
 
 interface AnalyticsConfig {
@@ -26,31 +25,32 @@ const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({ config }) =
       });
     }
 
-    // Web Vitals tracking
+    // Simple performance tracking without web-vitals
     if (config.enableWebVitals) {
-      const sendToAnalytics = (metric: any) => {
-        // Send to Google Analytics if available
-        if (config.gaTrackingId) {
+      const trackSimpleMetrics = () => {
+        // Track page load time
+        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+        if (config.gaTrackingId && loadTime > 0) {
           ReactGA.event({
-            category: 'Web Vitals',
-            action: metric.name,
-            value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
+            category: 'Performance',
+            action: 'Page Load Time',
+            value: Math.round(loadTime),
             nonInteraction: true,
           });
         }
 
-        // Also log to console in development
+        // Log to console in development
         if (process.env.NODE_ENV === 'development') {
-          console.log('Web Vital:', metric);
+          console.log('Page Load Time:', loadTime + 'ms');
         }
       };
 
-      // Measure all Web Vitals
-      getCLS(sendToAnalytics);
-      getFID(sendToAnalytics);
-      getFCP(sendToAnalytics);
-      getLCP(sendToAnalytics);
-      getTTFB(sendToAnalytics);
+      // Wait for page to fully load
+      if (document.readyState === 'complete') {
+        trackSimpleMetrics();
+      } else {
+        window.addEventListener('load', trackSimpleMetrics);
+      }
     }
 
     // User behavior tracking
@@ -102,50 +102,6 @@ const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({ config }) =
       };
     }
   }, [config]);
-
-  // Track raffle interactions
-  const trackRaffleInteraction = (action: string, raffleId: string, raffleName: string) => {
-    if (config.gaTrackingId) {
-      ReactGA.event({
-        category: 'Raffle Interaction',
-        action: action,
-        label: `${raffleId} - ${raffleName}`,
-      });
-    }
-  };
-
-  // Track search interactions
-  const trackSearch = (query: string, resultCount: number) => {
-    if (config.gaTrackingId) {
-      ReactGA.event({
-        category: 'Search',
-        action: 'Search Query',
-        label: query,
-        value: resultCount,
-      });
-    }
-  };
-
-  // Track filter usage
-  const trackFilter = (filterType: string, filterValue: string) => {
-    if (config.gaTrackingId) {
-      ReactGA.event({
-        category: 'Filter Usage',
-        action: filterType,
-        label: filterValue,
-      });
-    }
-  };
-
-  // Expose tracking functions globally for use in other components
-  useEffect(() => {
-    // @ts-ignore
-    window.trackRaffleInteraction = trackRaffleInteraction;
-    // @ts-ignore
-    window.trackSearch = trackSearch;
-    // @ts-ignore
-    window.trackFilter = trackFilter;
-  }, []);
 
   return null; // This component doesn't render anything
 };

@@ -1,6 +1,5 @@
 
-import React, { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useCallback, useState, useRef } from 'react';
 import { Upload, X, Image, AlertCircle, Check } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
@@ -22,26 +21,60 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const [errors, setErrors] = useState<string[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
-    setErrors([]);
+  const validateFile = (file: File) => {
+    const errors: string[] = [];
     
-    // Handle rejected files
-    if (rejectedFiles.length > 0) {
-      const newErrors = rejectedFiles.map(rejection => {
-        if (rejection.errors[0]?.code === 'file-too-large') {
-          return `${rejection.file.name} is too large. Maximum size is ${maxSize / 1024 / 1024}MB.`;
-        }
-        if (rejection.errors[0]?.code === 'file-invalid-type') {
-          return `${rejection.file.name} is not a supported file type.`;
-        }
-        return `${rejection.file.name} was rejected.`;
-      });
+    // Check file size
+    if (file.size > maxSize) {
+      errors.push(`${file.name} is too large. Maximum size is ${maxSize / 1024 / 1024}MB.`);
+    }
+    
+    // Check file type
+    const isValidType = acceptedTypes.some(type => {
+      if (type === 'image/*') {
+        return file.type.startsWith('image/');
+      }
+      return file.type === type;
+    });
+    
+    if (!isValidType) {
+      errors.push(`${file.name} is not a supported file type.`);
+    }
+    
+    return errors;
+  };
+
+  const processFiles = (fileList: FileList) => {
+    setErrors([]);
+    const files = Array.from(fileList);
+    const newErrors: string[] = [];
+    const validFiles: File[] = [];
+
+    files.forEach(file => {
+      const fileErrors = validateFile(file);
+      if (fileErrors.length > 0) {
+        newErrors.push(...fileErrors);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    // Check total file count
+    const totalFiles = uploadedFiles.length + validFiles.length;
+    if (totalFiles > maxFiles) {
+      newErrors.push(`Maximum ${maxFiles} files allowed. Please remove some files first.`);
+      return;
+    }
+
+    if (newErrors.length > 0) {
       setErrors(newErrors);
     }
 
-    // Simulate upload progress
-    acceptedFiles.forEach(file => {
+    // Simulate upload progress for valid files
+    validFiles.forEach(file => {
       const fileName = file.name;
       let progress = 0;
       
@@ -59,10 +92,35 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
       }, 100);
     });
 
-    const newFiles = [...uploadedFiles, ...acceptedFiles].slice(0, maxFiles);
+    const newFiles = [...uploadedFiles, ...validFiles];
     setUploadedFiles(newFiles);
     onFileUpload(newFiles);
-  }, [uploadedFiles, maxFiles, maxSize, onFileUpload]);
+  };
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    if (e.dataTransfer.files) {
+      processFiles(e.dataTransfer.files);
+    }
+  }, [uploadedFiles, maxFiles, maxSize]);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      processFiles(e.target.files);
+    }
+  };
 
   const removeFile = (fileName: string) => {
     const newFiles = uploadedFiles.filter(file => file.name !== fileName);
@@ -75,14 +133,6 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
     });
   };
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
-    onDrop,
-    accept: acceptedTypes.reduce((acc, type) => ({ ...acc, [type]: [] }), {}),
-    maxSize,
-    maxFiles,
-    multiple: maxFiles > 1
-  });
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -93,44 +143,43 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
 
   return (
     <div className={className}>
+      {/* File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple={maxFiles > 1}
+        accept={acceptedTypes.join(',')}
+        onChange={handleFileInputChange}
+        className="hidden"
+      />
+
       {/* Dropzone */}
       <div
-        {...getRootProps()}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
         className={`
           border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
-          ${isDragActive && !isDragReject 
+          ${isDragOver 
             ? 'border-purple-400 bg-purple-50' 
-            : isDragReject 
-            ? 'border-red-400 bg-red-50' 
             : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
           }
         `}
       >
-        <input {...getInputProps()} />
-        
         <div className="space-y-4">
           <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${
-            isDragActive && !isDragReject 
-              ? 'bg-purple-100' 
-              : isDragReject 
-              ? 'bg-red-100' 
-              : 'bg-gray-100'
+            isDragOver ? 'bg-purple-100' : 'bg-gray-100'
           }`}>
             <Upload className={`h-8 w-8 ${
-              isDragActive && !isDragReject 
-                ? 'text-purple-600' 
-                : isDragReject 
-                ? 'text-red-600' 
-                : 'text-gray-600'
+              isDragOver ? 'text-purple-600' : 'text-gray-600'
             }`} />
           </div>
           
           <div>
             <p className="text-lg font-medium text-gray-800">
-              {isDragActive 
-                ? isDragReject 
-                  ? 'Some files are not supported'
-                  : 'Drop your images here'
+              {isDragOver 
+                ? 'Drop your images here'
                 : 'Drag & drop your images here'
               }
             </p>
