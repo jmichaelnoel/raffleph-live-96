@@ -19,6 +19,7 @@ interface BundlePricing {
 interface ConsolationPrize {
   title: string;
   value: string;
+  isCash: boolean;
   images: string[];
 }
 
@@ -48,7 +49,7 @@ const RaffleForm = () => {
   ]);
 
   const [consolationPrizes, setConsolationPrizes] = useState<ConsolationPrize[]>([
-    { title: '', value: '', images: [] }
+    { title: '', value: '', isCash: false, images: [] }
   ]);
 
   const [isBundlePricingOpen, setIsBundlePricingOpen] = useState(false);
@@ -59,6 +60,35 @@ const RaffleForm = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleGrandPrizeImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      // This will work when Supabase is integrated
+      toast({
+        title: "Image Upload",
+        description: "Image upload will be fully functional once you integrate with Supabase. For now, this is a placeholder.",
+        duration: 5000
+      });
+      
+      // Placeholder logic - will be replaced with actual Supabase file upload
+      const fileNames = Array.from(files).map(file => file.name);
+      setFormData(prev => ({
+        ...prev,
+        grandPrizeImages: [...prev.grandPrizeImages, ...fileNames]
+      }));
+    }
+  };
+
+  const formatDateDisplay = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
   };
 
   const addBundlePricing = () => {
@@ -79,7 +109,7 @@ const RaffleForm = () => {
   };
 
   const addConsolationPrize = () => {
-    setConsolationPrizes([...consolationPrizes, { title: '', value: '', images: [] }]);
+    setConsolationPrizes([...consolationPrizes, { title: '', value: '', isCash: false, images: [] }]);
   };
 
   const removeConsolationPrize = (index: number) => {
@@ -88,11 +118,29 @@ const RaffleForm = () => {
     }
   };
 
-  const updateConsolationPrize = (index: number, field: 'title' | 'value', value: string) => {
+  const updateConsolationPrize = (index: number, field: 'title' | 'value' | 'isCash', value: string | boolean) => {
     const updated = consolationPrizes.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     );
     setConsolationPrizes(updated);
+  };
+
+  const handleConsolationPrizeImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      toast({
+        title: "Image Upload",
+        description: "Image upload will be fully functional once you integrate with Supabase.",
+        duration: 5000
+      });
+      
+      // Placeholder logic
+      const fileNames = Array.from(files).map(file => file.name);
+      const updated = consolationPrizes.map((item, i) => 
+        i === index ? { ...item, images: [...item.images, ...fileNames] } : item
+      );
+      setConsolationPrizes(updated);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -134,7 +182,7 @@ const RaffleForm = () => {
     });
 
     setBundlePricing([{ slots: '', price: '' }]);
-    setConsolationPrizes([{ title: '', value: '', images: [] }]);
+    setConsolationPrizes([{ title: '', value: '', isCash: false, images: [] }]);
   };
 
   return (
@@ -257,11 +305,34 @@ const RaffleForm = () => {
                   <span className="mr-2 text-xl">📸</span>
                   Grand Prize Images
                 </Label>
-                <div className="mt-2 border-2 border-dashed border-purple-200 rounded-xl p-6 text-center hover:border-purple-400 transition-colors">
-                  <Upload className="mx-auto h-12 w-12 text-purple-400 mb-3" />
-                  <p className="text-gray-600">Click to upload multiple images of your grand prize</p>
-                  <p className="text-sm text-gray-500 mt-1">Supports JPG, PNG files</p>
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleGrandPrizeImageUpload}
+                    className="hidden"
+                    id="grandPrizeImages"
+                  />
+                  <label
+                    htmlFor="grandPrizeImages"
+                    className="border-2 border-dashed border-purple-200 rounded-xl p-6 text-center hover:border-purple-400 transition-colors cursor-pointer block"
+                  >
+                    <Upload className="mx-auto h-12 w-12 text-purple-400 mb-3" />
+                    <p className="text-gray-600">Click to upload multiple images of your grand prize</p>
+                    <p className="text-sm text-gray-500 mt-1">Supports JPG, PNG files</p>
+                  </label>
                 </div>
+                {formData.grandPrizeImages.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600">Selected images:</p>
+                    <ul className="text-sm text-gray-500">
+                      {formData.grandPrizeImages.map((image, index) => (
+                        <li key={index}>• {image}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Consolation Prizes Section */}
@@ -305,11 +376,51 @@ const RaffleForm = () => {
                       </div>
                       
                       <div className="mb-4">
-                        <Label className="text-sm font-medium">Prize Images</Label>
-                        <div className="mt-1 border border-dashed border-orange-200 rounded-lg p-3 text-center text-sm">
-                          <Upload className="mx-auto h-8 w-8 text-orange-400 mb-2" />
-                          <p className="text-gray-600">Upload images for this prize</p>
+                        <div className="flex items-center space-x-3 mb-3">
+                          <input
+                            type="checkbox"
+                            id={`cash-${index}`}
+                            checked={prize.isCash}
+                            onChange={(e) => updateConsolationPrize(index, 'isCash', e.target.checked)}
+                            className="w-4 h-4 rounded"
+                          />
+                          <Label htmlFor={`cash-${index}`} className="text-sm font-medium">
+                            💵 This prize is CASH
+                          </Label>
                         </div>
+                        
+                        {!prize.isCash && (
+                          <div>
+                            <Label className="text-sm font-medium">Prize Images</Label>
+                            <div className="mt-1">
+                              <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={(e) => handleConsolationPrizeImageUpload(index, e)}
+                                className="hidden"
+                                id={`consolationImages-${index}`}
+                              />
+                              <label
+                                htmlFor={`consolationImages-${index}`}
+                                className="border border-dashed border-orange-200 rounded-lg p-3 text-center text-sm cursor-pointer block hover:border-orange-400 transition-colors"
+                              >
+                                <Upload className="mx-auto h-8 w-8 text-orange-400 mb-2" />
+                                <p className="text-gray-600">Upload images for this prize</p>
+                              </label>
+                            </div>
+                            {prize.images.length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-xs text-gray-600">Selected images:</p>
+                                <ul className="text-xs text-gray-500">
+                                  {prize.images.map((image, imgIndex) => (
+                                    <li key={imgIndex}>• {image}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex gap-2 justify-end">
@@ -494,6 +605,11 @@ const RaffleForm = () => {
                   onChange={(e) => handleInputChange('drawDate', e.target.value)}
                   className="mt-2 h-12 text-lg border-2 border-purple-200 focus:border-purple-500 rounded-xl"
                 />
+                {formData.drawDate && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Formatted as: {formatDateDisplay(formData.drawDate)}
+                  </p>
+                )}
               </div>
             </div>
 

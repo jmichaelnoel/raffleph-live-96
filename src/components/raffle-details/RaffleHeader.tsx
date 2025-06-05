@@ -17,6 +17,12 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
     window.open(raffle.externalJoinUrl, '_blank');
   };
 
+  const handleBuySlotsClick = () => {
+    // Extract the messenger link from the organization name or use a messenger format
+    const messengerLink = `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`;
+    window.open(messengerLink, '_blank');
+  };
+
   const handleOrganizerClick = () => {
     window.open(raffle.organizerFacebookUrl, '_blank');
   };
@@ -65,7 +71,7 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
             
             {/* Where to Buy Slots Button */}
             <Button 
-              onClick={() => window.open(`https://m.me/${raffle.organization}`, '_blank')}
+              onClick={handleBuySlotsClick}
               variant="outline"
               size="lg" 
               className="w-full text-lg py-4 border-2 border-ph-blue text-ph-blue hover:bg-ph-blue hover:text-white transition-all duration-300 font-semibold"

@@ -14,8 +14,8 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
   // Mock data for multiple images - in real implementation, this would come from raffle data
   const grandPrizeImages = [raffle.imageUrl, raffle.imageUrl, raffle.imageUrl];
   const consolationPrizes = [
-    { name: "2nd Prize: ₱50,000 Cash", images: [raffle.imageUrl] },
-    { name: "3rd Prize: ₱25,000 Cash", images: [raffle.imageUrl] }
+    { name: "2nd Prize: ₱50,000 Cash", images: ["https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800"], isCash: true },
+    { name: "3rd Prize: ₱25,000 Cash", images: ["https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800"], isCash: true }
   ];
 
   const nextImage = () => {
@@ -24,6 +24,12 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + grandPrizeImages.length) % grandPrizeImages.length);
+  };
+
+  const handleBundleClick = () => {
+    // Navigate to organizer's messenger
+    const messengerLink = `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`;
+    window.open(messengerLink, '_blank');
   };
 
   return (
@@ -35,12 +41,23 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
         </h2>
         
         <div className="space-y-4">
-          {/* Image Gallery */}
+          {/* Image Gallery with blurred background */}
           <div className="relative">
+            <div 
+              className="w-full h-64 rounded-md border overflow-hidden relative"
+              style={{
+                backgroundImage: `url(${grandPrizeImages[currentImageIndex]})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'blur(10px)',
+              }}
+            >
+              <div className="absolute inset-0 bg-black/20"></div>
+            </div>
             <img 
               src={grandPrizeImages[currentImageIndex]} 
               alt={`Grand Prize: ${raffle.title}`}
-              className="w-full h-64 object-cover rounded-md border"
+              className="absolute inset-0 w-full h-64 object-contain rounded-md"
             />
             {grandPrizeImages.length > 1 && (
               <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
@@ -77,13 +94,8 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
           <div>
             <h3 className="text-xl font-medium text-ph-blue mb-2">{raffle.title}</h3>
             <p className="text-gray-600 mb-3">
-              Brand new condition. Full details and specifications are outlined by the organizer.
+              {raffle.description}
             </p>
-            <ul className="list-disc list-inside text-sm text-gray-500 space-y-1">
-              <li>Condition: Brand New</li>
-              <li>Warranty: Included if applicable</li>
-              <li>Documentation: Complete papers included</li>
-            </ul>
           </div>
         </div>
       </div>
@@ -99,7 +111,7 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
             {consolationPrizes.map((prize, index) => (
               <div key={index} className="flex items-center space-x-4 p-4 bg-white rounded-md border">
                 <img 
-                  src={prize.images[0]} 
+                  src={prize.isCash ? "https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800" : prize.images[0]} 
                   alt={prize.name}
                   className="w-16 h-16 object-cover rounded"
                 />
@@ -117,20 +129,29 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
       <div className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow-md border border-yellow-200">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Bundle Pricing</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-white rounded-md border">
+          <button 
+            onClick={handleBundleClick}
+            className="text-center p-4 bg-white rounded-md border hover:border-ph-blue hover:shadow-md transition-all cursor-pointer"
+          >
             <p className="text-lg font-semibold text-ph-blue">1 Slot</p>
             <p className="text-2xl font-bold text-gray-800">₱{raffle.bettingCost.toLocaleString()}</p>
-          </div>
-          <div className="text-center p-4 bg-white rounded-md border border-ph-red">
+          </button>
+          <button 
+            onClick={handleBundleClick}
+            className="text-center p-4 bg-white rounded-md border border-ph-red hover:border-ph-red hover:shadow-md transition-all cursor-pointer"
+          >
             <p className="text-lg font-semibold text-ph-red">5 Slots</p>
             <p className="text-2xl font-bold text-gray-800">₱{(raffle.bettingCost * 4.5).toLocaleString()}</p>
             <p className="text-sm text-green-600">Save 10%</p>
-          </div>
-          <div className="text-center p-4 bg-white rounded-md border border-green-500">
+          </button>
+          <button 
+            onClick={handleBundleClick}
+            className="text-center p-4 bg-white rounded-md border border-green-500 hover:border-green-500 hover:shadow-md transition-all cursor-pointer"
+          >
             <p className="text-lg font-semibold text-green-600">10 Slots</p>
             <p className="text-2xl font-bold text-gray-800">₱{(raffle.bettingCost * 8).toLocaleString()}</p>
             <p className="text-sm text-green-600">Save 20%</p>
-          </div>
+          </button>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Logo from '@/components/ui/logo';
 
 const SimpleFooter = () => {
   const navigate = useNavigate();
@@ -28,10 +29,9 @@ const SimpleFooter = () => {
     <footer className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white py-8 mt-12">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
-          <h2 className="text-2xl lg:text-3xl font-bold mb-3 flex items-center justify-center gap-3">
-            <span className="bg-gradient-to-r from-red-400 via-pink-400 to-red-500 bg-clip-text text-transparent">Raffle</span>
-            <span className="bg-gradient-to-r from-white via-blue-100 to-gray-200 bg-clip-text text-transparent">PH</span>
-          </h2>
+          <div className="flex justify-center mb-3">
+            <Logo width={150} height={50} />
+          </div>
           <p className="text-lg text-blue-100 max-w-2xl mx-auto">
             The ultimate destination for online raffles in the Philippines! 🎊
           </p>
