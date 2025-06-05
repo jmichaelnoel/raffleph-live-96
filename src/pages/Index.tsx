@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
+import CenteredHeroSection from '@/components/CenteredHeroSection';
+import SimpleFooter from '@/components/SimpleFooter';
 import FilterSidebar from '@/components/FilterSidebar';
 import SortOptions from '@/components/SortOptions';
 import RaffleCard from '@/components/RaffleCard';
@@ -14,9 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 const Index = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const {
     searchQuery,
@@ -49,8 +48,10 @@ const Index = () => {
     return priceRange[0] > 0 || priceRange[1] < maxPrize || betRange[0] > 0 || betRange[1] < maxBet || winRateRange[0] > 0 || winRateRange[1] < 0.02;
   };
   
-  return <div className="min-h-screen bg-gray-50">
-      <Header onSearchChange={setSearchQuery} />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <CenteredHeroSection />
       
       <main className="container mx-auto px-4 py-6 lg:py-12">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -105,16 +106,22 @@ const Index = () => {
               </p>
             </div>
             
-            {filteredRaffles.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
-                {filteredRaffles.map((raffle, index) => <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
+            {filteredRaffles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
+                {filteredRaffles.map((raffle, index) => (
+                  <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
                     <RaffleCard raffle={raffle} />
-                  </div>)}
-              </div> : <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
                 <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">No raffles found</h3>
                 <p className="text-gray-600 text-sm lg:text-base">
                   Try adjusting your filters or search query to find more raffles.
                 </p>
-              </div>}
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -137,8 +144,9 @@ const Index = () => {
         setWinRateRange={setWinRateRange} 
       />
       
-      <Footer />
-    </div>;
+      <SimpleFooter />
+    </div>
+  );
 };
 
 export default Index;

@@ -8,7 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Search, FileText, Rocket, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import SimpleFooter from '@/components/SimpleFooter';
 
 const HowItWorksPage: React.FC = () => {
   const navigate = useNavigate();
@@ -222,7 +222,7 @@ const HowItWorksPage: React.FC = () => {
         </div>
       </section>
       
-      <Footer />
+      <SimpleFooter />
     </div>
   );
 };
