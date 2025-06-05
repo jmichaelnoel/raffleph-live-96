@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -78,7 +79,6 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
         <CardContent className="pt-4 lg:pt-6 pb-0 flex-grow px-4 lg:px-6">
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg lg:text-xl font-bold line-clamp-2 flex-1 text-gray-800">{raffle.title}</h3>
-            <span className="text-xs text-gray-500 ml-2 whitespace-nowrap bg-gray-100 px-2 py-1 rounded-full">{raffle.location}</span>
           </div>
           
           <p className="text-xs lg:text-sm text-gray-500 mb-3 font-medium">By {raffle.organization}</p>

@@ -3,7 +3,7 @@ import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tag, Award, MapPin, Clock, Gift, DollarSign, Percent, Ticket, ExternalLink, Facebook } from 'lucide-react';
+import { Tag, Award, Clock, Gift, DollarSign, Percent, Ticket, ExternalLink, Facebook } from 'lucide-react';
 
 interface HeroSectionProps {
   raffle: Raffle;
@@ -44,10 +44,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ raffle }) => {
             </Badge>
           )}
         </div>
-        <div className="absolute bottom-4 left-4 bg-black/50 text-white p-2 rounded text-sm">
-          <MapPin className="inline mr-1 h-4 w-4" /> {raffle.location}
-        </div>
-         <div className="absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded text-sm">
+        <div className="absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded text-sm">
           <Clock className="inline mr-1 h-4 w-4" /> Ends in {daysLeft} days
         </div>
       </div>
