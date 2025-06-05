@@ -2,7 +2,7 @@
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Badge } from '@/components/ui/badge';
-import { Tag, Award, MapPin, Clock, Facebook } from 'lucide-react';
+import { Tag, Award, Clock } from 'lucide-react';
 
 interface BasicInfoProps {
   raffle: Raffle;
@@ -10,14 +10,22 @@ interface BasicInfoProps {
   onOrganizerClick: () => void;
 }
 
-const BasicInfo: React.FC<BasicInfoProps> = ({ raffle, daysLeft, onOrganizerClick }) => {
+const BasicInfo: React.FC<BasicInfoProps> = ({ raffle, daysLeft }) => {
   return (
     <div className="relative lg:col-span-1">
-      <img 
-        src={raffle.imageUrl} 
-        alt={raffle.title} 
-        className="w-full h-64 lg:h-full object-cover"
-      />
+      <div className="w-full h-64 lg:h-full relative overflow-hidden rounded-l-2xl lg:rounded-none">
+        {/* Blurred background */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center filter blur-md scale-110"
+          style={{ backgroundImage: `url(${raffle.imageUrl})` }}
+        />
+        {/* Main image */}
+        <img 
+          src={raffle.imageUrl} 
+          alt={raffle.title} 
+          className="absolute inset-0 w-full h-full object-contain z-10"
+        />
+      </div>
       <div className="absolute top-4 left-4 space-x-2">
         <Badge variant="secondary" className="bg-white/90">
           <Tag className="mr-1 h-3 w-3" /> {raffle.category}
@@ -32,9 +40,6 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ raffle, daysLeft, onOrganizerClic
             💰 Cash Option
           </Badge>
         )}
-      </div>
-      <div className="absolute bottom-4 left-4 bg-black/70 text-white p-2 rounded text-sm">
-        <MapPin className="inline mr-1 h-4 w-4" /> {raffle.location}
       </div>
       <div className="absolute bottom-4 right-4 bg-black/70 text-white p-2 rounded text-sm">
         <Clock className="inline mr-1 h-4 w-4" /> Ends in {daysLeft} days

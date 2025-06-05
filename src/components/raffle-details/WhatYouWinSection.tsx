@@ -1,159 +1,127 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Raffle } from '@/data/raffles';
-import { Package, ChevronLeft, ChevronRight, Trophy, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Gift, Star, MessageCircle } from 'lucide-react';
 
 interface WhatYouWinSectionProps {
   raffle: Raffle;
 }
 
 const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Mock data for multiple images - in real implementation, this would come from raffle data
-  const grandPrizeImages = [raffle.imageUrl, raffle.imageUrl, raffle.imageUrl];
-  const consolationPrizes = [
-    { name: "2nd Prize: ₱50,000 Cash", images: ["https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800"], isCash: true },
-    { name: "3rd Prize: ₱25,000 Cash", images: ["https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800"], isCash: true }
-  ];
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % grandPrizeImages.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + grandPrizeImages.length) % grandPrizeImages.length);
-  };
-
   const handleBundleClick = () => {
-    // Navigate to organizer's messenger
-    const messengerLink = `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`;
-    window.open(messengerLink, '_blank');
+    window.open(raffle.messengerLink || `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`, '_blank');
   };
+
+  // Philippine peso bills image for cash prizes
+  const cashImage = 'https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400';
 
   return (
     <div className="space-y-6">
       {/* Grand Prize */}
-      <div className="p-6 bg-white rounded-lg shadow-md border border-gray-200">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-          <Trophy className="mr-2 h-6 w-6 text-ph-red" /> Grand Prize
-        </h2>
-        
-        <div className="space-y-4">
-          {/* Image Gallery with blurred background */}
-          <div className="relative">
-            <div 
-              className="w-full h-64 rounded-md border overflow-hidden relative"
-              style={{
-                backgroundImage: `url(${grandPrizeImages[currentImageIndex]})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'blur(10px)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/20"></div>
+      <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200">
+        <CardHeader>
+          <CardTitle className="flex items-center text-xl font-bold text-gray-800">
+            <Star className="mr-2 h-6 w-6 text-yellow-500" />
+            Grand Prize
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="relative overflow-hidden rounded-lg">
+              <div 
+                className="w-full h-48 bg-cover bg-center filter blur-md scale-110"
+                style={{ backgroundImage: `url(${raffle.imageUrl})` }}
+              />
+              <img 
+                src={raffle.imageUrl} 
+                alt={raffle.title}
+                className="absolute inset-0 w-full h-48 object-contain z-10"
+              />
             </div>
-            <img 
-              src={grandPrizeImages[currentImageIndex]} 
-              alt={`Grand Prize: ${raffle.title}`}
-              className="absolute inset-0 w-full h-64 object-contain rounded-md"
-            />
-            {grandPrizeImages.length > 1 && (
-              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/80 hover:bg-white"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/80 hover:bg-white"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-              {grandPrizeImages.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
-                />
-              ))}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">{raffle.title}</h3>
+              <p className="text-2xl font-bold text-ph-red">₱{raffle.prize.toLocaleString()}</p>
+              {raffle.convertibleToCash && (
+                <Badge className="mt-2 bg-green-100 text-green-800">
+                  💰 Can be converted to cash
+                </Badge>
+              )}
             </div>
           </div>
-          
-          <div>
-            <h3 className="text-xl font-medium text-ph-blue mb-2">{raffle.title}</h3>
-            <p className="text-gray-600 mb-3">
-              {raffle.description}
-            </p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Consolation Prizes */}
-      {consolationPrizes.length > 0 && (
-        <div className="p-6 bg-slate-50 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-            <Gift className="mr-2 h-5 w-5 text-ph-blue" /> Consolation Prizes
-          </h2>
-          
-          <div className="space-y-4">
-            {consolationPrizes.map((prize, index) => (
-              <div key={index} className="flex items-center space-x-4 p-4 bg-white rounded-md border">
-                <img 
-                  src={prize.isCash ? "https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800" : prize.images[0]} 
-                  alt={prize.name}
-                  className="w-16 h-16 object-cover rounded"
-                />
-                <div>
-                  <h4 className="font-medium text-gray-800">{prize.name}</h4>
-                  <p className="text-sm text-gray-500">Additional prizes for lucky participants</p>
+      {raffle.consolationPrizes && raffle.consolationPrizes.length > 0 && (
+        <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-xl font-bold text-gray-800">
+              <Gift className="mr-2 h-6 w-6 text-blue-500" />
+              Consolation Prizes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {raffle.consolationPrizes.map((prize, index) => (
+                <div key={index} className="flex items-center space-x-4 p-3 bg-white rounded-lg border border-blue-100">
+                  <img 
+                    src={prize.isCash ? cashImage : (prize.image || '/placeholder.svg')} 
+                    alt={prize.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div>
+                    <h4 className="font-semibold text-gray-800">{prize.name}</h4>
+                    {prize.isCash && (
+                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                        Cash Prize
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Bundle Pricing */}
-      <div className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg shadow-md border border-yellow-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Bundle Pricing</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button 
-            onClick={handleBundleClick}
-            className="text-center p-4 bg-white rounded-md border hover:border-ph-blue hover:shadow-md transition-all cursor-pointer"
-          >
-            <p className="text-lg font-semibold text-ph-blue">1 Slot</p>
-            <p className="text-2xl font-bold text-gray-800">₱{raffle.bettingCost.toLocaleString()}</p>
-          </button>
-          <button 
-            onClick={handleBundleClick}
-            className="text-center p-4 bg-white rounded-md border border-ph-red hover:border-ph-red hover:shadow-md transition-all cursor-pointer"
-          >
-            <p className="text-lg font-semibold text-ph-red">5 Slots</p>
-            <p className="text-2xl font-bold text-gray-800">₱{(raffle.bettingCost * 4.5).toLocaleString()}</p>
-            <p className="text-sm text-green-600">Save 10%</p>
-          </button>
-          <button 
-            onClick={handleBundleClick}
-            className="text-center p-4 bg-white rounded-md border border-green-500 hover:border-green-500 hover:shadow-md transition-all cursor-pointer"
-          >
-            <p className="text-lg font-semibold text-green-600">10 Slots</p>
-            <p className="text-2xl font-bold text-gray-800">₱{(raffle.bettingCost * 8).toLocaleString()}</p>
-            <p className="text-sm text-green-600">Save 20%</p>
-          </button>
-        </div>
-      </div>
+      {raffle.bundlePricing && raffle.bundlePricing.length > 0 && (
+        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-xl font-bold text-gray-800">
+              <MessageCircle className="mr-2 h-6 w-6 text-purple-500" />
+              Bundle Pricing
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {raffle.bundlePricing.map((bundle, index) => (
+                <Button
+                  key={index}
+                  onClick={handleBundleClick}
+                  variant="outline"
+                  className="w-full p-4 h-auto hover:bg-purple-50 border-purple-200 hover:border-purple-300 transition-all duration-300"
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-800">{bundle.slots} Slots</p>
+                      <p className="text-lg font-bold text-purple-600">₱{bundle.price.toLocaleString()}</p>
+                    </div>
+                    {bundle.savings && (
+                      <Badge className="bg-green-100 text-green-800">
+                        Save ₱{bundle.savings.toLocaleString()}
+                      </Badge>
+                    )}
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

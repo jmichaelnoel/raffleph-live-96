@@ -26,18 +26,18 @@ const SimpleFooter = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white py-8 mt-12">
+    <footer className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white py-12 mt-12">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-3">
-            <Logo width={150} height={50} />
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Logo width={180} height={60} />
           </div>
           <p className="text-lg text-blue-100 max-w-2xl mx-auto">
             The ultimate destination for online raffles in the Philippines! 🎊
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-12 mb-8">
           <button 
             onClick={handleBrowseRaffles}
             className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-pink-400 decoration-2 underline-offset-4 flex flex-col items-center gap-2 group"
@@ -57,9 +57,9 @@ const SimpleFooter = () => {
           </Link>
         </div>
         
-        <div className="border-t border-purple-700/40 pt-4 text-center">
+        <div className="border-t border-purple-700/40 pt-6 text-center">
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-blue-200">
-            <span>&copy; 2025 RafflePH. All rights reserved.</span>
+            <span>&copy; 2025 RafflePH.com. All rights reserved.</span>
             <span className="text-pink-300 font-semibold">Made with ❤️ in Cebu, Philippines</span>
           </div>
         </div>

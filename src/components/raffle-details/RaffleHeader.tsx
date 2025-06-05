@@ -18,9 +18,7 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
   };
 
   const handleBuySlotsClick = () => {
-    // Extract the messenger link from the organization name or use a messenger format
-    const messengerLink = `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`;
-    window.open(messengerLink, '_blank');
+    window.open(raffle.messengerLink || `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`, '_blank');
   };
 
   const handleOrganizerClick = () => {
@@ -69,7 +67,6 @@ const RaffleHeader: React.FC<RaffleHeaderProps> = ({ raffle }) => {
               Join Raffle Now
             </Button>
             
-            {/* Where to Buy Slots Button */}
             <Button 
               onClick={handleBuySlotsClick}
               variant="outline"

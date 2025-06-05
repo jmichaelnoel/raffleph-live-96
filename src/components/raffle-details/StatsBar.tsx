@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Raffle } from '@/data/raffles';
-import { DollarSign, Percent, CalendarDays, MapPin, BarChartBig, Users } from 'lucide-react';
+import { DollarSign, Percent, CalendarDays, BarChartBig, Users } from 'lucide-react';
 
 interface StatsBarProps {
   raffle: Raffle;
@@ -18,20 +18,17 @@ const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string
 const StatsBar: React.FC<StatsBarProps> = ({ raffle }) => {
   const daysLeft = Math.max(0, Math.ceil((new Date(raffle.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
   
-  // Calculate win rate: 1/total slots
-  const totalSlots = raffle.entriesLeft || 1000; // fallback to 1000 if not specified
-  const winRate = ((1 / totalSlots) * 100).toFixed(4);
+  // Calculate win rate: 1/total slots with 3 decimals
+  const totalSlots = raffle.totalSlots || raffle.entriesLeft || 1000;
+  const winRate = ((1 / totalSlots) * 100).toFixed(3);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
       <StatItem icon={BarChartBig} label="Total Prize Value" value={`₱${raffle.prize.toLocaleString()}`} iconColor="text-ph-red" />
       <StatItem icon={DollarSign} label="Entry Cost" value={`₱${raffle.bettingCost.toLocaleString()}`} iconColor="text-green-500" />
       <StatItem icon={Percent} label="Win Rate" value={`${winRate}%`} iconColor="text-yellow-600" />
       <StatItem icon={CalendarDays} label="Days Left" value={daysLeft} iconColor="text-blue-500" />
-      <StatItem icon={MapPin} label="Location" value={raffle.location} iconColor="text-purple-500" />
-      {raffle.entriesLeft !== undefined && (
-        <StatItem icon={Users} label="Total Entries" value={raffle.entriesLeft > 0 ? raffle.entriesLeft.toLocaleString() : "Unlimited"} iconColor="text-indigo-500" />
-      )}
+      <StatItem icon={Users} label="Total Entries" value={totalSlots.toLocaleString()} iconColor="text-indigo-500" />
     </div>
   );
 };

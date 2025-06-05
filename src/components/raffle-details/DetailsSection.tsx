@@ -52,7 +52,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
               <h3 className="font-semibold text-gray-800 mb-2">Total Raffle Slots</h3>
               <p className="text-xl font-semibold text-blue-600 flex items-center">
                 <Users className="mr-2 h-5 w-5" />
-                {raffle.entriesLeft ? raffle.entriesLeft.toLocaleString() : 'Unlimited'}
+                {(raffle.totalSlots || raffle.entriesLeft || 0).toLocaleString()}
               </p>
             </div>
             
@@ -71,11 +71,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
       {/* Raffle Mechanics */}
       <div className="p-6 bg-slate-50 rounded-lg shadow-md border border-gray-200">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Raffle Mechanics</h2>
-        <div className="space-y-3 text-gray-700">
-          <p><strong>How to Join:</strong> One entry = one chance. Multiple entries allowed.</p>
-          <p><strong>Payment:</strong> Contact the organizer via the official Facebook page or messenger link.</p>
-          <p><strong>Winner Selection:</strong> Random drawing will be conducted on the specified date via Facebook Live.</p>
-          <p><strong>Prize Delivery:</strong> Winner will be contacted directly for prize claiming/delivery arrangements.</p>
+        <div className="text-gray-700">
+          <p>{raffle.mechanics || 'Mechanics will be provided by the organizer.'}</p>
         </div>
       </div>
 

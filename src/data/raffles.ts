@@ -1,4 +1,3 @@
-
 export type RaffleCategory = 'Cash' | 'Cars' | 'Motorcycle' | 'Gadgets';
 
 export const raffleCategories: RaffleCategory[] = [
@@ -19,13 +18,26 @@ export interface Raffle {
   winningPercentage: number;
   endDate: string;
   organization: string;
-  location: string;
   featured: boolean;
   entriesLeft?: number;
   externalJoinUrl: string;
   organizerFacebookUrl: string;
   convertibleToCash: boolean;
   batchNumber?: string;
+  mechanics?: string;
+  messengerLink?: string;
+  grandPrizeImages?: string[];
+  consolationPrizes?: Array<{
+    name: string;
+    isCash: boolean;
+    image?: string;
+  }>;
+  bundlePricing?: Array<{
+    slots: number;
+    price: number;
+    savings?: number;
+  }>;
+  totalSlots?: number;
 }
 
 export const raffles: Raffle[] = [
@@ -33,55 +45,84 @@ export const raffles: Raffle[] = [
     id: '1',
     title: 'iPhone 16 Pro Max Giveaway',
     description: 'Win the latest iPhone 16 Pro Max with 1TB storage. Brand new, sealed, and unlocked for all networks in the Philippines. Drawing will be done via Facebook Live.',
+    mechanics: 'Purchase entries through our official Facebook page or messenger. Each entry gives you one chance to win. Multiple entries allowed. Winner will be selected via random draw on Facebook Live.',
     imageUrl: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800',
+    grandPrizeImages: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'],
     category: 'Gadgets',
     prize: 89000,
     bettingCost: 50,
     winningPercentage: 0.001,
     endDate: '2025-06-15T23:59:59',
     organization: 'TechPH Raffles',
-    location: 'Manila',
     featured: true,
     entriesLeft: 1500,
-    externalJoinUrl: 'https://m.me/techphraffles',
+    totalSlots: 1500,
+    externalJoinUrl: 'https://facebook.com/techphraffles/posts/123456',
+    messengerLink: 'https://m.me/techphraffles',
     organizerFacebookUrl: 'https://facebook.com/techphraffles',
-    convertibleToCash: false
+    convertibleToCash: false,
+    consolationPrizes: [
+      { name: '₱5,000 Cash', isCash: true },
+      { name: 'AirPods Pro', isCash: false, image: 'https://images.unsplash.com/photo-1606220838315-056192d5e927?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400' }
+    ],
+    bundlePricing: [
+      { slots: 5, price: 200, savings: 50 },
+      { slots: 10, price: 350, savings: 150 }
+    ]
   },
   {
     id: '2',
     title: 'Brand New Toyota Vios 2025',
     description: 'Drive home a brand new Toyota Vios 2025 model. Complete with 3-year warranty and full insurance coverage. Perfect for your family needs!',
+    mechanics: 'Contact us via messenger to reserve your slots. Payment can be made through various channels. Draw will be conducted live on Facebook with independent witness.',
     imageUrl: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800',
+    grandPrizeImages: ['https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'],
     category: 'Cars',
     prize: 850000,
     bettingCost: 200,
     winningPercentage: 0.0005,
     endDate: '2025-09-30T23:59:59',
     organization: 'AutoDream PH',
-    location: 'Quezon City',
     featured: true,
     entriesLeft: 2000,
-    externalJoinUrl: 'https://m.me/autodreamph',
+    totalSlots: 2000,
+    externalJoinUrl: 'https://facebook.com/autodreamph/posts/789012',
+    messengerLink: 'https://m.me/autodreamph',
     organizerFacebookUrl: 'https://facebook.com/autodreamph',
-    convertibleToCash: true
+    convertibleToCash: true,
+    consolationPrizes: [
+      { name: '₱50,000 Cash', isCash: true },
+      { name: '₱25,000 Cash', isCash: true }
+    ],
+    bundlePricing: [
+      { slots: 3, price: 500, savings: 100 },
+      { slots: 5, price: 800, savings: 200 }
+    ]
   },
   {
     id: '3',
     title: 'Cash Prize ₱100,000',
     description: 'Win ₱100,000 cash directly deposited to your bank account. No questions asked, pure cash prize. Drawing every Sunday via Facebook Live.',
+    mechanics: 'Simple mechanics: buy your slots, get your entries, and wait for the draw. Winner gets direct bank transfer.',
     imageUrl: 'https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800',
+    grandPrizeImages: ['https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'],
     category: 'Cash',
     prize: 100000,
     bettingCost: 25,
     winningPercentage: 0.002,
     endDate: '2025-06-20T23:59:59',
     organization: 'CashWin Philippines',
-    location: 'Nationwide',
     featured: false,
     entriesLeft: 5000,
-    externalJoinUrl: 'https://m.me/cashwinph',
+    totalSlots: 5000,
+    externalJoinUrl: 'https://facebook.com/cashwinph/posts/345678',
+    messengerLink: 'https://m.me/cashwinph',
     organizerFacebookUrl: 'https://facebook.com/cashwinphilippines',
-    convertibleToCash: true
+    convertibleToCash: true,
+    consolationPrizes: [
+      { name: '₱10,000 Cash', isCash: true },
+      { name: '₱5,000 Cash', isCash: true }
+    ]
   },
   {
     id: '4',
@@ -94,7 +135,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.0008,
     endDate: '2025-08-01T23:59:59',
     organization: 'AppleFans PH',
-    location: 'Makati',
     featured: true,
     entriesLeft: 800,
     externalJoinUrl: 'https://m.me/applefansph',
@@ -112,7 +152,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.001,
     endDate: '2025-07-15T23:59:59',
     organization: 'Moto Raffle PH',
-    location: 'Pasig',
     featured: true,
     entriesLeft: 1000,
     externalJoinUrl: 'https://m.me/motorafflesph',
@@ -130,7 +169,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.0006,
     endDate: '2025-10-15T23:59:59',
     organization: 'GamersHub PH',
-    location: 'Cebu',
     featured: true,
     entriesLeft: 600,
     externalJoinUrl: 'https://m.me/gamershubph',
@@ -148,7 +186,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.0015,
     endDate: '2025-06-25T23:59:59',
     organization: 'MobileWorld PH',
-    location: 'Taguig',
     featured: false,
     entriesLeft: 2500,
     externalJoinUrl: 'https://m.me/mobileworldph',
@@ -166,7 +203,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.0012,
     endDate: '2025-08-20T23:59:59',
     organization: 'RideOn Raffles',
-    location: 'Marikina',
     featured: false,
     entriesLeft: 1800,
     externalJoinUrl: 'https://m.me/rideonraffles',
@@ -184,7 +220,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.0008,
     endDate: '2025-12-25T23:59:59',
     organization: 'MegaCash PH',
-    location: 'Nationwide',
     featured: true,
     entriesLeft: 3000,
     externalJoinUrl: 'https://m.me/megacashph',
@@ -202,7 +237,6 @@ export const raffles: Raffle[] = [
     winningPercentage: 0.0006,
     endDate: '2025-11-15T23:59:59',
     organization: 'CarDreams PH',
-    location: 'Las Piñas',
     featured: false,
     entriesLeft: 1500,
     externalJoinUrl: 'https://m.me/cardreamsph',
