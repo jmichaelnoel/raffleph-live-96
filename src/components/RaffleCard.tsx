@@ -1,15 +1,28 @@
-
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import { trackRaffleJoin, trackEvent } from '@/components/PerformanceAnalytics';
+import { useInView } from 'react-intersection-observer';
 
 interface RaffleCardProps {
   raffle: Raffle;
 }
 
 const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
+  const { ref, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: true
+  });
+
+  // Track when raffle card comes into view
+  React.useEffect(() => {
+    if (inView) {
+      trackEvent('Raffle Card', 'View', raffle.id);
+    }
+  }, [inView, raffle.id]);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
@@ -54,17 +67,23 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
   const handleJoinClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    trackRaffleJoin(raffle);
     window.open(raffle.externalJoinUrl, '_blank');
   };
 
+  const handleCardClick = () => {
+    trackEvent('Raffle Card', 'Click', raffle.id);
+  };
+
   return (
-    <Card className="raffle-card overflow-hidden h-full flex flex-col rounded-2xl lg:rounded-3xl border-2 border-gray-100/50 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white via-gray-50/30 to-purple-50/20">
-      <Link to={`/raffles/${raffle.id}`} className="flex-1 flex flex-col">
+    <Card ref={ref} className="raffle-card overflow-hidden h-full flex flex-col rounded-2xl lg:rounded-3xl border-2 border-gray-100/50 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white via-gray-50/30 to-purple-50/20">
+      <Link to={`/raffles/${raffle.id}`} onClick={handleCardClick} className="flex-1 flex flex-col">
         <div className="relative">
           <img
             src={raffle.imageUrl}
             alt={raffle.title}
             className="w-full h-40 lg:h-48 object-cover"
+            loading="lazy"
           />
           {raffle.featured && (
             <Badge className="absolute top-2 lg:top-3 right-2 lg:right-3 bg-gradient-to-r from-ph-red to-red-600 hover:from-red-600 hover:to-ph-red text-white rounded-full font-medium text-xs shadow-lg">

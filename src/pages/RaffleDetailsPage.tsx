@@ -10,8 +10,12 @@ import DetailsSection from '@/components/raffle-details/DetailsSection';
 import WhatYouWinSection from '@/components/raffle-details/WhatYouWinSection';
 import TrustVerificationSection from '@/components/raffle-details/TrustVerificationSection';
 import FAQSection from '@/components/raffle-details/FAQSection';
+import RaffleRecommendations from '@/components/RaffleRecommendations';
+import SocialShare from '@/components/SocialShare';
+import SEOHead from '@/components/SEOHead';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { trackRaffleView } from '@/components/PerformanceAnalytics';
 
 const RaffleDetailsPage = () => {
   const { raffleId } = useParams<{ raffleId: string }>();
@@ -22,11 +26,17 @@ const RaffleDetailsPage = () => {
     return <Navigate to="/404" replace />;
   }
 
+  // Track raffle view
+  React.useEffect(() => {
+    trackRaffleView(raffle);
+  }, [raffle]);
+
   // Empty search handler since we don't need search on detail pages
   const handleSearchChange = () => {};
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead raffle={raffle} />
       <Header onSearchChange={handleSearchChange} />
       
       <main className="container mx-auto px-4 py-8">
@@ -41,8 +51,8 @@ const RaffleDetailsPage = () => {
           <span className="text-gray-800 font-medium">{raffle.title}</span>
         </nav>
 
-        {/* Return to Raffle Lists Button */}
-        <div className="mb-8">
+        {/* Return to Raffle Lists Button with Social Share */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-between items-start">
           <Link to="/">
             <Button 
               variant="outline" 
@@ -52,6 +62,8 @@ const RaffleDetailsPage = () => {
               Return to Raffle Lists
             </Button>
           </Link>
+          
+          <SocialShare raffle={raffle} />
         </div>
 
         {/* Raffle Header */}
@@ -73,6 +85,13 @@ const RaffleDetailsPage = () => {
         {/* Trust and FAQ Sections */}
         <TrustVerificationSection />
         <FAQSection />
+
+        {/* Similar Raffles Recommendations */}
+        <RaffleRecommendations 
+          raffles={raffles}
+          currentRaffle={raffle}
+          className="mt-12"
+        />
       </main>
       
       {/* Footer */}

@@ -5,18 +5,22 @@ import CenteredHeroSection from '@/components/CenteredHeroSection';
 import SimpleFooter from '@/components/SimpleFooter';
 import FilterSidebar from '@/components/FilterSidebar';
 import SortOptions from '@/components/SortOptions';
-import RaffleCard from '@/components/RaffleCard';
 import MobileFilterDrawer from '@/components/MobileFilterDrawer';
 import MobileFilterButton from '@/components/MobileFilterButton';
+import EnhancedSearch from '@/components/EnhancedSearch';
+import VirtualRaffleGrid from '@/components/VirtualRaffleGrid';
+import RaffleRecommendations from '@/components/RaffleRecommendations';
+import SEOHead from '@/components/SEOHead';
+import PerformanceAnalytics from '@/components/PerformanceAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { useRaffleData } from '@/hooks/useRaffleData';
 import { SortOption } from '@/utils/raffleUtils';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { trackEvent } from '@/components/PerformanceAnalytics';
 
 const Index = () => {
   const { toast } = useToast();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const {
     searchQuery,
     setSearchQuery,
@@ -37,11 +41,19 @@ const Index = () => {
   
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
+    trackEvent('Sort', 'Change', option);
     toast({
       title: "Sort Applied",
       description: `Sorting raffles by ${option.replace(/-/g, ' ')}`,
       duration: 2000
     });
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      trackEvent('Search', 'Query', query, filteredRaffles.length);
+    }
   };
   
   const hasActiveFilters = () => {
@@ -50,6 +62,14 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead />
+      <PerformanceAnalytics 
+        config={{
+          enableWebVitals: true,
+          enableUserBehavior: true
+        }}
+      />
+      
       <Navbar />
       <CenteredHeroSection />
       
@@ -57,18 +77,13 @@ const Index = () => {
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Desktop Sidebar Filters */}
           <aside className="lg:w-1/4 hidden lg:block">
-            {/* Sticky Search Bar */}
+            {/* Enhanced Search Bar */}
             <div className="sticky top-4 mb-6 z-20">
-              <div className="relative group">
-                <Input 
-                  type="text" 
-                  placeholder="🔍 Search raffles..." 
-                  className="pl-10 pr-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 w-full text-base shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02] bg-white" 
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)} 
-                />
-                <Search className="absolute left-3 top-3 h-5 w-5 text-purple-400 animate-pulse" />
-              </div>
+              <EnhancedSearch
+                raffles={filteredRaffles}
+                searchQuery={searchQuery}
+                onSearchChange={handleSearchChange}
+              />
             </div>
             
             {/* Filter Sidebar */}
@@ -106,22 +121,20 @@ const Index = () => {
               </p>
             </div>
             
-            {filteredRaffles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-8">
-                {filteredRaffles.map((raffle, index) => (
-                  <div key={raffle.id} className={`animate-slide-up ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}`}>
-                    <RaffleCard raffle={raffle} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 lg:py-16 bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-lg">
-                <h3 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-2">No raffles found</h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Try adjusting your filters or search query to find more raffles.
-                </p>
-              </div>
-            )}
+            {/* Enhanced Raffle Grid with Virtual Scrolling */}
+            <div className="mb-12">
+              <VirtualRaffleGrid 
+                raffles={filteredRaffles} 
+                isLoading={isLoading}
+                containerHeight={800}
+              />
+            </div>
+
+            {/* Recommendations Section */}
+            <RaffleRecommendations 
+              raffles={filteredRaffles}
+              className="mt-12"
+            />
           </div>
         </div>
       </main>

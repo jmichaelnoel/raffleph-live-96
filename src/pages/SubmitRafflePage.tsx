@@ -5,10 +5,15 @@ import { GradientText } from '@/components/ui/gradient-text';
 import Header from '@/components/Header';
 import SimpleFooter from '@/components/SimpleFooter';
 import RaffleForm from '@/components/submit-raffle/RaffleForm';
+import SEOHead from '@/components/SEOHead';
 
 const SubmitRafflePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30">
+      <SEOHead 
+        title="Submit Your Raffle - Philippine Raffles | Free During Beta"
+        description="Submit your raffle for free during our beta period. Reach thousands of participants and grow your raffle with our verified platform. Quick approval process."
+      />
       <Header onSearchChange={() => {}} />
       
       {/* Hero Section */}
@@ -59,6 +64,10 @@ const SubmitRafflePage = () => {
             <div className="flex items-center bg-gradient-to-r from-purple-100 to-pink-100 rounded-full px-6 py-3 backdrop-blur-sm border border-purple-200">
               <span className="mr-2">⚡</span>
               <span className="text-gray-700">24hr Review</span>
+            </div>
+            <div className="flex items-center bg-gradient-to-r from-purple-100 to-pink-100 rounded-full px-6 py-3 backdrop-blur-sm border border-purple-200">
+              <span className="mr-2">🎯</span>
+              <span className="text-gray-700">Smart Analytics</span>
             </div>
           </div>
         </div>
