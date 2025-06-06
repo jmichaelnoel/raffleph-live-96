@@ -1,9 +1,20 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, Trophy, Target, Zap, Coins, Plus } from 'lucide-react';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    window.scrollTo(0, 0);
+  };
+
+  const handleHomeNavigation = () => {
+    navigate('/');
+    window.scrollTo(0, 0);
+  };
+
   return (
     <footer className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white py-20 mt-20 relative overflow-hidden">
       {/* Animated background elements */}
@@ -75,34 +86,49 @@ const Footer = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
           <div className="text-center">
-            <Link to="/" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-pink-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+            <button 
+              onClick={handleHomeNavigation}
+              className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-pink-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group"
+            >
               <span className="text-3xl group-hover:scale-110 transition-transform duration-300">🏠</span>
               Home
-            </Link>
+            </button>
           </div>
           <div className="text-center">
-            <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-yellow-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+            <button 
+              onClick={handleHomeNavigation}
+              className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-yellow-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group"
+            >
               <span className="text-3xl group-hover:scale-110 transition-transform duration-300">⭐</span>
               Featured
-            </a>
+            </button>
           </div>
           <div className="text-center">
-            <Link to="/submit-raffle" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+            <button 
+              onClick={() => handleNavigation('/submit-raffle')}
+              className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group"
+            >
               <Plus className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
               Submit Raffle
-            </Link>
+            </button>
           </div>
           <div className="text-center">
-            <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-blue-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+            <button 
+              onClick={() => handleNavigation('/how-it-works')}
+              className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-blue-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group"
+            >
               <span className="text-3xl group-hover:scale-110 transition-transform duration-300">❓</span>
               How It Works
-            </a>
+            </button>
           </div>
           <div className="text-center">
-            <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-purple-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group">
+            <button 
+              onClick={handleHomeNavigation}
+              className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-purple-400 decoration-2 underline-offset-4 flex flex-col items-center gap-3 group"
+            >
               <span className="text-3xl group-hover:scale-110 transition-transform duration-300">💬</span>
               FAQ
-            </a>
+            </button>
           </div>
         </div>
         

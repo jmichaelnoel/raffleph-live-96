@@ -1,7 +1,5 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/components/ui/logo';
 
 const SimpleFooter = () => {
@@ -25,6 +23,11 @@ const SimpleFooter = () => {
     }
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    window.scrollTo(0, 0);
+  };
+
   return (
     <footer className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white py-12 mt-12">
       <div className="container mx-auto px-4">
@@ -46,15 +49,21 @@ const SimpleFooter = () => {
             Browse Raffles
           </button>
           
-          <Link to="/how-it-works" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-yellow-400 decoration-2 underline-offset-4 flex flex-col items-center gap-2 group">
+          <button 
+            onClick={() => handleNavigation('/how-it-works')}
+            className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-yellow-400 decoration-2 underline-offset-4 flex flex-col items-center gap-2 group"
+          >
             <span className="text-2xl group-hover:scale-110 transition-transform duration-300">❓</span>
             How It Works
-          </Link>
+          </button>
           
-          <Link to="/submit-raffle" className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-2 group">
+          <button 
+            onClick={() => handleNavigation('/submit-raffle')}
+            className="text-blue-200 hover:text-white transition-colors duration-300 text-lg font-medium hover:underline decoration-green-400 decoration-2 underline-offset-4 flex flex-col items-center gap-2 group"
+          >
             <span className="text-2xl group-hover:scale-110 transition-transform duration-300">📝</span>
             Submit Raffle
-          </Link>
+          </button>
         </div>
         
         <div className="border-t border-purple-700/40 pt-6 text-center">
