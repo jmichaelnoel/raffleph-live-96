@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Minus, ChevronDown, Upload } from 'lucide-react';
+import ConfirmationDialog from './ConfirmationDialog';
 
 interface BundlePricing {
   slots: string;
@@ -25,6 +26,7 @@ interface ConsolationPrize {
 
 const RaffleForm = () => {
   const { toast } = useToast();
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -156,11 +158,8 @@ const RaffleForm = () => {
       return;
     }
 
-    toast({
-      title: "🎉 AMAZING! Your Raffle is Submitted! 🎉",
-      description: "Your raffle has been submitted for review! Get ready to reach thousands of excited participants. We'll contact you within 24 hours! 🚀✨",
-      duration: 8000
-    });
+    // Show confirmation dialog instead of toast
+    setConfirmationOpen(true);
 
     // Reset form
     setFormData({
@@ -720,6 +719,12 @@ const RaffleForm = () => {
           </form>
         </CardContent>
       </Card>
+      
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog 
+        open={confirmationOpen} 
+        onOpenChange={setConfirmationOpen}
+      />
     </main>
   );
 };
