@@ -50,12 +50,12 @@ const ConfirmationDialog = ({ open, onOpenChange }: ConfirmationDialogProps) => 
               We'll review your submission within 24 hours
             </li>
             <li className="flex items-start">
-              <span className="mr-2 text-lg">📧</span>
-              You'll receive an email notification once approved
-            </li>
-            <li className="flex items-start">
               <span className="mr-2 text-lg">📱</span>
               Your raffle will appear on our homepage
+            </li>
+            <li className="flex items-start">
+              <span className="mr-2 text-lg">🎮</span>
+              Wait for bettors to join your raffle
             </li>
           </ul>
         </div>
