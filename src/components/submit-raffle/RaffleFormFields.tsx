@@ -202,7 +202,7 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
               <FormLabel>Grand Prize Images</FormLabel>
               <FormControl>
                 <EnhancedFileUpload
-                  onFilesChange={field.onChange}
+                  onFileUpload={field.onChange}
                   maxFiles={5}
                   acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
                 />
