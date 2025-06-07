@@ -6,9 +6,16 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { uploadMultipleImages } from '@/utils/imageUtils';
+import { normalizeUrl, isValidUrl } from '@/utils/urlUtils';
 import { Form } from '@/components/ui/form';
 import RaffleFormFields from './RaffleFormFields';
 import { Button } from '@/components/ui/button';
+
+// Custom URL validation that normalizes URLs and validates them
+const urlSchema = z.string()
+  .min(1, 'URL is required')
+  .transform(normalizeUrl)
+  .refine(isValidUrl, 'Must be a valid URL');
 
 const raffleFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -22,9 +29,9 @@ const raffleFormSchema = z.object({
   totalSlots: z.number().min(1, 'Total slots must be greater than 0'),
   drawDate: z.string().min(1, 'Draw date is required'),
   organizationName: z.string().min(2, 'Organization name is required'),
-  facebookPageUrl: z.string().url('Must be a valid URL'),
-  raffleLink: z.string().url('Must be a valid URL'),
-  buyingSlotsUrl: z.string().url('Must be a valid URL'),
+  facebookPageUrl: urlSchema,
+  raffleLink: urlSchema,
+  buyingSlotsUrl: urlSchema,
   grandPrizeImages: z.any().optional(),
   consolationPrizes: z.array(z.object({
     title: z.string().min(1, 'Prize title is required'),
@@ -56,21 +63,25 @@ const RaffleFormHandler = () => {
   const onSubmit = async (data: RaffleFormData) => {
     try {
       setIsSubmitting(true);
+      console.log('Starting raffle submission with data:', data);
 
       // Upload grand prize images
       let grandPrizeImageUrls: string[] = [];
       if (data.grandPrizeImages && data.grandPrizeImages.length > 0) {
+        console.log('Uploading grand prize images...');
         const uploadResults = await uploadMultipleImages(
           data.grandPrizeImages,
           'raffle-images',
           'grand-prizes'
         );
         grandPrizeImageUrls = uploadResults.map(result => result.url);
+        console.log('Grand prize images uploaded:', grandPrizeImageUrls);
       }
 
       // Generate slug from organization name and batch number
       const slugBase = `${data.organizationName}${data.batchNumber || ''}`.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+      console.log('Inserting raffle into database...');
       // Insert raffle into database
       const { data: raffleData, error: raffleError } = await supabase
         .from('raffles')
@@ -96,17 +107,21 @@ const RaffleFormHandler = () => {
         .single();
 
       if (raffleError) {
+        console.error('Raffle insertion error:', raffleError);
         throw raffleError;
       }
 
+      console.log('Raffle inserted successfully:', raffleData);
       const raffleId = raffleData.id;
 
       // Insert consolation prizes if any
       if (data.consolationPrizes && data.consolationPrizes.length > 0) {
+        console.log('Processing consolation prizes...');
         const consolationPrizesData = await Promise.all(
           data.consolationPrizes.map(async (prize) => {
             let prizeImageUrls: string[] = [];
-            if (prize.images && prize.images.length > 0) {
+            if (prize.images && prize.images.length > 0 && !prize.isCash) {
+              console.log('Uploading consolation prize images...');
               const uploadResults = await uploadMultipleImages(
                 prize.images,
                 'prize-images',
@@ -130,12 +145,15 @@ const RaffleFormHandler = () => {
           .insert(consolationPrizesData);
 
         if (consolationError) {
+          console.error('Consolation prizes insertion error:', consolationError);
           throw consolationError;
         }
+        console.log('Consolation prizes inserted successfully');
       }
 
       // Insert bundle pricing if any
       if (data.bundlePricing && data.bundlePricing.length > 0) {
+        console.log('Processing bundle pricing...');
         const bundlePricingData = data.bundlePricing.map(bundle => ({
           raffle_id: raffleId,
           slots: bundle.slots,
@@ -147,25 +165,44 @@ const RaffleFormHandler = () => {
           .insert(bundlePricingData);
 
         if (bundleError) {
+          console.error('Bundle pricing insertion error:', bundleError);
           throw bundleError;
         }
+        console.log('Bundle pricing inserted successfully');
       }
 
       toast({
-        title: "Success!",
+        title: "🎉 Success!",
         description: "Your raffle has been submitted for review. You'll be notified once it's approved.",
         duration: 5000
       });
 
       // Reset form
       form.reset();
+      console.log('Form reset successfully');
 
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error('Submission error details:', error);
+      
+      let errorMessage = "Something went wrong. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('violates row-level security')) {
+          errorMessage = "Permission denied. Please check your submission details.";
+        } else if (error.message.includes('duplicate key')) {
+          errorMessage = "A raffle with similar details already exists.";
+        } else if (error.message.includes('network')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "Submission Failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
-        variant: "destructive"
+        title: "❌ Submission Failed",
+        description: errorMessage,
+        variant: "destructive",
+        duration: 8000
       });
     } finally {
       setIsSubmitting(false);
@@ -181,9 +218,16 @@ const RaffleFormHandler = () => {
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Raffle'}
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  Submitting...
+                </div>
+              ) : (
+                'Submit Raffle'
+              )}
             </Button>
           </div>
         </form>

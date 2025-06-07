@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { X, Upload, Eye } from 'lucide-react';
@@ -25,6 +25,19 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
   const [files, setFiles] = useState<PreviewFile[]>([]);
   const [previewModal, setPreviewModal] = useState<string | null>(null);
 
+  const createFileList = useCallback((filesArray: PreviewFile[]): FileList => {
+    const fileList = {
+      length: filesArray.length,
+      item: (index: number) => filesArray[index] || null,
+      [Symbol.iterator]: function* () {
+        for (let i = 0; i < this.length; i++) {
+          yield this.item(i);
+        }
+      }
+    } as FileList;
+    return fileList;
+  }, []);
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.slice(0, maxFiles).map(file => 
       Object.assign(file, {
@@ -34,43 +47,26 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
     
     setFiles(prev => {
       const combined = [...prev, ...newFiles].slice(0, maxFiles);
-      // Convert to FileList-like object
-      const fileList = {
-        length: combined.length,
-        item: (index: number) => combined[index],
-        [Symbol.iterator]: function* () {
-          for (let i = 0; i < this.length; i++) {
-            yield this.item(i);
-          }
-        }
-      } as FileList;
-      
-      onFileUpload(fileList);
       return combined;
     });
-  }, [maxFiles, onFileUpload]);
+  }, [maxFiles]);
 
-  const removeFile = (indexToRemove: number) => {
+  // Separate useEffect to handle onFileUpload callback
+  useEffect(() => {
+    const fileList = createFileList(files);
+    onFileUpload(fileList);
+  }, [files, onFileUpload, createFileList]);
+
+  const removeFile = useCallback((indexToRemove: number) => {
     setFiles(prev => {
       const newFiles = prev.filter((_, index) => index !== indexToRemove);
       // Revoke the object URL to free memory
-      URL.revokeObjectURL(prev[indexToRemove].preview);
-      
-      // Convert to FileList-like object
-      const fileList = {
-        length: newFiles.length,
-        item: (index: number) => newFiles[index],
-        [Symbol.iterator]: function* () {
-          for (let i = 0; i < this.length; i++) {
-            yield this.item(i);
-          }
-        }
-      } as FileList;
-      
-      onFileUpload(fileList);
+      if (prev[indexToRemove]) {
+        URL.revokeObjectURL(prev[indexToRemove].preview);
+      }
       return newFiles;
     });
-  };
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -80,9 +76,13 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
   });
 
   // Clean up previews on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
-      files.forEach(file => URL.revokeObjectURL(file.preview));
+      files.forEach(file => {
+        if (file.preview) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
     };
   }, [files]);
 
@@ -118,7 +118,7 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
       {files.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {files.map((file, index) => (
-            <div key={index} className="relative group">
+            <div key={`${file.name}-${index}`} className="relative group">
               <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200">
                 <img
                   src={file.preview}
@@ -130,6 +130,7 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
               {/* Overlay with actions */}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center gap-2">
                 <Button
+                  type="button"
                   size="sm"
                   variant="secondary"
                   onClick={() => setPreviewModal(file.preview)}
@@ -138,6 +139,7 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
                   <Eye className="h-4 w-4" />
                 </Button>
                 <Button
+                  type="button"
                   size="sm"
                   variant="destructive"
                   onClick={() => removeFile(index)}
@@ -172,6 +174,7 @@ const ImagePreviewUpload: React.FC<ImagePreviewUploadProps> = ({
               className="max-w-full max-h-full object-contain rounded-lg"
             />
             <Button
+              type="button"
               size="sm"
               variant="secondary"
               onClick={() => setPreviewModal(null)}
