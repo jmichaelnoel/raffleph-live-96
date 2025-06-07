@@ -21,3 +21,18 @@ export const isValidUrl = (url: string): boolean => {
     return false;
   }
 };
+
+export const validateUrls = (urls: string[]): { valid: string[], invalid: string[] } => {
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  
+  urls.forEach(url => {
+    if (isValidUrl(url)) {
+      valid.push(normalizeUrl(url));
+    } else {
+      invalid.push(url);
+    }
+  });
+  
+  return { valid, invalid };
+};
