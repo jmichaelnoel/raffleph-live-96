@@ -65,31 +65,24 @@ const RaffleFormHandler = () => {
     try {
       setIsSubmitting(true);
       setSubmissionStep('Starting submission...');
-      console.log('🚀 Starting raffle submission with clean RLS policies');
-      console.log('📋 Form data:', data);
+      console.log('🚀 Starting raffle submission');
 
-      // Upload grand prize images with error handling
+      // Upload grand prize images
       let grandPrizeImageUrls: string[] = [];
       if (data.grandPrizeImages && data.grandPrizeImages.length > 0) {
-        try {
-          setSubmissionStep('Uploading grand prize images...');
-          console.log('📸 Uploading grand prize images...');
-          const uploadResults = await uploadMultipleImages(
-            data.grandPrizeImages,
-            'raffle-images',
-            'grand-prizes'
-          );
-          grandPrizeImageUrls = uploadResults.map(result => result.url);
-          console.log('✅ Grand prize images uploaded:', grandPrizeImageUrls);
-        } catch (error) {
-          console.warn('⚠️ Grand prize image upload failed, continuing without images:', error);
-        }
+        setSubmissionStep('Uploading grand prize images...');
+        const uploadResults = await uploadMultipleImages(
+          data.grandPrizeImages,
+          'raffle-images',
+          'grand-prizes'
+        );
+        grandPrizeImageUrls = uploadResults.map(result => result.url);
+        console.log('✅ Grand prize images uploaded:', grandPrizeImageUrls);
       }
 
       setSubmissionStep('Creating raffle record...');
-      console.log('💾 Inserting raffle into database...');
       
-      // Prepare raffle data with enhanced logging
+      // Prepare raffle data
       const raffleData = {
         title: data.title,
         batch_number: data.batchNumber || null,
@@ -110,8 +103,6 @@ const RaffleFormHandler = () => {
         approved: false
       };
 
-      console.log('📝 Raffle data prepared:', raffleData);
-
       const { data: insertedRaffle, error: raffleError } = await supabase
         .from('raffles')
         .insert(raffleData)
@@ -119,13 +110,6 @@ const RaffleFormHandler = () => {
         .single();
 
       if (raffleError) {
-        console.error('❌ Raffle insertion error:', raffleError);
-        console.error('🔍 Error details:', {
-          message: raffleError.message,
-          details: raffleError.details,
-          hint: raffleError.hint,
-          code: raffleError.code
-        });
         throw new Error(`Database error: ${raffleError.message}`);
       }
 
@@ -135,73 +119,57 @@ const RaffleFormHandler = () => {
       // Insert consolation prizes if any
       if (data.consolationPrizes && data.consolationPrizes.length > 0) {
         setSubmissionStep('Processing consolation prizes...');
-        console.log('🎁 Processing consolation prizes...');
         
-        try {
-          const consolationPrizesData = await Promise.all(
-            data.consolationPrizes.map(async (prize) => {
-              let prizeImageUrls: string[] = [];
-              if (prize.images && prize.images.length > 0 && !prize.isCash) {
-                try {
-                  const uploadResults = await uploadMultipleImages(
-                    prize.images,
-                    'prize-images',
-                    'consolation-prizes'
-                  );
-                  prizeImageUrls = uploadResults.map(result => result.url);
-                } catch (error) {
-                  console.warn('⚠️ Consolation prize image upload failed:', error);
-                }
-              }
+        const consolationPrizesData = await Promise.all(
+          data.consolationPrizes.map(async (prize) => {
+            let prizeImageUrls: string[] = [];
+            if (prize.images && prize.images.length > 0 && !prize.isCash) {
+              const uploadResults = await uploadMultipleImages(
+                prize.images,
+                'prize-images',
+                'consolation-prizes'
+              );
+              prizeImageUrls = uploadResults.map(result => result.url);
+            }
 
-              return {
-                raffle_id: raffleId,
-                title: prize.title,
-                value: prize.value,
-                is_cash: prize.isCash,
-                images: prizeImageUrls
-              };
-            })
-          );
+            return {
+              raffle_id: raffleId,
+              title: prize.title,
+              value: prize.value,
+              is_cash: prize.isCash,
+              images: prizeImageUrls
+            };
+          })
+        );
 
-          const { error: consolationError } = await supabase
-            .from('consolation_prizes')
-            .insert(consolationPrizesData);
+        const { error: consolationError } = await supabase
+          .from('consolation_prizes')
+          .insert(consolationPrizesData);
 
-          if (consolationError) {
-            console.error('❌ Consolation prizes error:', consolationError);
-            throw new Error(`Consolation prizes error: ${consolationError.message}`);
-          }
-          console.log('✅ Consolation prizes inserted successfully');
-        } catch (error) {
-          console.warn('⚠️ Consolation prizes processing failed:', error);
+        if (consolationError) {
+          throw new Error(`Consolation prizes error: ${consolationError.message}`);
         }
+        console.log('✅ Consolation prizes inserted');
       }
 
       // Insert bundle pricing if any
       if (data.bundlePricing && data.bundlePricing.length > 0) {
         setSubmissionStep('Processing bundle pricing...');
-        console.log('💰 Processing bundle pricing...');
         
-        try {
-          const bundlePricingData = data.bundlePricing.map(bundle => ({
-            raffle_id: raffleId,
-            slots: bundle.slots,
-            price: bundle.price
-          }));
+        const bundlePricingData = data.bundlePricing.map(bundle => ({
+          raffle_id: raffleId,
+          slots: bundle.slots,
+          price: bundle.price
+        }));
 
-          const { error: bundleError } = await supabase
-            .from('bundle_pricing')
-            .insert(bundlePricingData);
+        const { error: bundleError } = await supabase
+          .from('bundle_pricing')
+          .insert(bundlePricingData);
 
-          if (bundleError) {
-            console.error('❌ Bundle pricing error:', bundleError);
-            throw new Error(`Bundle pricing error: ${bundleError.message}`);
-          }
-          console.log('✅ Bundle pricing inserted successfully');
-        } catch (error) {
-          console.warn('⚠️ Bundle pricing processing failed:', error);
+        if (bundleError) {
+          throw new Error(`Bundle pricing error: ${bundleError.message}`);
         }
+        console.log('✅ Bundle pricing inserted');
       }
 
       setSubmissionStep('Complete!');
@@ -215,26 +183,17 @@ const RaffleFormHandler = () => {
 
       // Reset form
       form.reset();
-      console.log('🔄 Form reset successfully');
 
     } catch (error) {
-      console.error('💥 Submission error details:', error);
+      console.error('💥 Submission error:', error);
       
       let errorMessage = "Something went wrong. Please try again.";
       
       if (error instanceof Error) {
-        console.error('🔍 Error analysis:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        });
-        
         if (error.message.includes('violates row-level security')) {
-          errorMessage = "Permission denied. The RLS policies may need adjustment.";
+          errorMessage = "Permission denied. Please contact support.";
         } else if (error.message.includes('duplicate key')) {
           errorMessage = "A raffle with similar details already exists.";
-        } else if (error.message.includes('network')) {
-          errorMessage = "Network error. Please check your connection and try again.";
         } else {
           errorMessage = error.message;
         }
