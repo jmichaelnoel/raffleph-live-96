@@ -9,16 +9,161 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bundle_pricing: {
+        Row: {
+          created_at: string
+          id: string
+          price: number
+          raffle_id: string | null
+          slots: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price: number
+          raffle_id?: string | null
+          slots: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price?: number
+          raffle_id?: string | null
+          slots?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_pricing_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consolation_prizes: {
+        Row: {
+          created_at: string
+          id: string
+          images: string[] | null
+          is_cash: boolean | null
+          raffle_id: string | null
+          title: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          is_cash?: boolean | null
+          raffle_id?: string | null
+          title: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          is_cash?: boolean | null
+          raffle_id?: string | null
+          title?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consolation_prizes_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffles: {
+        Row: {
+          approved: boolean | null
+          batch_number: string | null
+          buying_slots_url: string
+          category: Database["public"]["Enums"]["raffle_category"]
+          convertible_to_cash: boolean | null
+          cost_per_slot: number
+          created_at: string
+          description: string
+          draw_date: string
+          facebook_page_url: string
+          grand_prize: string
+          grand_prize_images: string[] | null
+          grand_prize_value: number
+          id: string
+          organization_name: string
+          raffle_link: string
+          raffle_status: Database["public"]["Enums"]["raffle_status"] | null
+          slug: string
+          title: string
+          total_slots: number
+          updated_at: string
+        }
+        Insert: {
+          approved?: boolean | null
+          batch_number?: string | null
+          buying_slots_url: string
+          category: Database["public"]["Enums"]["raffle_category"]
+          convertible_to_cash?: boolean | null
+          cost_per_slot: number
+          created_at?: string
+          description: string
+          draw_date: string
+          facebook_page_url: string
+          grand_prize: string
+          grand_prize_images?: string[] | null
+          grand_prize_value: number
+          id?: string
+          organization_name: string
+          raffle_link: string
+          raffle_status?: Database["public"]["Enums"]["raffle_status"] | null
+          slug: string
+          title: string
+          total_slots: number
+          updated_at?: string
+        }
+        Update: {
+          approved?: boolean | null
+          batch_number?: string | null
+          buying_slots_url?: string
+          category?: Database["public"]["Enums"]["raffle_category"]
+          convertible_to_cash?: boolean | null
+          cost_per_slot?: number
+          created_at?: string
+          description?: string
+          draw_date?: string
+          facebook_page_url?: string
+          grand_prize?: string
+          grand_prize_images?: string[] | null
+          grand_prize_value?: number
+          id?: string
+          organization_name?: string
+          raffle_link?: string
+          raffle_status?: Database["public"]["Enums"]["raffle_status"] | null
+          slug?: string
+          title?: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_raffle_slug: {
+        Args: { org_name: string; batch_num: string }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      raffle_category: "Cars" | "Motorcycle" | "Gadgets" | "Cash"
+      raffle_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +278,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      raffle_category: ["Cars", "Motorcycle", "Gadgets", "Cash"],
+      raffle_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const

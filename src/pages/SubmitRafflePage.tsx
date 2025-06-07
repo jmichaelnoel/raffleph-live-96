@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { GradientText } from '@/components/ui/gradient-text';
 import Header from '@/components/Header';
 import SimpleFooter from '@/components/SimpleFooter';
-import RaffleForm from '@/components/submit-raffle/RaffleForm';
+import RaffleFormHandler from '@/components/submit-raffle/RaffleFormHandler';
 import SEOHead from '@/components/SEOHead';
 
 const SubmitRafflePage = () => {
@@ -73,7 +73,7 @@ const SubmitRafflePage = () => {
         </div>
       </div>
       
-      <RaffleForm />
+      <RaffleFormHandler />
       <SimpleFooter />
     </div>
   );

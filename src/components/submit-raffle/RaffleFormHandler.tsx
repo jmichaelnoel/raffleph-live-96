@@ -1,0 +1,191 @@
+
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { uploadMultipleImages } from '@/utils/imageUtils';
+import { Form } from '@/components/ui/form';
+import RaffleFormFields from './RaffleFormFields';
+import { Button } from '@/components/ui/button';
+
+const raffleFormSchema = z.object({
+  title: z.string().min(5, 'Title must be at least 5 characters'),
+  batchNumber: z.string().optional(),
+  description: z.string().min(20, 'Description must be at least 20 characters'),
+  grandPrize: z.string().min(3, 'Grand prize is required'),
+  grandPrizeValue: z.number().min(1, 'Prize value must be greater than 0'),
+  convertibleToCash: z.boolean().default(false),
+  category: z.enum(['Cars', 'Motorcycle', 'Gadgets', 'Cash']),
+  costPerSlot: z.number().min(1, 'Cost per slot must be greater than 0'),
+  totalSlots: z.number().min(1, 'Total slots must be greater than 0'),
+  drawDate: z.string().min(1, 'Draw date is required'),
+  organizationName: z.string().min(2, 'Organization name is required'),
+  facebookPageUrl: z.string().url('Must be a valid URL'),
+  raffleLink: z.string().url('Must be a valid URL'),
+  buyingSlotsUrl: z.string().url('Must be a valid URL'),
+  grandPrizeImages: z.any().optional(),
+  consolationPrizes: z.array(z.object({
+    title: z.string().min(1, 'Prize title is required'),
+    value: z.number().min(0, 'Prize value must be 0 or greater'),
+    isCash: z.boolean().default(false),
+    images: z.any().optional()
+  })).optional(),
+  bundlePricing: z.array(z.object({
+    slots: z.number().min(1, 'Slots must be greater than 0'),
+    price: z.number().min(1, 'Price must be greater than 0')
+  })).optional()
+});
+
+export type RaffleFormData = z.infer<typeof raffleFormSchema>;
+
+const RaffleFormHandler = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<RaffleFormData>({
+    resolver: zodResolver(raffleFormSchema),
+    defaultValues: {
+      convertibleToCash: false,
+      consolationPrizes: [],
+      bundlePricing: []
+    }
+  });
+
+  const onSubmit = async (data: RaffleFormData) => {
+    try {
+      setIsSubmitting(true);
+
+      // Upload grand prize images
+      let grandPrizeImageUrls: string[] = [];
+      if (data.grandPrizeImages && data.grandPrizeImages.length > 0) {
+        const uploadResults = await uploadMultipleImages(
+          data.grandPrizeImages,
+          'raffle-images',
+          'grand-prizes'
+        );
+        grandPrizeImageUrls = uploadResults.map(result => result.url);
+      }
+
+      // Insert raffle into database
+      const { data: raffleData, error: raffleError } = await supabase
+        .from('raffles')
+        .insert({
+          title: data.title,
+          batch_number: data.batchNumber || null,
+          description: data.description,
+          grand_prize: data.grandPrize,
+          grand_prize_value: data.grandPrizeValue,
+          grand_prize_images: grandPrizeImageUrls,
+          convertible_to_cash: data.convertibleToCash,
+          category: data.category,
+          cost_per_slot: data.costPerSlot,
+          total_slots: data.totalSlots,
+          draw_date: data.drawDate,
+          organization_name: data.organizationName,
+          facebook_page_url: data.facebookPageUrl,
+          raffle_link: data.raffleLink,
+          buying_slots_url: data.buyingSlotsUrl
+        })
+        .select()
+        .single();
+
+      if (raffleError) {
+        throw raffleError;
+      }
+
+      const raffleId = raffleData.id;
+
+      // Insert consolation prizes if any
+      if (data.consolationPrizes && data.consolationPrizes.length > 0) {
+        const consolationPrizesData = await Promise.all(
+          data.consolationPrizes.map(async (prize) => {
+            let prizeImageUrls: string[] = [];
+            if (prize.images && prize.images.length > 0) {
+              const uploadResults = await uploadMultipleImages(
+                prize.images,
+                'prize-images',
+                'consolation-prizes'
+              );
+              prizeImageUrls = uploadResults.map(result => result.url);
+            }
+
+            return {
+              raffle_id: raffleId,
+              title: prize.title,
+              value: prize.value,
+              is_cash: prize.isCash,
+              images: prizeImageUrls
+            };
+          })
+        );
+
+        const { error: consolationError } = await supabase
+          .from('consolation_prizes')
+          .insert(consolationPrizesData);
+
+        if (consolationError) {
+          throw consolationError;
+        }
+      }
+
+      // Insert bundle pricing if any
+      if (data.bundlePricing && data.bundlePricing.length > 0) {
+        const bundlePricingData = data.bundlePricing.map(bundle => ({
+          raffle_id: raffleId,
+          slots: bundle.slots,
+          price: bundle.price
+        }));
+
+        const { error: bundleError } = await supabase
+          .from('bundle_pricing')
+          .insert(bundlePricingData);
+
+        if (bundleError) {
+          throw bundleError;
+        }
+      }
+
+      toast({
+        title: "Success!",
+        description: "Your raffle has been submitted for review. You'll be notified once it's approved.",
+        duration: 5000
+      });
+
+      // Reset form
+      form.reset();
+
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <RaffleFormFields form={form} />
+          <div className="flex justify-end">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3"
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Raffle'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
+};
+
+export default RaffleFormHandler;
