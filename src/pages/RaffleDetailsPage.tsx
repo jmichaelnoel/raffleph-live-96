@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { raffles } from '@/data/raffles';
+import { useSupabaseRaffle } from '@/hooks/useSupabaseRaffle';
+import { convertSupabaseRaffleToRaffle } from '@/utils/raffleConverter';
 import Header from '@/components/Header';
 import SimpleFooter from '@/components/SimpleFooter';
 import RaffleHeader from '@/components/raffle-details/RaffleHeader';
@@ -16,23 +17,54 @@ import SEOHead from '@/components/SEOHead';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trackRaffleView } from '@/components/PerformanceAnalytics';
+import { SkeletonCard } from '@/components/SkeletonCard';
+import { useSupabaseRaffles } from '@/hooks/useSupabaseRaffles';
 
 const RaffleDetailsPage = () => {
   const { raffleId } = useParams<{ raffleId: string }>();
   
-  const raffle = raffles.find(r => r.id === raffleId);
-  
-  if (!raffle) {
+  if (!raffleId) {
     return <Navigate to="/404" replace />;
   }
 
+  const { raffle: supabaseRaffle, loading, error } = useSupabaseRaffle(raffleId);
+  const { raffles: allSupabaseRaffles } = useSupabaseRaffles();
+  
+  // Convert Supabase raffle to the format expected by components
+  const raffle = supabaseRaffle ? convertSupabaseRaffleToRaffle(supabaseRaffle) : null;
+  const allRaffles = allSupabaseRaffles.map(convertSupabaseRaffleToRaffle);
+
   // Track raffle view
   React.useEffect(() => {
-    trackRaffleView(raffle);
+    if (raffle) {
+      trackRaffleView(raffle);
+    }
   }, [raffle]);
 
   // Empty search handler since we don't need search on detail pages
   const handleSearchChange = () => {};
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onSearchChange={handleSearchChange} />
+        <main className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </main>
+        <SimpleFooter />
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (error || !raffle) {
+    return <Navigate to="/404" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,7 +120,7 @@ const RaffleDetailsPage = () => {
 
         {/* Similar Raffles Recommendations */}
         <RaffleRecommendations 
-          raffles={raffles}
+          raffles={allRaffles}
           currentRaffle={raffle}
           className="mt-12"
         />
