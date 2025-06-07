@@ -17,7 +17,7 @@ import SEOHead from '@/components/SEOHead';
 import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trackRaffleView } from '@/components/PerformanceAnalytics';
-import { SkeletonCard } from '@/components/SkeletonCard';
+import SkeletonCard from '@/components/SkeletonCard';
 import { useSupabaseRaffles } from '@/hooks/useSupabaseRaffles';
 
 const RaffleDetailsPage = () => {
