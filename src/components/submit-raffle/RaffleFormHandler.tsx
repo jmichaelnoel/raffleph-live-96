@@ -64,32 +64,32 @@ const RaffleFormHandler = () => {
   const onSubmit = async (data: RaffleFormData) => {
     try {
       setIsSubmitting(true);
-      setSubmissionStep('Validating form data...');
-      console.log('Starting raffle submission with data:', data);
+      setSubmissionStep('Starting submission...');
+      console.log('🚀 Starting raffle submission with clean RLS policies');
+      console.log('📋 Form data:', data);
 
       // Upload grand prize images with error handling
       let grandPrizeImageUrls: string[] = [];
       if (data.grandPrizeImages && data.grandPrizeImages.length > 0) {
         try {
           setSubmissionStep('Uploading grand prize images...');
-          console.log('Uploading grand prize images...');
+          console.log('📸 Uploading grand prize images...');
           const uploadResults = await uploadMultipleImages(
             data.grandPrizeImages,
             'raffle-images',
             'grand-prizes'
           );
           grandPrizeImageUrls = uploadResults.map(result => result.url);
-          console.log('Grand prize images uploaded:', grandPrizeImageUrls);
+          console.log('✅ Grand prize images uploaded:', grandPrizeImageUrls);
         } catch (error) {
-          console.warn('Grand prize image upload failed, continuing without images:', error);
-          // Continue without images rather than failing completely
+          console.warn('⚠️ Grand prize image upload failed, continuing without images:', error);
         }
       }
 
       setSubmissionStep('Creating raffle record...');
-      console.log('Inserting raffle into database...');
+      console.log('💾 Inserting raffle into database...');
       
-      // Insert raffle into database with better error handling
+      // Prepare raffle data with enhanced logging
       const raffleData = {
         title: data.title,
         batch_number: data.batchNumber || null,
@@ -107,10 +107,10 @@ const RaffleFormHandler = () => {
         facebook_page_url: data.facebookPageUrl,
         raffle_link: data.raffleLink,
         buying_slots_url: data.buyingSlotsUrl,
-        approved: false // Explicitly set to false for review
+        approved: false
       };
 
-      console.log('Inserting raffle data:', raffleData);
+      console.log('📝 Raffle data prepared:', raffleData);
 
       const { data: insertedRaffle, error: raffleError } = await supabase
         .from('raffles')
@@ -119,17 +119,23 @@ const RaffleFormHandler = () => {
         .single();
 
       if (raffleError) {
-        console.error('Raffle insertion error:', raffleError);
+        console.error('❌ Raffle insertion error:', raffleError);
+        console.error('🔍 Error details:', {
+          message: raffleError.message,
+          details: raffleError.details,
+          hint: raffleError.hint,
+          code: raffleError.code
+        });
         throw new Error(`Database error: ${raffleError.message}`);
       }
 
-      console.log('Raffle inserted successfully:', insertedRaffle);
+      console.log('✅ Raffle inserted successfully:', insertedRaffle);
       const raffleId = insertedRaffle.id;
 
       // Insert consolation prizes if any
       if (data.consolationPrizes && data.consolationPrizes.length > 0) {
         setSubmissionStep('Processing consolation prizes...');
-        console.log('Processing consolation prizes...');
+        console.log('🎁 Processing consolation prizes...');
         
         try {
           const consolationPrizesData = await Promise.all(
@@ -137,7 +143,6 @@ const RaffleFormHandler = () => {
               let prizeImageUrls: string[] = [];
               if (prize.images && prize.images.length > 0 && !prize.isCash) {
                 try {
-                  console.log('Uploading consolation prize images...');
                   const uploadResults = await uploadMultipleImages(
                     prize.images,
                     'prize-images',
@@ -145,7 +150,7 @@ const RaffleFormHandler = () => {
                   );
                   prizeImageUrls = uploadResults.map(result => result.url);
                 } catch (error) {
-                  console.warn('Consolation prize image upload failed, continuing without images:', error);
+                  console.warn('⚠️ Consolation prize image upload failed:', error);
                 }
               }
 
@@ -164,19 +169,19 @@ const RaffleFormHandler = () => {
             .insert(consolationPrizesData);
 
           if (consolationError) {
-            console.error('Consolation prizes insertion error:', consolationError);
+            console.error('❌ Consolation prizes error:', consolationError);
             throw new Error(`Consolation prizes error: ${consolationError.message}`);
           }
-          console.log('Consolation prizes inserted successfully');
+          console.log('✅ Consolation prizes inserted successfully');
         } catch (error) {
-          console.warn('Consolation prizes processing failed, continuing:', error);
+          console.warn('⚠️ Consolation prizes processing failed:', error);
         }
       }
 
       // Insert bundle pricing if any
       if (data.bundlePricing && data.bundlePricing.length > 0) {
         setSubmissionStep('Processing bundle pricing...');
-        console.log('Processing bundle pricing...');
+        console.log('💰 Processing bundle pricing...');
         
         try {
           const bundlePricingData = data.bundlePricing.map(bundle => ({
@@ -190,16 +195,17 @@ const RaffleFormHandler = () => {
             .insert(bundlePricingData);
 
           if (bundleError) {
-            console.error('Bundle pricing insertion error:', bundleError);
+            console.error('❌ Bundle pricing error:', bundleError);
             throw new Error(`Bundle pricing error: ${bundleError.message}`);
           }
-          console.log('Bundle pricing inserted successfully');
+          console.log('✅ Bundle pricing inserted successfully');
         } catch (error) {
-          console.warn('Bundle pricing processing failed, continuing:', error);
+          console.warn('⚠️ Bundle pricing processing failed:', error);
         }
       }
 
       setSubmissionStep('Complete!');
+      console.log('🎉 Raffle submission completed successfully!');
       
       toast({
         title: "🎉 Success!",
@@ -209,16 +215,22 @@ const RaffleFormHandler = () => {
 
       // Reset form
       form.reset();
-      console.log('Form reset successfully');
+      console.log('🔄 Form reset successfully');
 
     } catch (error) {
-      console.error('Submission error details:', error);
+      console.error('💥 Submission error details:', error);
       
       let errorMessage = "Something went wrong. Please try again.";
       
       if (error instanceof Error) {
+        console.error('🔍 Error analysis:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
         if (error.message.includes('violates row-level security')) {
-          errorMessage = "Permission denied. Please check your submission details.";
+          errorMessage = "Permission denied. The RLS policies may need adjustment.";
         } else if (error.message.includes('duplicate key')) {
           errorMessage = "A raffle with similar details already exists.";
         } else if (error.message.includes('network')) {
