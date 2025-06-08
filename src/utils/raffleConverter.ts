@@ -3,9 +3,20 @@ import { SupabaseRaffle } from '@/hooks/useSupabaseRaffles';
 import { Raffle } from '@/data/raffles';
 
 export const convertSupabaseRaffleToRaffle = (supabaseRaffle: SupabaseRaffle): Raffle => {
-  const daysUntilDraw = Math.max(0, Math.ceil(
-    (new Date(supabaseRaffle.draw_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-  ));
+  // Handle null draw date case
+  let daysUntilDraw = 0;
+  let endDate = '';
+  
+  if (supabaseRaffle.draw_date) {
+    daysUntilDraw = Math.max(0, Math.ceil(
+      (new Date(supabaseRaffle.draw_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    ));
+    endDate = supabaseRaffle.draw_date + 'T23:59:59';
+  } else {
+    // For TBD dates, set a far future date to avoid negative calculations
+    daysUntilDraw = 999;
+    endDate = 'TBD';
+  }
 
   // Calculate winning percentage (simplified calculation)
   const winningPercentage = 1 / supabaseRaffle.total_slots;
@@ -20,7 +31,7 @@ export const convertSupabaseRaffleToRaffle = (supabaseRaffle: SupabaseRaffle): R
     prize: supabaseRaffle.grand_prize_value,
     bettingCost: supabaseRaffle.cost_per_slot,
     winningPercentage,
-    endDate: supabaseRaffle.draw_date + 'T23:59:59',
+    endDate,
     organization: supabaseRaffle.organization_name,
     featured: false, // We can add logic for this later
     entriesLeft: supabaseRaffle.total_slots,

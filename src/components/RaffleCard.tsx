@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -36,6 +37,11 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
   };
 
   const daysUntilEnd = () => {
+    // Handle TBD case
+    if (raffle.endDate === 'TBD') {
+      return 'TBD';
+    }
+    
     const endDate = new Date(raffle.endDate);
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
@@ -74,6 +80,8 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
   const handleCardClick = () => {
     trackEvent('Raffle Card', 'Click', raffle.id);
   };
+
+  const displayDaysUntilEnd = daysUntilEnd();
 
   return (
     <Card ref={ref} className="raffle-card overflow-hidden h-full flex flex-col rounded-2xl lg:rounded-3xl border-2 border-gray-100/50 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white via-gray-50/30 to-purple-50/20">
@@ -122,7 +130,9 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
             
             <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-3 border border-red-200/50">
               <span className="text-xs text-gray-600 block font-medium">⏳ Ends in</span>
-              <span className="font-bold text-red-700 text-sm lg:text-base">{daysUntilEnd()} days</span>
+              <span className="font-bold text-red-700 text-sm lg:text-base">
+                {displayDaysUntilEnd === 'TBD' ? 'TBD' : `${displayDaysUntilEnd} days`}
+              </span>
             </div>
           </div>
         </CardContent>

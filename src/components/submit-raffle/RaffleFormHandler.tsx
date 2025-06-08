@@ -27,7 +27,8 @@ const raffleFormSchema = z.object({
   category: z.enum(['Cars', 'Motorcycle', 'Gadgets', 'Cash']),
   costPerSlot: z.number().min(1, 'Cost per slot must be greater than 0'),
   totalSlots: z.number().min(1, 'Total slots must be greater than 0'),
-  drawDate: z.string().min(1, 'Draw date is required'),
+  isDrawDateTBD: z.boolean().default(false),
+  drawDate: z.string().optional(),
   organizationName: z.string().min(2, 'Organization name is required'),
   facebookPageUrl: urlSchema,
   raffleLink: urlSchema,
@@ -43,6 +44,15 @@ const raffleFormSchema = z.object({
     slots: z.number().min(1, 'Slots must be greater than 0'),
     price: z.number().min(1, 'Price must be greater than 0')
   })).optional()
+}).refine((data) => {
+  // If draw date is not TBD, then drawDate is required
+  if (!data.isDrawDateTBD && !data.drawDate) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Draw date is required when not marked as TBD",
+  path: ["drawDate"]
 });
 
 export type RaffleFormData = z.infer<typeof raffleFormSchema>;
@@ -56,6 +66,7 @@ const RaffleFormHandler = () => {
     resolver: zodResolver(raffleFormSchema),
     defaultValues: {
       convertibleToCash: false,
+      isDrawDateTBD: false,
       consolationPrizes: [],
       bundlePricing: []
     }
@@ -82,7 +93,7 @@ const RaffleFormHandler = () => {
 
       setSubmissionStep('Creating raffle record...');
       
-      // Prepare raffle data
+      // Prepare raffle data - set draw_date to null if TBD is selected
       const raffleData = {
         title: data.title,
         batch_number: data.batchNumber || null,
@@ -95,7 +106,7 @@ const RaffleFormHandler = () => {
         category: data.category,
         cost_per_slot: data.costPerSlot,
         total_slots: data.totalSlots,
-        draw_date: data.drawDate,
+        draw_date: data.isDrawDateTBD ? null : data.drawDate,
         organization_name: data.organizationName,
         facebook_page_url: data.facebookPageUrl,
         raffle_link: data.raffleLink,
@@ -177,7 +188,9 @@ const RaffleFormHandler = () => {
       
       toast({
         title: "🎉 Success!",
-        description: "Your raffle has been submitted for review. You'll be notified once it's approved.",
+        description: data.isDrawDateTBD 
+          ? "Your raffle has been submitted for review. You can finalize the draw date later."
+          : "Your raffle has been submitted for review. You'll be notified once it's approved.",
         duration: 5000
       });
 

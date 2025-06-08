@@ -89,7 +89,7 @@ export type Database = {
           cost_per_slot: number
           created_at: string
           description: string
-          draw_date: string
+          draw_date: string | null
           facebook_page_url: string
           grand_prize: string
           grand_prize_images: string[] | null
@@ -112,7 +112,7 @@ export type Database = {
           cost_per_slot: number
           created_at?: string
           description: string
-          draw_date: string
+          draw_date?: string | null
           facebook_page_url: string
           grand_prize: string
           grand_prize_images?: string[] | null
@@ -135,7 +135,7 @@ export type Database = {
           cost_per_slot?: number
           created_at?: string
           description?: string
-          draw_date?: string
+          draw_date?: string | null
           facebook_page_url?: string
           grand_prize?: string
           grand_prize_images?: string[] | null
