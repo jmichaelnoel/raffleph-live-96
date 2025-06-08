@@ -26,9 +26,7 @@ const SubmitRafflePage = () => {
           {/* FREE Promotion Banner */}
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <Badge className="bg-gradient-to-r from-ph-yellow to-orange-500 text-black px-8 py-3 text-lg font-bold rounded-full animate-pulse shadow-2xl border-4 border-yellow-300">
-                🔥 FREE SUBMISSIONS - BETA PERIOD! 🔥
-              </Badge>
+              <Badge className="bg-gradient-to-r from-ph-yellow to-orange-500 text-black px-8 py-3 text-lg font-bold rounded-full animate-pulse shadow-2xl border-4 border-yellow-300">🔥 DISCOUNTED SUBMISSION FEES🔥</Badge>
               <div className="absolute -top-2 -right-2 bg-ph-red text-white text-xs px-2 py-1 rounded-full animate-bounce">
                 LIMITED TIME!
               </div>
