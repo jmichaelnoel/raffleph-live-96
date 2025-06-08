@@ -22,14 +22,15 @@ export const useSEOSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase
+      // Using type assertion to work around TypeScript not knowing about seo_settings table
+      const { data, error } = await (supabase as any)
         .from('seo_settings')
         .select('setting_key, setting_value');
 
       if (error) throw error;
 
       const settingsObj: SEOSettings = {};
-      data?.forEach(item => {
+      data?.forEach((item: any) => {
         settingsObj[item.setting_key as keyof SEOSettings] = item.setting_value;
       });
 

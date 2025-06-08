@@ -30,7 +30,8 @@ const SEOSettingsManager = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // Using type assertion to work around TypeScript not knowing about seo_settings table
+      const { data, error } = await (supabase as any)
         .from('seo_settings')
         .select('*')
         .order('setting_key');
@@ -52,7 +53,8 @@ const SEOSettingsManager = () => {
   const updateSetting = async (settingKey: string, value: string) => {
     try {
       setSaving(true);
-      const { error } = await supabase
+      // Using type assertion to work around TypeScript not knowing about seo_settings table
+      const { error } = await (supabase as any)
         .from('seo_settings')
         .update({ setting_value: value })
         .eq('setting_key', settingKey);
