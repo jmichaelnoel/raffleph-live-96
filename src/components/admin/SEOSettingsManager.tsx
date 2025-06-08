@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSEOSettings } from '@/hooks/useSEOSettings';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Save, Settings, Globe, Share2, Palette, Download, Upload } from 'lucide-react';
+import SEOImageUpload from './SEOImageUpload';
 
 interface SEOSettingField {
   key: string;
@@ -135,6 +135,33 @@ const SEOSettingsManager = () => {
 
   const getInputComponent = (field: SEOSettingField) => {
     const value = localSettings[field.key as keyof typeof localSettings] || '';
+
+    // Special handling for image fields
+    if (field.key === 'default_social_image') {
+      return (
+        <SEOImageUpload
+          label="Default Social Image"
+          value={value}
+          onChange={(newValue) => handleInputChange(field.key, newValue)}
+          type="social"
+          description={field.description}
+        />
+      );
+    }
+
+    if (field.key === 'favicon_url') {
+      return (
+        <SEOImageUpload
+          label="Favicon"
+          value={value}
+          onChange={(newValue) => handleInputChange(field.key, newValue)}
+          type="favicon"
+          description={field.description}
+        />
+      );
+    }
+
+    // Regular input handling for non-image fields
     const commonProps = {
       value: value,
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
@@ -267,20 +294,6 @@ const SEOSettingsManager = () => {
                 <p className="text-sm text-gray-600 mb-2">{field.description}</p>
                 
                 {getInputComponent(field)}
-                
-                {field.key.includes('image') && localSettings[field.key as keyof typeof localSettings] && (
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-500 mb-1">Preview:</p>
-                    <img 
-                      src={localSettings[field.key as keyof typeof localSettings] as string} 
-                      alt="Preview" 
-                      className="w-20 h-20 object-cover rounded border"
-                      onError={(e) => {
-                        e.currentTarget.src = '/placeholder.svg';
-                      }}
-                    />
-                  </div>
-                )}
               </div>
             );
           })}
@@ -292,6 +305,7 @@ const SEOSettingsManager = () => {
             <li>• Settings are stored locally and persist in browser session</li>
             <li>• Use Export/Import to backup or transfer settings</li>
             <li>• Changes are applied immediately to the site preview</li>
+            <li>• Images can be uploaded directly or linked via URL</li>
             <li>• For permanent storage, consider upgrading to database version</li>
           </ul>
         </div>
