@@ -3,6 +3,7 @@ import React from 'react';
 import { Raffle } from '@/data/raffles';
 import { Badge } from '@/components/ui/badge';
 import { Tag, Award, Clock } from 'lucide-react';
+import { calculateDaysLeft } from '@/utils/dateUtils';
 
 interface BasicInfoProps {
   raffle: Raffle;
@@ -11,6 +12,8 @@ interface BasicInfoProps {
 }
 
 const BasicInfo: React.FC<BasicInfoProps> = ({ raffle, daysLeft }) => {
+  const displayDaysLeft = calculateDaysLeft(raffle.endDate);
+  
   return (
     <div className="relative lg:col-span-1">
       <div className="w-full h-64 lg:h-full relative overflow-hidden rounded-l-2xl lg:rounded-none">
@@ -42,7 +45,8 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ raffle, daysLeft }) => {
         )}
       </div>
       <div className="absolute bottom-4 right-4 bg-black/70 text-white p-2 rounded text-sm">
-        <Clock className="inline mr-1 h-4 w-4" /> Ends in {daysLeft} days
+        <Clock className="inline mr-1 h-4 w-4" />
+        {displayDaysLeft === 'TBD' ? 'Draw Date TBD' : `Ends in ${displayDaysLeft} days`}
       </div>
     </div>
   );

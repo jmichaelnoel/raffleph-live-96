@@ -4,13 +4,14 @@ import { Raffle } from '@/data/raffles';
 import { CalendarDays, Tag, ExternalLink, Users, DollarSign, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatDrawDate } from '@/utils/dateUtils';
 
 interface DetailsSectionProps {
   raffle: Raffle;
 }
 
 const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
-  const drawingDate = new Date(raffle.endDate);
+  const drawingDateDisplay = formatDrawDate(raffle.endDate);
 
   return (
     <div className="space-y-6">
@@ -60,9 +61,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ raffle }) => {
               <h3 className="font-semibold text-gray-800 mb-2">Drawing Date</h3>
               <p className="flex items-center text-gray-700">
                 <CalendarDays className="mr-2 h-5 w-5 text-ph-blue" /> 
-                {drawingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                {drawingDateDisplay === 'TBD' ? 'Draw Date: TBD' : drawingDateDisplay}
               </p>
-              <p className="text-sm text-gray-500 mt-1">via Facebook Live</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {drawingDateDisplay === 'TBD' ? 'Date to be announced by organizer' : 'via Facebook Live'}
+              </p>
             </div>
           </div>
         </div>

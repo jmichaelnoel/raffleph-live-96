@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { trackRaffleView } from '@/components/PerformanceAnalytics';
 import SkeletonCard from '@/components/SkeletonCard';
 import { useSupabaseRaffles } from '@/hooks/useSupabaseRaffles';
+import { scrollToTop } from '@/utils/navigationUtils';
 
 const RaffleDetailsPage = () => {
   const { raffleId } = useParams<{ raffleId: string }>();
@@ -74,7 +75,7 @@ const RaffleDetailsPage = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 mb-6 text-sm text-gray-600">
-          <Link to="/" className="hover:text-ph-blue transition-colors">
+          <Link to="/" onClick={scrollToTop} className="hover:text-ph-blue transition-colors">
             <Home className="h-4 w-4" />
           </Link>
           <span>/</span>
@@ -85,7 +86,7 @@ const RaffleDetailsPage = () => {
 
         {/* Return to Raffle Lists Button with Social Share */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-between items-start">
-          <Link to="/">
+          <Link to="/" onClick={scrollToTop}>
             <Button 
               variant="outline" 
               className="bg-white hover:bg-gray-50 border-2 border-ph-blue text-ph-blue hover:text-ph-blue font-semibold transition-all duration-300 hover:shadow-md"

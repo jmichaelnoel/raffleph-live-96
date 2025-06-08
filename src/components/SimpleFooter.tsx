@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/components/ui/logo';
+import { scrollToTop } from '@/utils/navigationUtils';
 
 const SimpleFooter = () => {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ const SimpleFooter = () => {
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    window.scrollTo(0, 0);
+    scrollToTop();
   };
 
   return (

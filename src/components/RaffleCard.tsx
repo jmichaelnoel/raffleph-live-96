@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { trackRaffleJoin, trackEvent } from '@/components/PerformanceAnalytics';
 import { useInView } from 'react-intersection-observer';
+import { calculateDaysLeft } from '@/utils/dateUtils';
+import { scrollToTop } from '@/utils/navigationUtils';
 
 interface RaffleCardProps {
   raffle: Raffle;
@@ -36,19 +38,7 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
     return `${(value * 100).toFixed(3)}%`;
   };
 
-  const daysUntilEnd = () => {
-    // Handle TBD case
-    if (raffle.endDate === 'TBD') {
-      return 'TBD';
-    }
-    
-    const endDate = new Date(raffle.endDate);
-    const today = new Date();
-    const diffTime = endDate.getTime() - today.getTime();
-    if (diffTime < 0) return 0;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+  const displayDaysUntilEnd = calculateDaysLeft(raffle.endDate);
 
   const getCategoryButtonStyle = (category: string) => {
     const categoryStyles = {
@@ -79,9 +69,8 @@ const RaffleCard: React.FC<RaffleCardProps> = ({ raffle }) => {
 
   const handleCardClick = () => {
     trackEvent('Raffle Card', 'Click', raffle.id);
+    scrollToTop();
   };
-
-  const displayDaysUntilEnd = daysUntilEnd();
 
   return (
     <Card ref={ref} className="raffle-card overflow-hidden h-full flex flex-col rounded-2xl lg:rounded-3xl border-2 border-gray-100/50 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white via-gray-50/30 to-purple-50/20">

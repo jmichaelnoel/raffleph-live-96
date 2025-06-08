@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { scrollToTop } from '@/utils/navigationUtils';
 
 const MobileNavigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ const MobileNavigation: React.FC = () => {
 
   const handleNavigation = (path: string) => {
     navigate(path);
+    scrollToTop();
     setIsOpen(false);
   };
 
