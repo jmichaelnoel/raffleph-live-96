@@ -9,6 +9,7 @@ import { uploadMultipleImages } from '@/utils/imageUtils';
 import { normalizeUrl, isValidUrl } from '@/utils/urlUtils';
 import { Form } from '@/components/ui/form';
 import RaffleFormFields from './RaffleFormFields';
+import { Button } from '@/components/ui/button';
 
 // Custom URL validation that normalizes URLs and validates them
 const urlSchema = z.string()
@@ -59,7 +60,6 @@ export type RaffleFormData = z.infer<typeof raffleFormSchema>;
 const RaffleFormHandler = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStep, setSubmissionStep] = useState<string>('');
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<RaffleFormData>({
@@ -72,8 +72,7 @@ const RaffleFormHandler = () => {
     }
   });
 
-  const onSubmit = async () => {
-    const data = form.getValues();
+  const onSubmit = async (data: RaffleFormData) => {
     try {
       setIsSubmitting(true);
       setSubmissionStep('Starting submission...');
@@ -187,8 +186,13 @@ const RaffleFormHandler = () => {
       setSubmissionStep('Complete!');
       console.log('🎉 Raffle submission completed successfully!');
       
-      // Show confirmation dialog instead of toast
-      setShowConfirmation(true);
+      toast({
+        title: "🎉 Success!",
+        description: data.isDrawDateTBD 
+          ? "Your raffle has been submitted for review. You can finalize the draw date later."
+          : "Your raffle has been submitted for review. You'll be notified once it's approved.",
+        duration: 5000
+      });
 
       // Reset form
       form.reset();
@@ -223,14 +227,24 @@ const RaffleFormHandler = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Form {...form}>
-        <form className="space-y-8">
-          <RaffleFormFields 
-            onSubmit={onSubmit}
-            isSubmitting={isSubmitting}
-            submissionStep={submissionStep}
-            showConfirmation={showConfirmation}
-            setShowConfirmation={setShowConfirmation}
-          />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <RaffleFormFields form={form} />
+          <div className="flex justify-end">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  {submissionStep || 'Submitting...'}
+                </div>
+              ) : (
+                'Submit Raffle'
+              )}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

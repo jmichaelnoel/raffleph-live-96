@@ -1,158 +1,183 @@
-
 import React, { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { RaffleFormData } from './RaffleFormHandler';
-import { DollarSign, Gift, Building, Users, Calendar, ChevronRight, ChevronLeft, Send } from 'lucide-react';
+import EnhancedFileUpload from '@/components/EnhancedFileUpload';
 import DrawDateField from './DrawDateField';
 import ConsolationPrizesSection from './ConsolationPrizesSection';
 import SlotBundlesSection from './SlotBundlesSection';
-import ImagePreviewUpload from '@/components/ImagePreviewUpload';
-import ConfirmationDialog from './ConfirmationDialog';
 
 interface RaffleFormFieldsProps {
-  onSubmit: () => void;
-  isSubmitting: boolean;
-  submissionStep: string;
-  showConfirmation: boolean;
-  setShowConfirmation: (show: boolean) => void;
+  form: UseFormReturn<RaffleFormData>;
 }
 
-const RaffleFormFields = ({ onSubmit, isSubmitting, submissionStep, showConfirmation, setShowConfirmation }: RaffleFormFieldsProps) => {
-  const form = useFormContext<RaffleFormData>();
-  const [currentStep, setCurrentStep] = useState(0);
+const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
+  const [currentSection, setCurrentSection] = useState(0);
 
-  const steps = [
-    {
-      id: 'basic-info',
-      title: 'Basic Information',
-      icon: <Gift className="h-5 w-5" />,
-      description: 'Tell us about your raffle'
+  const sections = [
+    { 
+      id: 'basic', 
+      title: 'Basic Information', 
+      emoji: '📝',
+      description: 'Tell us about your amazing raffle!'
     },
-    {
-      id: 'prize-details',
-      title: 'Prize Details',
-      icon: <DollarSign className="h-5 w-5" />,
-      description: 'What are you raffling?'
+    { 
+      id: 'prize', 
+      title: 'Prize Information', 
+      emoji: '🏆',
+      description: 'Show off that incredible prize!'
     },
-    {
-      id: 'raffle-setup',
-      title: 'Raffle Setup',
-      icon: <Users className="h-5 w-5" />,
-      description: 'Configure slots and pricing'
+    { 
+      id: 'details', 
+      title: 'Raffle Details', 
+      emoji: '🎯',
+      description: 'Set up the mechanics'
     },
-    {
-      id: 'schedule',
-      title: 'Schedule',
-      icon: <Calendar className="h-5 w-5" />,
-      description: 'When will the draw happen?'
+    { 
+      id: 'extras', 
+      title: 'Extra Features', 
+      emoji: '✨',
+      description: 'Add consolation prizes & bundles!'
     },
-    {
-      id: 'extra-features',
-      title: 'Extra Features',
-      icon: <Gift className="h-5 w-5" />,
-      description: 'Add bundles and consolation prizes'
-    },
-    {
-      id: 'contact-info',
-      title: 'Contact Information',
-      icon: <Building className="h-5 w-5" />,
-      description: 'How participants can reach you'
+    { 
+      id: 'contact', 
+      title: 'Contact Information', 
+      emoji: '📞',
+      description: 'How can participants reach you?'
     }
   ];
 
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+  const nextSection = () => {
+    if (currentSection < sections.length - 1) {
+      setCurrentSection(currentSection + 1);
     }
   };
 
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+  const prevSection = () => {
+    if (currentSection > 0) {
+      setCurrentSection(currentSection - 1);
     }
-  };
-
-  const handleSubmit = () => {
-    onSubmit();
-  };
-
-  const normalizeUrl = (url: string): string => {
-    if (!url) return '';
-    const trimmedUrl = url.trim();
-    if (!trimmedUrl.match(/^https?:\/\//)) {
-      return `https://${trimmedUrl}`;
-    }
-    return trimmedUrl;
   };
 
   return (
-    <div className="space-y-8">
-      {/* Progress Steps */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Step {currentStep + 1} of {steps.length}</h2>
-          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300">
-            {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete
-          </Badge>
-        </div>
-        
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center flex-shrink-0">
-              <div className={`flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-300 ${
-                index === currentStep 
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105' 
-                  : index < currentStep 
-                    ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-300'
-                    : 'bg-gray-100 text-gray-500'
-              }`}>
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  index === currentStep ? 'bg-white/20' : index < currentStep ? 'bg-green-200' : 'bg-gray-200'
-                }`}>
-                  {React.cloneElement(step.icon, { 
-                    className: `h-4 w-4 ${index === currentStep ? 'text-white' : index < currentStep ? 'text-green-600' : 'text-gray-400'}` 
-                  })}
-                </div>
-                <span className="font-medium text-sm">{step.title}</span>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Progress Indicator */}
+      <div className="mb-12">
+        <div className="flex justify-between items-center mb-6">
+          {sections.map((section, index) => (
+            <div
+              key={section.id}
+              className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${
+                index <= currentSection ? 'text-purple-600' : 'text-gray-400'
+              }`}
+              onClick={() => setCurrentSection(index)}
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-2 transition-all duration-300 transform hover:scale-110 ${
+                  index <= currentSection
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg animate-pulse'
+                    : 'bg-gray-200 text-gray-500'
+                }`}
+              >
+                {section.emoji}
               </div>
-              {index < steps.length - 1 && (
-                <ChevronRight className="h-4 w-4 text-gray-300 mx-2 flex-shrink-0" />
-              )}
+              <span className="text-sm font-medium hidden md:block">{section.title}</span>
             </div>
           ))}
         </div>
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
+          />
+        </div>
       </div>
 
-      {/* Current Step Content */}
-      <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 min-h-[600px]">
-        <div className="mb-6">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2 flex items-center">
-            {React.cloneElement(steps[currentStep].icon, { className: 'h-6 w-6 mr-3 text-purple-600' })}
-            {steps[currentStep].title}
-          </h3>
-          <p className="text-gray-600">{steps[currentStep].description}</p>
-        </div>
+      {/* Section Header */}
+      <div className="text-center mb-8 animate-fade-in">
+        <h2 className="text-3xl md:text-4xl font-bold mb-3 text-gray-800">
+          <span className="text-4xl mr-3 animate-bounce inline-block">
+            {sections[currentSection].emoji}
+          </span>
+          {sections[currentSection].title}
+        </h2>
+        <p className="text-lg text-gray-600 animate-fade-in delay-150">
+          {sections[currentSection].description}
+        </p>
+      </div>
 
-        {/* Step Content */}
-        {currentStep === 0 && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Form Sections */}
+      <div className="space-y-8">
+        {/* Basic Information Section */}
+        {currentSection === 0 && (
+          <div className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 rounded-2xl p-8 shadow-lg border border-purple-100 animate-slide-up">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                        <span className="mr-2">🎲</span>
+                        Raffle Title *
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., iPhone 15 Pro Max Raffle" 
+                          className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="batchNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                        <span className="mr-2">🏷️</span>
+                        Batch Number (Optional)
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., Batch 1, Series A" 
+                          className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription className="text-gray-600">
+                        If this is part of a series or batch of raffles
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="title"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-800">Raffle Title</FormLabel>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">📄</span>
+                      Description *
+                    </FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="e.g., Win a Brand New iPhone 15 Pro Max!" 
-                        className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
+                      <Textarea 
+                        placeholder="Describe your raffle in detail. Include any terms, conditions, and what makes it special..."
+                        className="min-h-[120px] text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl resize-none"
                         {...field} 
                       />
                     </FormControl>
@@ -163,13 +188,16 @@ const RaffleFormFields = ({ onSubmit, isSubmitting, submissionStep, showConfirma
 
               <FormField
                 control={form.control}
-                name="batchNumber"
+                name="organizationName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-800">Batch Number (Optional)</FormLabel>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">🏢</span>
+                      Organization Name *
+                    </FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="e.g., Batch 001, Series A" 
+                        placeholder="Your business or organization name" 
                         className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
                         {...field} 
                       />
@@ -179,61 +207,81 @@ const RaffleFormFields = ({ onSubmit, isSubmitting, submissionStep, showConfirma
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe your raffle in detail. What makes it special? Include any terms and conditions here..."
-                      className="min-h-[120px] text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl resize-none"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="organizationName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Organization Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="e.g., TechCorp Philippines, Manila Startup Hub" 
-                      className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
         )}
 
-        {currentStep === 1 && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Prize Information Section */}
+        {currentSection === 1 && (
+          <div className="bg-gradient-to-br from-white via-yellow-50/30 to-orange-50/30 rounded-2xl p-8 shadow-lg border border-yellow-100 animate-slide-up">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="grandPrize"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                        <span className="mr-2">🎁</span>
+                        Grand Prize *
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., iPhone 15 Pro Max 256GB" 
+                          className="h-12 text-lg border-2 border-gray-200 focus:border-yellow-400 transition-all duration-300 hover:border-yellow-300 rounded-xl"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="grandPrizeValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                        <span className="mr-2">💰</span>
+                        Prize Value (PHP) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="75000" 
+                          className="h-12 text-lg border-2 border-gray-200 focus:border-yellow-400 transition-all duration-300 hover:border-yellow-300 rounded-xl"
+                          {...field}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="grandPrize"
+                name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-800">Grand Prize</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g., iPhone 15 Pro Max 256GB" 
-                        className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                        {...field} 
-                      />
-                    </FormControl>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">🏷️</span>
+                      Category *
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-yellow-400 transition-all duration-300 hover:border-yellow-300 rounded-xl">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="Cars" className="text-lg py-3 hover:bg-purple-50">🚗 Cars</SelectItem>
+                        <SelectItem value="Motorcycle" className="text-lg py-3 hover:bg-purple-50">🏍️ Motorcycle</SelectItem>
+                        <SelectItem value="Gadgets" className="text-lg py-3 hover:bg-purple-50">📱 Gadgets</SelectItem>
+                        <SelectItem value="Cash" className="text-lg py-3 hover:bg-purple-50">💰 Cash</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -241,108 +289,46 @@ const RaffleFormFields = ({ onSubmit, isSubmitting, submissionStep, showConfirma
 
               <FormField
                 control={form.control}
-                name="grandPrizeValue"
+                name="convertibleToCash"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-800">Prize Value (PHP)</FormLabel>
+                  <FormItem className="flex flex-row items-start space-x-4 space-y-0 rounded-xl border-2 border-dashed border-gray-300 p-6 hover:border-yellow-400 transition-all duration-300 bg-gradient-to-r from-yellow-50/50 to-orange-50/50">
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="75000" 
-                        className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                        {...field}
-                        onChange={e => field.onChange(Number(e.target.value))}
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1 h-5 w-5"
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Cars">🚗 Cars</SelectItem>
-                      <SelectItem value="Motorcycle">🏍️ Motorcycle</SelectItem>
-                      <SelectItem value="Gadgets">📱 Gadgets</SelectItem>
-                      <SelectItem value="Cash">💰 Cash</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="grandPrizeImages"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Prize Images</FormLabel>
-                  <FormControl>
-                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 hover:border-purple-400 transition-all duration-300">
-                      <ImagePreviewUpload
-                        onFileUpload={field.onChange}
-                        maxFiles={5}
-                        acceptedTypes={['image/*']}
-                      />
+                    <div className="space-y-2 leading-none">
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center cursor-pointer">
+                        <span className="mr-2">💰</span>
+                        Convertible to Cash
+                      </FormLabel>
+                      <FormDescription className="text-gray-600">
+                        Check this if the winner can choose to receive cash instead of the physical prize
+                      </FormDescription>
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
-
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="totalSlots"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-800">Total Slots</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="1000" 
-                        className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                        {...field}
-                        onChange={e => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="costPerSlot"
+                name="grandPrizeImages"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-800">Cost per Slot (PHP)</FormLabel>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">📸</span>
+                      Prize Images
+                    </FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="100" 
-                        className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                        {...field}
-                        onChange={e => field.onChange(Number(e.target.value))}
-                      />
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-yellow-400 transition-all duration-300">
+                        <EnhancedFileUpload
+                          onFileUpload={field.onChange}
+                          maxFiles={5}
+                          acceptedTypes={['image/*']}
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -352,127 +338,203 @@ const RaffleFormFields = ({ onSubmit, isSubmitting, submissionStep, showConfirma
           </div>
         )}
 
-        {currentStep === 3 && (
-          <DrawDateField />
-        )}
+        {/* Raffle Details Section */}
+        {currentSection === 2 && (
+          <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/30 rounded-2xl p-8 shadow-lg border border-blue-100 animate-slide-up">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="costPerSlot"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                        <span className="mr-2">🎫</span>
+                        Cost per Slot (PHP) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="100" 
+                          className="h-12 text-lg border-2 border-gray-200 focus:border-blue-400 transition-all duration-300 hover:border-blue-300 rounded-xl"
+                          {...field}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-        {currentStep === 4 && (
-          <div className="space-y-8">
-            <ConsolationPrizesSection />
-            <SlotBundlesSection />
+                <FormField
+                  control={form.control}
+                  name="totalSlots"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                        <span className="mr-2">🎯</span>
+                        Total Slots *
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="1000" 
+                          className="h-12 text-lg border-2 border-gray-200 focus:border-blue-400 transition-all duration-300 hover:border-blue-300 rounded-xl"
+                          {...field}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl p-6 border border-blue-200">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                  <span className="mr-2">📅</span>
+                  Draw Date
+                </h3>
+                <DrawDateField />
+              </div>
+            </div>
           </div>
         )}
 
-        {currentStep === 5 && (
-          <div className="space-y-6">
-            <FormField
-              control={form.control}
-              name="facebookPageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Facebook Page URL</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="facebook.com/yourpage or www.facebook.com/yourpage" 
-                      className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                      {...field}
-                      onChange={e => field.onChange(normalizeUrl(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* Extra Features Section */}
+        {currentSection === 3 && (
+          <div className="space-y-8 animate-slide-up">
+            <div className="bg-gradient-to-br from-white via-yellow-50/20 to-orange-50/20 rounded-2xl p-8 shadow-lg border border-yellow-100">
+              <ConsolationPrizesSection />
+            </div>
+            
+            <div className="bg-gradient-to-br from-white via-purple-50/20 to-pink-50/20 rounded-2xl p-8 shadow-lg border border-purple-100">
+              <SlotBundlesSection />
+            </div>
+          </div>
+        )}
 
-            <FormField
-              control={form.control}
-              name="raffleLink"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Raffle Link</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="your-raffle-website.com or facebook.com/events/123456" 
-                      className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                      {...field}
-                      onChange={e => field.onChange(normalizeUrl(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* Contact Information Section */}
+        {currentSection === 4 && (
+          <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/30 rounded-2xl p-8 shadow-lg border border-green-100 animate-slide-up">
+            <div className="space-y-6">
+              <FormField
+                control={form.control}
+                name="facebookPageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">📘</span>
+                      Facebook Page URL *
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://facebook.com/yourpage" 
+                        className="h-12 text-lg border-2 border-gray-200 focus:border-green-400 transition-all duration-300 hover:border-green-300 rounded-xl"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription className="text-gray-600">
+                      Your official Facebook page where participants can verify your legitimacy
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="buyingSlotsUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-800">Buying Slots URL</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="messenger.com/t/yourpage or gcash.com/payment-link" 
-                      className="h-12 text-lg border-2 border-gray-200 focus:border-purple-400 transition-all duration-300 hover:border-purple-300 rounded-xl"
-                      {...field}
-                      onChange={e => field.onChange(normalizeUrl(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="raffleLink"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">🔗</span>
+                      Raffle Information Link *
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://your-raffle-info-page.com" 
+                        className="h-12 text-lg border-2 border-gray-200 focus:border-green-400 transition-all duration-300 hover:border-green-300 rounded-xl"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription className="text-gray-600">
+                      Link to your raffle mechanics, terms, and detailed information
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="buyingSlotsUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-800 flex items-center">
+                      <span className="mr-2">💬</span>
+                      Slot Purchase/Contact URL *
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://m.me/yourpage or your contact method" 
+                        className="h-12 text-lg border-2 border-gray-200 focus:border-green-400 transition-all duration-300 hover:border-green-300 rounded-xl"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription className="text-gray-600">
+                      Where participants can purchase slots (Messenger, WhatsApp, etc.)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
         )}
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-6">
-        <Button
+      <div className="flex justify-between items-center mt-12">
+        <button
           type="button"
-          variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 0}
-          className="px-6 py-3 text-lg font-semibold border-2 border-gray-300 hover:border-purple-400 transition-all duration-300 rounded-xl disabled:opacity-50"
+          onClick={prevSection}
+          disabled={currentSection === 0}
+          className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
+            currentSection === 0
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 shadow-lg hover:shadow-xl'
+          }`}
         >
-          <ChevronLeft className="h-5 w-5 mr-2" />
-          Previous
-        </Button>
+          ← Previous
+        </button>
 
-        {currentStep < steps.length - 1 ? (
-          <Button
-            type="button"
-            onClick={nextStep}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded-xl"
-          >
-            Next Step
-            <ChevronRight className="h-5 w-5 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded-xl disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                {submissionStep || 'Submitting...'}
-              </div>
-            ) : (
-              <>
-                <Send className="h-5 w-5 mr-2" />
-                Submit Raffle
-              </>
-            )}
-          </Button>
-        )}
+        <div className="flex space-x-2">
+          {sections.map((_, index) => (
+            <div
+              key={index}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index <= currentSection
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500'
+                  : 'bg-gray-300'
+              }`}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={nextSection}
+          disabled={currentSection === sections.length - 1}
+          className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
+            currentSection === sections.length - 1
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl'
+          }`}
+        >
+          Next →
+        </button>
       </div>
-
-      <ConfirmationDialog 
-        open={showConfirmation} 
-        onOpenChange={setShowConfirmation}
-      />
     </div>
   );
 };
