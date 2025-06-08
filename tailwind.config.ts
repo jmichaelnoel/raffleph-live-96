@@ -124,6 +124,36 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-8px)' },
         },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(50px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'slide-in-left': {
+          '0%': { opacity: '0', transform: 'translateX(-50px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'pulse-dot': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.5', transform: 'scale(1.1)' },
+        },
+        'checkmark': {
+          '0%': { transform: 'scale(0) rotate(45deg)', opacity: '0' },
+          '50%': { transform: 'scale(1.2) rotate(45deg)', opacity: '1' },
+          '100%': { transform: 'scale(1) rotate(45deg)', opacity: '1' },
+        },
+        'rainbow-border': {
+          '0%': { borderColor: '#ff6b6b' },
+          '16.66%': { borderColor: '#feca57' },
+          '33.33%': { borderColor: '#48dbfb' },
+          '50%': { borderColor: '#ff9ff3' },
+          '66.66%': { borderColor: '#54a0ff' },
+          '83.33%': { borderColor: '#5f27cd' },
+          '100%': { borderColor: '#ff6b6b' },
+        },
         // GradientText keyframes
         "gradient-border": {
           "0%, 100%": { borderRadius: "37% 29% 27% 27% / 28% 25% 41% 37%" },
@@ -160,6 +190,12 @@ export default {
         'button-hover-pop': 'button-hover-pop 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards',
         'sparkle': 'sparkle 1.5s infinite alternate ease-in-out',
         'float-gently': 'float-gently 3s infinite alternate ease-in-out',
+        'slide-up': 'slide-up 0.6s ease-out forwards',
+        'slide-in-right': 'slide-in-right 0.5s ease-out forwards',
+        'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
+        'pulse-dot': 'pulse-dot 2s ease-in-out infinite',
+        'checkmark': 'checkmark 0.5s ease-out forwards',
+        'rainbow-border': 'rainbow-border 3s linear infinite',
 			}
 		}
 	},

@@ -148,6 +148,37 @@ html {
   animation: slideUp 0.6s ease-out forwards;
 }
 
+/* Enhanced slide animations for form sections */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInFromRight 0.5s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.5s ease-out forwards;
+}
+
 .delay-1 {
   animation-delay: 0.1s;
 }
@@ -291,4 +322,60 @@ html {
 
 .animate-fade-in {
   animation: fade-in 0.8s ease-out forwards;
+}
+
+/* Form input focus glow effect */
+.form-input-glow:focus {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1), 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Pulsing dot animation */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Success checkmark animation */
+@keyframes checkmark {
+  0% {
+    transform: scale(0) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+.animate-checkmark {
+  animation: checkmark 0.5s ease-out forwards;
+}
+
+/* Rainbow border animation */
+@keyframes rainbow-border {
+  0% { border-color: #ff6b6b; }
+  16.66% { border-color: #feca57; }
+  33.33% { border-color: #48dbfb; }
+  50% { border-color: #ff9ff3; }
+  66.66% { border-color: #54a0ff; }
+  83.33% { border-color: #5f27cd; }
+  100% { border-color: #ff6b6b; }
+}
+
+.animate-rainbow-border {
+  animation: rainbow-border 3s linear infinite;
 }
