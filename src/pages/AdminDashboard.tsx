@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, Eye, Clock } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
+import RaffleDrawDateEditor from '@/components/admin/RaffleDrawDateEditor';
 
 interface PendingRaffle {
   id: string;
@@ -288,7 +289,7 @@ const AdminDashboard = () => {
                       <th className="text-left py-4 px-6 font-semibold text-gray-700">Title</th>
                       <th className="text-left py-4 px-6 font-semibold text-gray-700">Organization</th>
                       <th className="text-left py-4 px-6 font-semibold text-gray-700">Prize</th>
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Category</th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Draw Date</th>
                       <th className="text-left py-4 px-6 font-semibold text-gray-700">Status</th>
                       <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
                     </tr>
@@ -319,9 +320,11 @@ const AdminDashboard = () => {
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <Badge variant="outline" className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-                            {raffle.category}
-                          </Badge>
+                          <RaffleDrawDateEditor 
+                            raffleId={raffle.id}
+                            currentDate={raffle.draw_date}
+                            onDateUpdated={fetchPendingRaffles}
+                          />
                         </td>
                         <td className="py-4 px-6">
                           {getStatusBadge(raffle.raffle_status)}

@@ -28,21 +28,20 @@ const ConfirmationDialog = ({ open, onOpenChange }: ConfirmationDialogProps) => 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md border-0 shadow-2xl bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 backdrop-blur-sm">
         <DialogHeader>
-          <DialogTitle className="text-2xl flex items-center">
+          <DialogTitle className="text-2xl flex items-center justify-center">
             <span className="mr-3 text-3xl animate-bounce">✅</span>
-            Raffle Submitted Successfully!
+            Submission Successful!
             <span className="ml-3 text-3xl animate-pulse">🎉</span>
           </DialogTitle>
-          <DialogDescription className="text-base pt-4">
-            Your raffle has been submitted for review by the RafflePH team. 
-            We will approve your raffle within the next 24 hours.
+          <DialogDescription className="text-base pt-4 text-center">
+            Thank you for submitting your raffle entry. Once we verify your payment and the legitimacy of the raffle, we will approve it in less than 24 hours.
           </DialogDescription>
         </DialogHeader>
 
         <div className="p-6 bg-gradient-to-r from-green-100 to-blue-100 rounded-xl border-2 border-green-200 my-4">
-          <div className="flex items-center text-lg font-semibold text-green-800">
+          <div className="flex items-center justify-center text-lg font-semibold text-green-800">
             <span className="mr-2 text-2xl animate-bounce">🚀</span>
-            What's next?
+            What happens next?
           </div>
           <ul className="text-green-700 mt-3 space-y-2">
             <li className="flex items-start">
@@ -51,11 +50,11 @@ const ConfirmationDialog = ({ open, onOpenChange }: ConfirmationDialogProps) => 
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-lg">📱</span>
-              Your raffle will appear on our homepage
+              Your raffle will appear on our homepage once approved
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-lg">🎮</span>
-              Wait for bettors to join your raffle
+              Participants can then join your raffle
             </li>
           </ul>
         </div>

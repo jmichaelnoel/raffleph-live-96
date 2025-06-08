@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
@@ -5,17 +6,22 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { RaffleFormData } from './RaffleFormHandler';
 import EnhancedFileUpload from '@/components/EnhancedFileUpload';
+import ImagePreviewUpload from '@/components/ImagePreviewUpload';
 import DrawDateField from './DrawDateField';
 import ConsolationPrizesSection from './ConsolationPrizesSection';
 import SlotBundlesSection from './SlotBundlesSection';
 
 interface RaffleFormFieldsProps {
   form: UseFormReturn<RaffleFormData>;
+  isSubmitting: boolean;
+  submissionStep: string;
+  onSubmit: () => void;
 }
 
-const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
+const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form, isSubmitting, submissionStep, onSubmit }) => {
   const [currentSection, setCurrentSection] = useState(0);
 
   const sections = [
@@ -62,6 +68,17 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
       setCurrentSection(currentSection - 1);
     }
   };
+
+  const normalizeUrl = (url: string): string => {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (!trimmed.match(/^https?:\/\//)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  };
+
+  const isLastSection = currentSection === sections.length - 1;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -323,7 +340,7 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
                     </FormLabel>
                     <FormControl>
                       <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-yellow-400 transition-all duration-300">
-                        <EnhancedFileUpload
+                        <ImagePreviewUpload
                           onFileUpload={field.onChange}
                           maxFiles={5}
                           acceptedTypes={['image/*']}
@@ -429,9 +446,10 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
                     </FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="https://facebook.com/yourpage" 
+                        placeholder="facebook.com/yourpage" 
                         className="h-12 text-lg border-2 border-gray-200 focus:border-green-400 transition-all duration-300 hover:border-green-300 rounded-xl"
-                        {...field} 
+                        {...field}
+                        onChange={(e) => field.onChange(normalizeUrl(e.target.value))}
                       />
                     </FormControl>
                     <FormDescription className="text-gray-600">
@@ -453,9 +471,10 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
                     </FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="https://your-raffle-info-page.com" 
+                        placeholder="your-raffle-info-page.com" 
                         className="h-12 text-lg border-2 border-gray-200 focus:border-green-400 transition-all duration-300 hover:border-green-300 rounded-xl"
-                        {...field} 
+                        {...field}
+                        onChange={(e) => field.onChange(normalizeUrl(e.target.value))}
                       />
                     </FormControl>
                     <FormDescription className="text-gray-600">
@@ -477,9 +496,10 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
                     </FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="https://m.me/yourpage or your contact method" 
+                        placeholder="m.me/yourpage or your contact method" 
                         className="h-12 text-lg border-2 border-gray-200 focus:border-green-400 transition-all duration-300 hover:border-green-300 rounded-xl"
-                        {...field} 
+                        {...field}
+                        onChange={(e) => field.onChange(normalizeUrl(e.target.value))}
                       />
                     </FormControl>
                     <FormDescription className="text-gray-600">
@@ -522,18 +542,31 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={nextSection}
-          disabled={currentSection === sections.length - 1}
-          className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
-            currentSection === sections.length - 1
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl'
-          }`}
-        >
-          Next →
-        </button>
+        {isLastSection ? (
+          <Button 
+            type="submit" 
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="px-8 py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                {submissionStep || 'Submitting...'}
+              </div>
+            ) : (
+              '🚀 Submit Raffle'
+            )}
+          </Button>
+        ) : (
+          <button
+            type="button"
+            onClick={nextSection}
+            className="px-8 py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          >
+            Next →
+          </button>
+        )}
       </div>
     </div>
   );

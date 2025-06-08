@@ -15,8 +15,8 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
     window.open(raffle.messengerLink || `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`, '_blank');
   };
 
-  // Philippine peso bills image for cash prizes
-  const cashImage = 'https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400';
+  // Philippine peso bills image for cash prizes - using the 4th uploaded image
+  const cashImage = '/lovable-uploads/4ce42990-1785-40d7-b220-e085b10c21c7.png';
 
   return (
     <div className="space-y-6">

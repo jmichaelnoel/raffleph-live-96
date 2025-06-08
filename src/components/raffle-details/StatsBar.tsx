@@ -16,7 +16,20 @@ const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string
 );
 
 const StatsBar: React.FC<StatsBarProps> = ({ raffle }) => {
-  const daysLeft = Math.max(0, Math.ceil((new Date(raffle.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+  // Handle TBD dates properly
+  let daysLeft: string | number = "TBD";
+  
+  if (raffle.endDate && raffle.endDate.toLowerCase() !== 'tbd') {
+    const endDate = new Date(raffle.endDate);
+    const today = new Date();
+    
+    // Check if the date is valid
+    if (!isNaN(endDate.getTime())) {
+      const timeDiff = endDate.getTime() - today.getTime();
+      const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      daysLeft = Math.max(0, daysDiff);
+    }
+  }
   
   // Calculate win rate: 1/total slots with 3 decimals
   const totalSlots = raffle.totalSlots || raffle.entriesLeft || 1000;

@@ -9,7 +9,7 @@ import { uploadMultipleImages } from '@/utils/imageUtils';
 import { normalizeUrl, isValidUrl } from '@/utils/urlUtils';
 import { Form } from '@/components/ui/form';
 import RaffleFormFields from './RaffleFormFields';
-import { Button } from '@/components/ui/button';
+import ConfirmationDialog from './ConfirmationDialog';
 
 // Custom URL validation that normalizes URLs and validates them
 const urlSchema = z.string()
@@ -60,6 +60,7 @@ export type RaffleFormData = z.infer<typeof raffleFormSchema>;
 const RaffleFormHandler = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStep, setSubmissionStep] = useState<string>('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<RaffleFormData>({
@@ -186,13 +187,8 @@ const RaffleFormHandler = () => {
       setSubmissionStep('Complete!');
       console.log('🎉 Raffle submission completed successfully!');
       
-      toast({
-        title: "🎉 Success!",
-        description: data.isDrawDateTBD 
-          ? "Your raffle has been submitted for review. You can finalize the draw date later."
-          : "Your raffle has been submitted for review. You'll be notified once it's approved.",
-        duration: 5000
-      });
+      // Show confirmation dialog instead of toast
+      setShowConfirmation(true);
 
       // Reset form
       form.reset();
@@ -224,30 +220,30 @@ const RaffleFormHandler = () => {
     }
   };
 
+  const handleSubmit = () => {
+    form.handleSubmit(onSubmit)();
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <RaffleFormFields form={form} />
-          <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  {submissionStep || 'Submitting...'}
-                </div>
-              ) : (
-                'Submit Raffle'
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+    <>
+      <div className="max-w-4xl mx-auto p-6">
+        <Form {...form}>
+          <form className="space-y-8">
+            <RaffleFormFields 
+              form={form} 
+              isSubmitting={isSubmitting}
+              submissionStep={submissionStep}
+              onSubmit={handleSubmit}
+            />
+          </form>
+        </Form>
+      </div>
+
+      <ConfirmationDialog 
+        open={showConfirmation}
+        onOpenChange={setShowConfirmation}
+      />
+    </>
   );
 };
 
