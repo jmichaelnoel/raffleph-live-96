@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
@@ -9,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RaffleFormData } from './RaffleFormHandler';
 import EnhancedFileUpload from '@/components/EnhancedFileUpload';
 import DrawDateField from './DrawDateField';
+import ConsolationPrizesSection from './ConsolationPrizesSection';
+import SlotBundlesSection from './SlotBundlesSection';
 
 interface RaffleFormFieldsProps {
   form: UseFormReturn<RaffleFormData>;
@@ -35,6 +36,12 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
       title: 'Raffle Details', 
       emoji: '🎯',
       description: 'Set up the mechanics'
+    },
+    { 
+      id: 'extras', 
+      title: 'Extra Features', 
+      emoji: '✨',
+      description: 'Add consolation prizes & bundles!'
     },
     { 
       id: 'contact', 
@@ -394,8 +401,21 @@ const RaffleFormFields: React.FC<RaffleFormFieldsProps> = ({ form }) => {
           </div>
         )}
 
-        {/* Contact Information Section */}
+        {/* Extra Features Section */}
         {currentSection === 3 && (
+          <div className="space-y-8 animate-slide-up">
+            <div className="bg-gradient-to-br from-white via-yellow-50/20 to-orange-50/20 rounded-2xl p-8 shadow-lg border border-yellow-100">
+              <ConsolationPrizesSection />
+            </div>
+            
+            <div className="bg-gradient-to-br from-white via-purple-50/20 to-pink-50/20 rounded-2xl p-8 shadow-lg border border-purple-100">
+              <SlotBundlesSection />
+            </div>
+          </div>
+        )}
+
+        {/* Contact Information Section */}
+        {currentSection === 4 && (
           <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/30 rounded-2xl p-8 shadow-lg border border-green-100 animate-slide-up">
             <div className="space-y-6">
               <FormField
