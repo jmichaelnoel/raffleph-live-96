@@ -1,35 +1,81 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Raffle } from '@/data/raffles';
-import { DollarSign, Percent, CalendarDays, BarChartBig, Users } from 'lucide-react';
+import { Calendar, Users, DollarSign, Trophy } from 'lucide-react';
 
 interface StatsBarProps {
   raffle: Raffle;
 }
 
-const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string | number; iconColor?: string }> = ({ icon: Icon, label, value, iconColor = "text-ph-blue" }) => (
-  <div className="flex flex-col items-center text-center p-4 bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-    <Icon className={`h-8 w-8 mb-2 ${iconColor}`} />
-    <span className="text-xs text-gray-500 font-medium">{label}</span>
-    <span className="text-lg font-bold text-gray-800">{value}</span>
-  </div>
-);
+const StatsBar = ({ raffle }: StatsBarProps) => {
+  const formatDrawDate = () => {
+    if (raffle.endDate === 'TBD') {
+      return 'Draw Date: TBD';
+    }
+    
+    try {
+      const drawDate = new Date(raffle.endDate);
+      if (isNaN(drawDate.getTime())) {
+        return 'Draw Date: TBD';
+      }
+      return drawDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Draw Date: TBD';
+    }
+  };
 
-const StatsBar: React.FC<StatsBarProps> = ({ raffle }) => {
-  const daysLeft = Math.max(0, Math.ceil((new Date(raffle.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
-  
-  // Calculate win rate: 1/total slots with 3 decimals
-  const totalSlots = raffle.totalSlots || raffle.entriesLeft || 1000;
-  const winRate = ((1 / totalSlots) * 100).toFixed(3);
+  const stats = [
+    {
+      icon: <Calendar className="h-5 w-5" />,
+      label: 'Draw Date',
+      value: formatDrawDate(),
+      color: 'text-blue-600'
+    },
+    {
+      icon: <Users className="h-5 w-5" />,
+      label: 'Total Slots',
+      value: raffle.totalSlots.toLocaleString(),
+      color: 'text-green-600'
+    },
+    {
+      icon: <DollarSign className="h-5 w-5" />,
+      label: 'Price per Slot',
+      value: `₱${raffle.bettingCost.toLocaleString()}`,
+      color: 'text-purple-600'
+    },
+    {
+      icon: <Trophy className="h-5 w-5" />,
+      label: 'Prize Value',
+      value: `₱${raffle.prize.toLocaleString()}`,
+      color: 'text-orange-600'
+    }
+  ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 my-8">
-      <StatItem icon={BarChartBig} label="Total Prize Value" value={`₱${raffle.prize.toLocaleString()}`} iconColor="text-ph-red" />
-      <StatItem icon={DollarSign} label="Entry Cost" value={`₱${raffle.bettingCost.toLocaleString()}`} iconColor="text-green-500" />
-      <StatItem icon={Percent} label="Win Rate" value={`${winRate}%`} iconColor="text-yellow-600" />
-      <StatItem icon={CalendarDays} label="Days Left" value={daysLeft} iconColor="text-blue-500" />
-      <StatItem icon={Users} label="Total Entries" value={totalSlots.toLocaleString()} iconColor="text-indigo-500" />
-    </div>
+    <Card className="mb-8 shadow-lg">
+      <CardContent className="p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {stats.map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3 ${stat.color}`}>
+                {stat.icon}
+              </div>
+              <div className="text-sm font-medium text-gray-600 mb-1">
+                {stat.label}
+              </div>
+              <div className="text-lg font-bold text-gray-900">
+                {stat.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

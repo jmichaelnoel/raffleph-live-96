@@ -1,54 +1,54 @@
 
 import React from 'react';
-import { Raffle } from '@/data/raffles';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Gift, Star, MessageCircle } from 'lucide-react';
+import { Raffle } from '@/data/raffles';
+import { Gift, DollarSign } from 'lucide-react';
 
 interface WhatYouWinSectionProps {
   raffle: Raffle;
 }
 
-const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
-  const handleBundleClick = () => {
-    window.open(raffle.messengerLink || `https://m.me/${raffle.organization.toLowerCase().replace(/\s+/g, '')}`, '_blank');
-  };
-
-  // Philippine peso bills image for cash prizes
-  const cashImage = 'https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400';
+const WhatYouWinSection = ({ raffle }: WhatYouWinSectionProps) => {
+  const defaultCashImage = "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800";
 
   return (
     <div className="space-y-6">
       {/* Grand Prize */}
-      <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200">
-        <CardHeader>
-          <CardTitle className="flex items-center text-xl font-bold text-gray-800">
-            <Star className="mr-2 h-6 w-6 text-yellow-500" />
+      <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <CardHeader className="bg-gradient-to-r from-ph-blue to-blue-600 text-white">
+          <CardTitle className="flex items-center text-xl">
+            <Gift className="mr-2 h-6 w-6" />
             Grand Prize
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-lg">
-              <div 
-                className="w-full h-48 bg-cover bg-center filter blur-md scale-110"
-                style={{ backgroundImage: `url(${raffle.imageUrl})` }}
-              />
-              <img 
-                src={raffle.imageUrl} 
-                alt={raffle.title}
-                className="absolute inset-0 w-full h-48 object-contain z-10"
-              />
-            </div>
-            <div>
+            {raffle.grandPrizeImages && raffle.grandPrizeImages.length > 0 && (
+              <div className="grid grid-cols-1 gap-4">
+                {raffle.grandPrizeImages.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`Grand prize ${index + 1}`}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                ))}
+              </div>
+            )}
+            
+            <div className="space-y-2">
               <h3 className="text-lg font-semibold text-gray-800">{raffle.title}</h3>
-              <p className="text-2xl font-bold text-ph-red">₱{raffle.prize.toLocaleString()}</p>
-              {raffle.convertibleToCash && (
-                <Badge className="mt-2 bg-green-100 text-green-800">
-                  💰 Can be converted to cash
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  ₱{raffle.prize.toLocaleString()}
                 </Badge>
-              )}
+                {raffle.convertibleToCash && (
+                  <Badge variant="outline" className="border-orange-300 text-orange-600">
+                    💰 Convertible to Cash
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -56,29 +56,31 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
 
       {/* Consolation Prizes */}
       {raffle.consolationPrizes && raffle.consolationPrizes.length > 0 && (
-        <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
-          <CardHeader>
-            <CardTitle className="flex items-center text-xl font-bold text-gray-800">
-              <Gift className="mr-2 h-6 w-6 text-blue-500" />
+        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+            <CardTitle className="flex items-center text-xl">
+              <DollarSign className="mr-2 h-6 w-6" />
               Consolation Prizes
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {raffle.consolationPrizes.map((prize, index) => (
-                <div key={index} className="flex items-center space-x-4 p-3 bg-white rounded-lg border border-blue-100">
-                  <img 
-                    src={prize.isCash ? cashImage : (prize.image || '/placeholder.svg')} 
-                    alt={prize.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                  <div>
-                    <h4 className="font-semibold text-gray-800">{prize.name}</h4>
-                    {prize.isCash && (
-                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                        Cash Prize
-                      </Badge>
-                    )}
+                <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={prize.isCash ? defaultCashImage : (prize.image || defaultCashImage)}
+                      alt={prize.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                    <div>
+                      <h4 className="font-medium text-gray-800">{prize.name}</h4>
+                      {prize.isCash && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 mt-1">
+                          💰 Cash Prize
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -89,34 +91,31 @@ const WhatYouWinSection: React.FC<WhatYouWinSectionProps> = ({ raffle }) => {
 
       {/* Bundle Pricing */}
       {raffle.bundlePricing && raffle.bundlePricing.length > 0 && (
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200">
-          <CardHeader>
-            <CardTitle className="flex items-center text-xl font-bold text-gray-800">
-              <MessageCircle className="mr-2 h-6 w-6 text-purple-500" />
-              Bundle Pricing
+        <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+            <CardTitle className="flex items-center text-xl">
+              <Gift className="mr-2 h-6 w-6" />
+              Bundle Deals
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {raffle.bundlePricing.map((bundle, index) => (
-                <Button
-                  key={index}
-                  onClick={handleBundleClick}
-                  variant="outline"
-                  className="w-full p-4 h-auto hover:bg-purple-50 border-purple-200 hover:border-purple-300 transition-all duration-300"
-                >
-                  <div className="flex justify-between items-center w-full">
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-800">{bundle.slots} Slots</p>
-                      <p className="text-lg font-bold text-purple-600">₱{bundle.price.toLocaleString()}</p>
+                <div key={index} className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {bundle.slots} Slots
                     </div>
-                    {bundle.savings && (
-                      <Badge className="bg-green-100 text-green-800">
+                    <div className="text-xl font-semibold text-gray-800">
+                      ₱{bundle.price.toLocaleString()}
+                    </div>
+                    {bundle.savings > 0 && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 mt-2">
                         Save ₱{bundle.savings.toLocaleString()}
                       </Badge>
                     )}
                   </div>
-                </Button>
+                </div>
               ))}
             </div>
           </CardContent>

@@ -34,8 +34,7 @@ const ConfirmationDialog = ({ open, onOpenChange }: ConfirmationDialogProps) => 
             <span className="ml-3 text-3xl animate-pulse">🎉</span>
           </DialogTitle>
           <DialogDescription className="text-base pt-4">
-            Your raffle has been submitted for review by the RafflePH team. 
-            We will approve your raffle within the next 24 hours.
+            Thank you for submitting your raffle entry. Once we verify your payment and the legitimacy of the raffle, we will approve it in less than 24 hours.
           </DialogDescription>
         </DialogHeader>
 
@@ -47,11 +46,11 @@ const ConfirmationDialog = ({ open, onOpenChange }: ConfirmationDialogProps) => 
           <ul className="text-green-700 mt-3 space-y-2">
             <li className="flex items-start">
               <span className="mr-2 text-lg">👀</span>
-              We'll review your submission within 24 hours
+              We'll verify your payment and raffle legitimacy
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-lg">📱</span>
-              Your raffle will appear on our homepage
+              Your raffle will appear on our homepage once approved
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-lg">🎮</span>
