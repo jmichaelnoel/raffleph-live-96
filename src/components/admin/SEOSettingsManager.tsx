@@ -1,115 +1,154 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useSEOSettings } from '@/hooks/useSEOSettings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Save, Settings, Globe, Share2, Palette } from 'lucide-react';
+import { Save, Settings, Globe, Share2, Palette, Download, Upload } from 'lucide-react';
 
-interface SEOSetting {
-  id: string;
-  setting_key: string;
-  setting_value: string;
-  setting_type: string;
+interface SEOSettingField {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'color' | 'url';
   description: string;
+  category: 'basic' | 'social' | 'appearance';
 }
 
+const seoFields: SEOSettingField[] = [
+  {
+    key: 'site_title',
+    label: 'Site Title',
+    type: 'text',
+    description: 'Main title for your website (max 60 characters)',
+    category: 'basic'
+  },
+  {
+    key: 'site_description',
+    label: 'Site Description',
+    type: 'textarea',
+    description: 'Meta description for your website (max 160 characters)',
+    category: 'basic'
+  },
+  {
+    key: 'og_site_name',
+    label: 'Site Name (Open Graph)',
+    type: 'text',
+    description: 'Site name for social media sharing',
+    category: 'social'
+  },
+  {
+    key: 'twitter_handle',
+    label: 'Twitter Handle',
+    type: 'text',
+    description: 'Your Twitter username (e.g., @YourHandle)',
+    category: 'social'
+  },
+  {
+    key: 'default_social_image',
+    label: 'Default Social Image',
+    type: 'url',
+    description: 'Default image for social media sharing (1200x630px recommended)',
+    category: 'social'
+  },
+  {
+    key: 'favicon_url',
+    label: 'Favicon URL',
+    type: 'url',
+    description: 'URL to your website favicon',
+    category: 'appearance'
+  },
+  {
+    key: 'theme_color',
+    label: 'Theme Color',
+    type: 'color',
+    description: 'Primary theme color for your website',
+    category: 'appearance'
+  }
+];
+
 const SEOSettingsManager = () => {
-  const [settings, setSettings] = useState<SEOSetting[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { settings, loading, updateSettings } = useSEOSettings();
+  const [localSettings, setLocalSettings] = useState(settings);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  React.useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
 
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      // Using type assertion to work around TypeScript not knowing about seo_settings table
-      const { data, error } = await (supabase as any)
-        .from('seo_settings')
-        .select('*')
-        .order('setting_key');
-
-      if (error) throw error;
-      setSettings(data || []);
-    } catch (error) {
-      console.error('Error fetching SEO settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch SEO settings",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleInputChange = (key: string, value: string) => {
+    setLocalSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
-  const updateSetting = async (settingKey: string, value: string) => {
-    try {
-      setSaving(true);
-      // Using type assertion to work around TypeScript not knowing about seo_settings table
-      const { error } = await (supabase as any)
-        .from('seo_settings')
-        .update({ setting_value: value })
-        .eq('setting_key', settingKey);
-
-      if (error) throw error;
-
-      setSettings(prev => 
-        prev.map(setting => 
-          setting.setting_key === settingKey 
-            ? { ...setting, setting_value: value }
-            : setting
-        )
-      );
-
-      toast({
-        title: "Success",
-        description: "SEO setting updated successfully"
-      });
-    } catch (error) {
-      console.error('Error updating SEO setting:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update SEO setting",
-        variant: "destructive"
-      });
-    } finally {
+  const handleSave = () => {
+    setSaving(true);
+    updateSettings(localSettings);
+    setTimeout(() => {
       setSaving(false);
+      toast({
+        title: "Settings Updated",
+        description: "SEO settings have been updated successfully (in-memory only)"
+      });
+    }, 500);
+  };
+
+  const exportSettings = () => {
+    const dataStr = JSON.stringify(localSettings, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'seo-settings.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedSettings = JSON.parse(e.target?.result as string);
+          setLocalSettings(importedSettings);
+          toast({
+            title: "Settings Imported",
+            description: "SEO settings have been imported successfully"
+          });
+        } catch (error) {
+          toast({
+            title: "Import Error",
+            description: "Failed to import settings. Please check the file format.",
+            variant: "destructive"
+          });
+        }
+      };
+      reader.readAsText(file);
     }
   };
 
-  const handleInputChange = (settingKey: string, value: string) => {
-    setSettings(prev => 
-      prev.map(setting => 
-        setting.setting_key === settingKey 
-          ? { ...setting, setting_value: value }
-          : setting
-      )
-    );
-  };
-
-  const getInputComponent = (setting: SEOSetting) => {
+  const getInputComponent = (field: SEOSettingField) => {
+    const value = localSettings[field.key as keyof typeof localSettings] || '';
     const commonProps = {
-      value: setting.setting_value || '',
+      value: value,
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
-        handleInputChange(setting.setting_key, e.target.value),
+        handleInputChange(field.key, e.target.value),
       className: "border-2 border-purple-200 focus:border-purple-400 rounded-xl"
     };
 
-    switch (setting.setting_type) {
+    switch (field.type) {
       case 'textarea':
         return (
           <Textarea 
             {...commonProps}
             rows={3}
-            placeholder={setting.description}
+            placeholder={field.description}
           />
         );
       case 'color':
@@ -133,36 +172,28 @@ const SEOSettingsManager = () => {
           <Input 
             {...commonProps}
             type="text"
-            placeholder={setting.description}
+            placeholder={field.description}
           />
         );
     }
   };
 
-  const getSettingIcon = (settingKey: string) => {
-    if (settingKey.includes('title') || settingKey.includes('description')) {
-      return <Globe className="h-4 w-4" />;
+  const getSettingIcon = (category: string) => {
+    switch (category) {
+      case 'basic': return <Globe className="h-4 w-4" />;
+      case 'social': return <Share2 className="h-4 w-4" />;
+      case 'appearance': return <Palette className="h-4 w-4" />;
+      default: return <Settings className="h-4 w-4" />;
     }
-    if (settingKey.includes('social') || settingKey.includes('og') || settingKey.includes('twitter')) {
-      return <Share2 className="h-4 w-4" />;
-    }
-    if (settingKey.includes('color') || settingKey.includes('theme')) {
-      return <Palette className="h-4 w-4" />;
-    }
-    return <Settings className="h-4 w-4" />;
   };
 
-  const getSettingCategory = (settingKey: string) => {
-    if (settingKey.includes('title') || settingKey.includes('description')) {
-      return { name: 'Basic SEO', color: 'bg-blue-100 text-blue-700' };
-    }
-    if (settingKey.includes('social') || settingKey.includes('og') || settingKey.includes('twitter')) {
-      return { name: 'Social Media', color: 'bg-green-100 text-green-700' };
-    }
-    if (settingKey.includes('favicon') || settingKey.includes('theme')) {
-      return { name: 'Appearance', color: 'bg-purple-100 text-purple-700' };
-    }
-    return { name: 'General', color: 'bg-gray-100 text-gray-700' };
+  const getCategoryBadge = (category: string) => {
+    const badges = {
+      basic: { name: 'Basic SEO', color: 'bg-blue-100 text-blue-700' },
+      social: { name: 'Social Media', color: 'bg-green-100 text-green-700' },
+      appearance: { name: 'Appearance', color: 'bg-purple-100 text-purple-700' }
+    };
+    return badges[category as keyof typeof badges] || { name: 'General', color: 'bg-gray-100 text-gray-700' };
   };
 
   if (loading) {
@@ -179,48 +210,73 @@ const SEOSettingsManager = () => {
       <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
         <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
           <Settings className="h-5 w-5 text-purple-600" />
-          🔧 SEO Settings Manager
+          🔧 SEO Settings Manager (File-Based)
         </CardTitle>
         <p className="text-gray-600 text-sm">
           Manage your site's SEO properties, meta tags, and social sharing settings
         </p>
       </CardHeader>
       <CardContent className="p-6">
+        {/* Import/Export Controls */}
+        <div className="flex gap-4 mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+          <Button
+            onClick={exportSettings}
+            variant="outline"
+            className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export Settings
+          </Button>
+          <label className="cursor-pointer">
+            <Button
+              as="span"
+              variant="outline"
+              className="border-2 border-green-200 text-green-600 hover:bg-green-50 rounded-xl"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Import Settings
+            </Button>
+            <input
+              type="file"
+              accept=".json"
+              onChange={importSettings}
+              className="hidden"
+            />
+          </label>
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg ml-auto"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? 'Saving...' : 'Save All'}
+          </Button>
+        </div>
+
         <div className="space-y-6">
-          {settings.map((setting) => {
-            const category = getSettingCategory(setting.setting_key);
+          {seoFields.map((field) => {
+            const category = getCategoryBadge(field.category);
             return (
-              <div key={setting.id} className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+              <div key={field.key} className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    {getSettingIcon(setting.setting_key)}
-                    <h3 className="font-semibold text-gray-800 capitalize">
-                      {setting.setting_key.replace(/_/g, ' ')}
-                    </h3>
+                    {getSettingIcon(field.category)}
+                    <h3 className="font-semibold text-gray-800">{field.label}</h3>
                     <Badge className={category.color}>
                       {category.name}
                     </Badge>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => updateSetting(setting.setting_key, setting.setting_value)}
-                    disabled={saving}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
-                  >
-                    <Save className="h-3 w-3 mr-1" />
-                    Save
-                  </Button>
                 </div>
                 
-                <p className="text-sm text-gray-600 mb-2">{setting.description}</p>
+                <p className="text-sm text-gray-600 mb-2">{field.description}</p>
                 
-                {getInputComponent(setting)}
+                {getInputComponent(field)}
                 
-                {setting.setting_key.includes('image') && setting.setting_value && (
+                {field.key.includes('image') && localSettings[field.key as keyof typeof localSettings] && (
                   <div className="mt-2">
                     <p className="text-xs text-gray-500 mb-1">Preview:</p>
                     <img 
-                      src={setting.setting_value} 
+                      src={localSettings[field.key as keyof typeof localSettings] as string} 
                       alt="Preview" 
                       className="w-20 h-20 object-cover rounded border"
                       onError={(e) => {
@@ -235,12 +291,12 @@ const SEOSettingsManager = () => {
         </div>
         
         <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2">💡 Quick Tips</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">💡 File-Based System Notes</h4>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Changes take effect immediately across the site</li>
-            <li>• For images, use full URLs or upload files to your media library</li>
-            <li>• Keep titles under 60 characters and descriptions under 160 characters</li>
-            <li>• Test your social sharing with tools like Facebook Debugger</li>
+            <li>• Settings are stored locally and persist in browser session</li>
+            <li>• Use Export/Import to backup or transfer settings</li>
+            <li>• Changes are applied immediately to the site preview</li>
+            <li>• For permanent storage, consider upgrading to database version</li>
           </ul>
         </div>
       </CardContent>

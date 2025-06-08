@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface SEOSettings {
   site_title?: string;
@@ -22,25 +21,45 @@ export const useSEOSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      // Using type assertion to work around TypeScript not knowing about seo_settings table
-      const { data, error } = await (supabase as any)
-        .from('seo_settings')
-        .select('setting_key, setting_value');
-
-      if (error) throw error;
-
-      const settingsObj: SEOSettings = {};
-      data?.forEach((item: any) => {
-        settingsObj[item.setting_key as keyof SEOSettings] = item.setting_value;
-      });
-
-      setSettings(settingsObj);
+      // Load settings from local JSON file
+      const response = await fetch('/src/data/seoSettings.json');
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      } else {
+        // Fallback to default settings if file not found
+        setSettings({
+          site_title: 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
+          site_description: 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
+          default_social_image: '/placeholder.svg',
+          favicon_url: '/favicon.ico',
+          og_site_name: 'Philippine Raffles',
+          twitter_handle: '@PhilippineRaffles',
+          theme_color: '#8B5CF6'
+        });
+      }
     } catch (error) {
       console.error('Error fetching SEO settings:', error);
+      // Use default settings on error
+      setSettings({
+        site_title: 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
+        site_description: 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
+        default_social_image: '/placeholder.svg',
+        favicon_url: '/favicon.ico',
+        og_site_name: 'Philippine Raffles',
+        twitter_handle: '@PhilippineRaffles',
+        theme_color: '#8B5CF6'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  return { settings, loading, refetch: fetchSettings };
+  const updateSettings = (newSettings: SEOSettings) => {
+    setSettings(newSettings);
+    // Note: In a real implementation, you'd need a backend API to save the file
+    console.log('Settings updated (in-memory only):', newSettings);
+  };
+
+  return { settings, loading, updateSettings, refetch: fetchSettings };
 };
