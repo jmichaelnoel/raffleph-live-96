@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, Eye, Clock } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
 import RaffleDrawDateEditor from '@/components/admin/RaffleDrawDateEditor';
+import SEOSettingsManager from '@/components/admin/SEOSettingsManager';
 
 interface PendingRaffle {
   id: string;
@@ -34,6 +34,7 @@ const AdminDashboard = () => {
     pendingRaffles: 0,
     approvedRaffles: 0
   });
+  const [activeTab, setActiveTab] = useState('raffles');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -224,161 +225,193 @@ const AdminDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">Total Raffles</CardTitle>
-              <Eye className="h-5 w-5 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                {stats.totalRaffles}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">Pending Review</CardTitle>
-              <Clock className="h-5 w-5 text-amber-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                {stats.pendingRaffles}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">Approved</CardTitle>
-              <Check className="h-5 w-5 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                {stats.approvedRaffles}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Navigation Tabs */}
+        <div className="flex gap-4 mb-8">
+          <Button
+            onClick={() => setActiveTab('raffles')}
+            variant={activeTab === 'raffles' ? 'default' : 'outline'}
+            className={`rounded-xl ${
+              activeTab === 'raffles' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600' 
+                : 'border-2 border-purple-200 text-purple-600 hover:bg-purple-50'
+            }`}
+          >
+            🎯 Raffles
+          </Button>
+          <Button
+            onClick={() => setActiveTab('seo')}
+            variant={activeTab === 'seo' ? 'default' : 'outline'}
+            className={`rounded-xl ${
+              activeTab === 'seo' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600' 
+                : 'border-2 border-purple-200 text-purple-600 hover:bg-purple-50'
+            }`}
+          >
+            🔧 SEO Settings
+          </Button>
         </div>
 
-        {/* Raffles Table */}
-        <Card className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
-            <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              🎯 All Raffles
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="text-2xl mb-2">⏳</div>
-                <div className="text-gray-600">Loading raffles...</div>
-              </div>
-            ) : pendingRaffles.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">📭</div>
-                <div className="text-gray-500">No raffles submitted yet</div>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Title</th>
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Organization</th>
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Prize</th>
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Draw Date</th>
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Status</th>
-                      <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingRaffles.map((raffle, index) => (
-                      <tr 
-                        key={raffle.id} 
-                        className={`border-b border-gray-100 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 transition-all duration-200 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                        }`}
-                      >
-                        <td className="py-4 px-6">
-                          <div>
-                            <div className="font-medium text-gray-800">{raffle.title}</div>
-                            <div className="text-sm text-gray-500">
-                              {new Date(raffle.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-gray-700">{raffle.organization_name}</td>
-                        <td className="py-4 px-6">
-                          <div>
-                            <div className="font-medium text-gray-800">{raffle.grand_prize}</div>
-                            <div className="text-sm text-green-600 font-semibold">
-                              {formatCurrency(raffle.grand_prize_value)}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <RaffleDrawDateEditor 
-                            raffleId={raffle.id}
-                            currentDate={raffle.draw_date}
-                            onDateUpdated={fetchPendingRaffles}
-                          />
-                        </td>
-                        <td className="py-4 px-6">
-                          {getStatusBadge(raffle.raffle_status)}
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex gap-2">
-                            {raffle.raffle_status === 'pending' && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleApproval(raffle.id, true)}
-                                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleApproval(raffle.id, false)}
-                                  className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
-                            {raffle.raffle_status === 'approved' && (
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleApproval(raffle.id, false)}
-                                className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg"
-                              >
-                                <X className="h-4 w-4 mr-1" /> Reject
-                              </Button>
-                            )}
-                            {raffle.raffle_status === 'rejected' && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleApproval(raffle.id, true)}
-                                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
-                              >
-                                <Check className="h-4 w-4 mr-1" /> Approve
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {activeTab === 'raffles' && (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-700">Total Raffles</CardTitle>
+                  <Eye className="h-5 w-5 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    {stats.totalRaffles}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-700">Pending Review</CardTitle>
+                  <Clock className="h-5 w-5 text-amber-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                    {stats.pendingRaffles}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-700">Approved</CardTitle>
+                  <Check className="h-5 w-5 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    {stats.approvedRaffles}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Raffles Table */}
+            <Card className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
+                <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  🎯 All Raffles
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="text-2xl mb-2">⏳</div>
+                    <div className="text-gray-600">Loading raffles...</div>
+                  </div>
+                ) : pendingRaffles.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-4xl mb-4">📭</div>
+                    <div className="text-gray-500">No raffles submitted yet</div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-4 px-6 font-semibold text-gray-700">Title</th>
+                          <th className="text-left py-4 px-6 font-semibold text-gray-700">Organization</th>
+                          <th className="text-left py-4 px-6 font-semibold text-gray-700">Prize</th>
+                          <th className="text-left py-4 px-6 font-semibold text-gray-700">Draw Date</th>
+                          <th className="text-left py-4 px-6 font-semibold text-gray-700">Status</th>
+                          <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingRaffles.map((raffle, index) => (
+                          <tr 
+                            key={raffle.id} 
+                            className={`border-b border-gray-100 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 transition-all duration-200 ${
+                              index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                            }`}
+                          >
+                            <td className="py-4 px-6">
+                              <div>
+                                <div className="font-medium text-gray-800">{raffle.title}</div>
+                                <div className="text-sm text-gray-500">
+                                  {new Date(raffle.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-6 text-gray-700">{raffle.organization_name}</td>
+                            <td className="py-4 px-6">
+                              <div>
+                                <div className="font-medium text-gray-800">{raffle.grand_prize}</div>
+                                <div className="text-sm text-green-600 font-semibold">
+                                  {formatCurrency(raffle.grand_prize_value)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-6">
+                              <RaffleDrawDateEditor 
+                                raffleId={raffle.id}
+                                currentDate={raffle.draw_date}
+                                onDateUpdated={fetchPendingRaffles}
+                              />
+                            </td>
+                            <td className="py-4 px-6">
+                              {getStatusBadge(raffle.raffle_status)}
+                            </td>
+                            <td className="py-4 px-6">
+                              <div className="flex gap-2">
+                                {raffle.raffle_status === 'pending' && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleApproval(raffle.id, true)}
+                                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
+                                    >
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleApproval(raffle.id, false)}
+                                      className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )}
+                                {raffle.raffle_status === 'approved' && (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleApproval(raffle.id, false)}
+                                    className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg"
+                                  >
+                                    <X className="h-4 w-4 mr-1" /> Reject
+                                  </Button>
+                                )}
+                                {raffle.raffle_status === 'rejected' && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleApproval(raffle.id, true)}
+                                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
+                                  >
+                                    <Check className="h-4 w-4 mr-1" /> Approve
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {activeTab === 'seo' && <SEOSettingsManager />}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Raffle } from '@/data/raffles';
+import { useSEOSettings } from '@/hooks/useSEOSettings';
 
 interface SEOHeadProps {
   title?: string;
@@ -20,21 +20,25 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   raffle,
   type = 'website'
 }) => {
-  // Generate SEO data based on raffle if provided
+  const { settings } = useSEOSettings();
+
+  // Generate SEO data based on raffle if provided, otherwise use database settings or defaults
   const seoData = raffle ? {
     title: `Win ${raffle.title} - ₱${raffle.prize.toLocaleString()} Prize | Philippine Raffles`,
     description: `Join the ${raffle.title} raffle organized by ${raffle.organization}. Prize worth ₱${raffle.prize.toLocaleString()}, entry cost ₱${raffle.bettingCost.toLocaleString()}. Win rate: ${(raffle.winningPercentage * 100).toFixed(3)}%. ${raffle.description}`,
     image: raffle.imageUrl,
     keywords: `raffle, giveaway, ${raffle.category}, ${raffle.organization}, Philippine raffles, win prizes, online raffle`
   } : {
-    title: title || 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
-    description: description || 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
-    image: image || '/placeholder.svg',
+    title: title || settings.site_title || 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
+    description: description || settings.site_description || 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
+    image: image || settings.default_social_image || '/placeholder.svg',
     keywords: 'Philippine raffles, online raffles, win prizes, giveaways, verified raffles, gadgets, cars, cash prizes'
   };
 
-  const siteName = 'Philippine Raffles';
+  const siteName = settings.og_site_name || 'Philippine Raffles';
   const canonicalUrl = url.split('?')[0]; // Remove query parameters for canonical URL
+  const faviconUrl = settings.favicon_url || '/favicon.ico';
+  const themeColor = settings.theme_color || '#8B5CF6';
 
   // Generate structured data for raffles
   const structuredData = raffle ? {
@@ -89,6 +93,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta name="description" content={seoData.description} />
       <meta name="keywords" content={seoData.keywords} />
       <link rel="canonical" href={canonicalUrl} />
+      <link rel="icon" href={faviconUrl} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
@@ -104,6 +109,9 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta name="twitter:title" content={seoData.title} />
       <meta name="twitter:description" content={seoData.description} />
       <meta name="twitter:image" content={seoData.image} />
+      {settings.twitter_handle && (
+        <meta name="twitter:site" content={settings.twitter_handle} />
+      )}
 
       {/* Additional Meta Tags */}
       <meta name="robots" content="index, follow" />
@@ -128,8 +136,8 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       </script>
 
       {/* Additional SEO Tags */}
-      <meta name="theme-color" content="#8B5CF6" />
-      <meta name="msapplication-TileColor" content="#8B5CF6" />
+      <meta name="theme-color" content={themeColor} />
+      <meta name="msapplication-TileColor" content={themeColor} />
       <meta name="format-detection" content="telephone=no" />
     </Helmet>
   );
