@@ -151,6 +151,45 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_settings: {
+        Row: {
+          created_at: string | null
+          default_social_image: string | null
+          favicon_url: string | null
+          id: string
+          og_site_name: string | null
+          site_description: string | null
+          site_title: string | null
+          theme_color: string | null
+          twitter_handle: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_social_image?: string | null
+          favicon_url?: string | null
+          id?: string
+          og_site_name?: string | null
+          site_description?: string | null
+          site_title?: string | null
+          theme_color?: string | null
+          twitter_handle?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          default_social_image?: string | null
+          favicon_url?: string | null
+          id?: string
+          og_site_name?: string | null
+          site_description?: string | null
+          site_title?: string | null
+          theme_color?: string | null
+          twitter_handle?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

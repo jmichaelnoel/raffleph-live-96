@@ -2,8 +2,9 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Upload, X, Image, AlertCircle } from 'lucide-react';
+import { Upload, X, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SEOImageUploadProps {
   label: string;
@@ -56,32 +57,35 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
     setUploading(true);
 
     try {
-      // Create FormData for upload
-      const formData = new FormData();
-      formData.append('file', file);
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${type}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      // Upload to Lovable's file system
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      console.log(`Uploading SEO image to bucket: seo-images, path: ${fileName}`);
 
-      if (response.ok) {
-        const result = await response.json();
-        const uploadedUrl = `/lovable-uploads/${result.filename}`;
-        onChange(uploadedUrl);
-      } else {
-        // Fallback: create a local URL for preview (development mode)
-        const localUrl = URL.createObjectURL(file);
-        onChange(localUrl);
-        console.log('Using local URL for development:', localUrl);
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('seo-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('SEO image upload error:', error);
+        throw new Error(`Upload failed: ${error.message}`);
       }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('seo-images')
+        .getPublicUrl(fileName);
+
+      console.log(`SEO image uploaded successfully: ${publicUrl}`);
+      onChange(publicUrl);
     } catch (error) {
-      console.error('Upload error:', error);
-      // Fallback: create a local URL for preview
-      const localUrl = URL.createObjectURL(file);
-      onChange(localUrl);
-      setError('Upload failed, using local preview');
+      console.error('SEO image upload failed:', error);
+      setError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
       setUploading(false);
     }

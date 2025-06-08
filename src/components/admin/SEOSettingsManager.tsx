@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSEOSettings } from '@/hooks/useSEOSettings';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Save, Settings, Globe, Share2, Palette, Download, Upload } from 'lucide-react';
+import { Save, Settings, Globe, Share2, Palette } from 'lucide-react';
 import SEOImageUpload from './SEOImageUpload';
 
 interface SEOSettingField {
@@ -86,50 +87,23 @@ const SEOSettingsManager = () => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
-    updateSettings(localSettings);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await updateSettings(localSettings);
       toast({
-        title: "Settings Updated",
-        description: "SEO settings have been updated successfully (in-memory only)"
+        title: "Settings Saved",
+        description: "SEO settings have been successfully saved to the database."
       });
-    }, 500);
-  };
-
-  const exportSettings = () => {
-    const dataStr = JSON.stringify(localSettings, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'seo-settings.json';
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const importedSettings = JSON.parse(e.target?.result as string);
-          setLocalSettings(importedSettings);
-          toast({
-            title: "Settings Imported",
-            description: "SEO settings have been imported successfully"
-          });
-        } catch (error) {
-          toast({
-            title: "Import Error",
-            description: "Failed to import settings. Please check the file format.",
-            variant: "destructive"
-          });
-        }
-      };
-      reader.readAsText(file);
+    } catch (error) {
+      console.error('Failed to save SEO settings:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save SEO settings. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -237,42 +211,22 @@ const SEOSettingsManager = () => {
       <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
         <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
           <Settings className="h-5 w-5 text-purple-600" />
-          🔧 SEO Settings Manager (File-Based)
+          🔧 SEO Settings Manager (Database-Backed)
         </CardTitle>
         <p className="text-gray-600 text-sm">
-          Manage your site's SEO properties, meta tags, and social sharing settings
+          Manage your site's SEO properties, meta tags, and social sharing settings. Changes are saved to the database.
         </p>
       </CardHeader>
       <CardContent className="p-6">
-        {/* Import/Export Controls */}
-        <div className="flex gap-4 mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-          <Button
-            onClick={exportSettings}
-            variant="outline"
-            className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export Settings
-          </Button>
-          <label className="cursor-pointer">
-            <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 border-2 border-green-200 text-green-600 hover:bg-green-50 rounded-xl">
-              <Upload className="h-4 w-4 mr-2" />
-              Import Settings
-            </span>
-            <input
-              type="file"
-              accept=".json"
-              onChange={importSettings}
-              className="hidden"
-            />
-          </label>
+        {/* Save Button */}
+        <div className="flex justify-end mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg ml-auto"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
           >
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Saving...' : 'Save All'}
+            {saving ? 'Saving...' : 'Save All Settings'}
           </Button>
         </div>
 
@@ -300,13 +254,13 @@ const SEOSettingsManager = () => {
         </div>
         
         <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2">💡 File-Based System Notes</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">💡 Database-Backed System Notes</h4>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Settings are stored locally and persist in browser session</li>
-            <li>• Use Export/Import to backup or transfer settings</li>
+            <li>• Settings are stored permanently in the Supabase database</li>
+            <li>• Images are uploaded to secure Supabase storage buckets</li>
             <li>• Changes are applied immediately to the site preview</li>
-            <li>• Images can be uploaded directly or linked via URL</li>
-            <li>• For permanent storage, consider upgrading to database version</li>
+            <li>• All data persists across sessions and deployments</li>
+            <li>• Admin authentication required for making changes</li>
           </ul>
         </div>
       </CardContent>

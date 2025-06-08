@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SEOSettings {
   site_title?: string;
@@ -21,13 +22,16 @@ export const useSEOSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      // Load settings from local JSON file
-      const response = await fetch('/src/data/seoSettings.json');
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-      } else {
-        // Fallback to default settings if file not found
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('seo_settings')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching SEO settings:', error);
+        // Use default settings on error
         setSettings({
           site_title: 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
           site_description: 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
@@ -37,28 +41,54 @@ export const useSEOSettings = () => {
           twitter_handle: '@PhilippineRaffles',
           theme_color: '#8B5CF6'
         });
+      } else if (data) {
+        setSettings(data);
       }
     } catch (error) {
       console.error('Error fetching SEO settings:', error);
-      // Use default settings on error
-      setSettings({
-        site_title: 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
-        site_description: 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
-        default_social_image: '/placeholder.svg',
-        favicon_url: '/favicon.ico',
-        og_site_name: 'Philippine Raffles',
-        twitter_handle: '@PhilippineRaffles',
-        theme_color: '#8B5CF6'
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const updateSettings = (newSettings: SEOSettings) => {
-    setSettings(newSettings);
-    // Note: In a real implementation, you'd need a backend API to save the file
-    console.log('Settings updated (in-memory only):', newSettings);
+  const updateSettings = async (newSettings: SEOSettings) => {
+    try {
+      // Get the current settings ID or create new one
+      const { data: existingData } = await supabase
+        .from('seo_settings')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
+
+      if (existingData) {
+        // Update existing settings
+        const { error } = await supabase
+          .from('seo_settings')
+          .update(newSettings)
+          .eq('id', existingData.id);
+
+        if (error) {
+          console.error('Error updating SEO settings:', error);
+          throw error;
+        }
+      } else {
+        // Insert new settings
+        const { error } = await supabase
+          .from('seo_settings')
+          .insert([newSettings]);
+
+        if (error) {
+          console.error('Error inserting SEO settings:', error);
+          throw error;
+        }
+      }
+
+      setSettings(newSettings);
+      console.log('SEO settings updated successfully in database');
+    } catch (error) {
+      console.error('Failed to update SEO settings:', error);
+      throw error;
+    }
   };
 
   return { settings, loading, updateSettings, refetch: fetchSettings };
