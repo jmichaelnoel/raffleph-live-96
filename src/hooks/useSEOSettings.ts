@@ -23,6 +23,8 @@ export const useSEOSettings = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
+      console.log('Fetching SEO settings...');
+      
       const { data, error } = await supabase
         .from('seo_settings')
         .select('*')
@@ -31,6 +33,12 @@ export const useSEOSettings = () => {
 
       if (error) {
         console.error('Error fetching SEO settings:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         // Use default settings on error
         setSettings({
           site_title: 'RafflePH - Win Cars, Millions in Cash, and More | No Sign-up Required',
@@ -42,12 +50,14 @@ export const useSEOSettings = () => {
           theme_color: '#6366f1'
         });
       } else if (data) {
+        console.log('SEO settings fetched successfully:', data);
         setSettings(data);
         // Update favicon immediately if we have a custom one
         if (data.favicon_url) {
           updateFavicon(data.favicon_url);
         }
       } else {
+        console.log('No SEO settings found, using defaults');
         // No data exists yet, use defaults
         setSettings({
           site_title: 'RafflePH - Win Cars, Millions in Cash, and More | No Sign-up Required',
@@ -60,7 +70,7 @@ export const useSEOSettings = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching SEO settings:', error);
+      console.error('Unexpected error fetching SEO settings:', error);
     } finally {
       setLoading(false);
     }
@@ -90,18 +100,26 @@ export const useSEOSettings = () => {
 
   const updateSettings = async (newSettings: SEOSettings) => {
     try {
-      console.log('Updating SEO settings:', newSettings);
+      console.log('Starting SEO settings update:', newSettings);
       
       // Get the current settings ID or create new one
-      const { data: existingData } = await supabase
+      const { data: existingData, error: fetchError } = await supabase
         .from('seo_settings')
         .select('id')
         .limit(1)
         .maybeSingle();
 
+      if (fetchError) {
+        console.error('Error fetching existing settings for update:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('Existing data:', existingData);
+
       let result;
       if (existingData) {
         // Update existing settings
+        console.log('Updating existing settings with ID:', existingData.id);
         result = await supabase
           .from('seo_settings')
           .update(newSettings)
@@ -110,6 +128,7 @@ export const useSEOSettings = () => {
           .single();
       } else {
         // Insert new settings
+        console.log('Inserting new settings');
         result = await supabase
           .from('seo_settings')
           .insert([newSettings])
@@ -117,8 +136,16 @@ export const useSEOSettings = () => {
           .single();
       }
 
+      console.log('Update/Insert result:', result);
+
       if (result.error) {
-        console.error('Error updating SEO settings:', result.error);
+        console.error('Database operation error:', result.error);
+        console.error('Error details:', {
+          message: result.error.message,
+          details: result.error.details,
+          hint: result.error.hint,
+          code: result.error.code
+        });
         throw result.error;
       }
 
@@ -134,9 +161,17 @@ export const useSEOSettings = () => {
 
       // Refresh the settings from database to ensure consistency
       await fetchSettings();
+      
+      return result.data;
     } catch (error) {
       console.error('Failed to update SEO settings:', error);
-      throw error;
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      
+      // Re-throw with more context
+      const enhancedError = new Error(`SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      enhancedError.cause = error;
+      throw enhancedError;
     }
   };
 

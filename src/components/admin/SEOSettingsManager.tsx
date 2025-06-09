@@ -75,12 +75,14 @@ const SEOSettingsManager = () => {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [lastError, setLastError] = useState<string | null>(null);
   const { toast } = useToast();
 
   React.useEffect(() => {
     setLocalSettings(settings);
     setHasChanges(false);
     setValidationErrors({});
+    setLastError(null);
   }, [settings]);
 
   const validateField = (key: string, value: string) => {
@@ -108,6 +110,7 @@ const SEOSettingsManager = () => {
       [key]: value
     }));
     setHasChanges(true);
+    setLastError(null);
 
     // Validate field
     const error = validateField(key, value);
@@ -132,7 +135,10 @@ const SEOSettingsManager = () => {
     }
 
     setSaving(true);
+    setLastError(null);
+    
     try {
+      console.log('Attempting to save SEO settings:', localSettings);
       await updateSettings(localSettings);
       setHasChanges(false);
       toast({
@@ -140,10 +146,15 @@ const SEOSettingsManager = () => {
         description: "SEO settings have been successfully updated. Changes are now live!"
       });
     } catch (error) {
-      console.error('Failed to save SEO settings:', error);
+      console.error('Save operation failed:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Unknown error occurred while saving settings';
+      
+      setLastError(errorMessage);
       toast({
         title: "Save Failed",
-        description: "Failed to save SEO settings. Please try again.",
+        description: `Failed to save SEO settings: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
@@ -369,6 +380,17 @@ const SEOSettingsManager = () => {
           </div>
         )}
 
+        {lastError && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-200">
+            <p className="text-sm text-red-700 font-medium">
+              ❌ Save Error: {lastError}
+            </p>
+            <p className="text-xs text-red-600 mt-1">
+              Check the browser console for more details.
+            </p>
+          </div>
+        )}
+
         <div className="space-y-6">
           {seoFields.map((field) => {
             const category = getCategoryBadge(field.category);
@@ -429,6 +451,7 @@ const SEOSettingsManager = () => {
             <li>• Favicon updates include cache-busting for instant browser refresh</li>
             <li>• Use "Test SEO" to validate your meta tags with external tools</li>
             <li>• All pages now use dynamic SEO instead of static HTML tags</li>
+            <li>• Database policies have been updated to allow proper access</li>
           </ul>
         </div>
       </CardContent>
