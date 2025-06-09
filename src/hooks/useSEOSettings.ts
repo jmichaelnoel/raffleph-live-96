@@ -51,6 +51,30 @@ export const useSEOSettings = () => {
     }
   };
 
+  const updateFavicon = (faviconUrl: string) => {
+    try {
+      // Remove existing favicon links
+      const existingLinks = document.querySelectorAll('link[rel*="icon"]');
+      existingLinks.forEach(link => link.remove());
+
+      // Add cache-busting parameter
+      const cacheBustUrl = faviconUrl.includes('?') 
+        ? `${faviconUrl}&t=${Date.now()}` 
+        : `${faviconUrl}?t=${Date.now()}`;
+
+      // Create new favicon link
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = cacheBustUrl;
+      link.type = 'image/x-icon';
+      document.head.appendChild(link);
+
+      console.log('Favicon updated:', cacheBustUrl);
+    } catch (error) {
+      console.error('Error updating favicon:', error);
+    }
+  };
+
   const updateSettings = async (newSettings: SEOSettings) => {
     try {
       // Get the current settings ID or create new one
@@ -83,8 +107,18 @@ export const useSEOSettings = () => {
         }
       }
 
+      // Update local state immediately
       setSettings(newSettings);
+      
+      // Update favicon if it changed
+      if (newSettings.favicon_url && newSettings.favicon_url !== settings.favicon_url) {
+        updateFavicon(newSettings.favicon_url);
+      }
+
       console.log('SEO settings updated successfully in database');
+      
+      // Refresh the settings from database to ensure consistency
+      await fetchSettings();
     } catch (error) {
       console.error('Failed to update SEO settings:', error);
       throw error;

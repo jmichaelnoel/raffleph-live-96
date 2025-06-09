@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Raffle } from '@/data/raffles';
@@ -37,8 +38,20 @@ const SEOHead: React.FC<SEOHeadProps> = ({
 
   const siteName = settings.og_site_name || 'Philippine Raffles';
   const canonicalUrl = url.split('?')[0]; // Remove query parameters for canonical URL
-  const faviconUrl = settings.favicon_url || '/favicon.ico';
   const themeColor = settings.theme_color || '#8B5CF6';
+
+  // Add cache-busting to favicon and images
+  const faviconUrl = settings.favicon_url 
+    ? (settings.favicon_url.includes('?') 
+        ? `${settings.favicon_url}&t=${Date.now()}` 
+        : `${settings.favicon_url}?t=${Date.now()}`)
+    : '/favicon.ico';
+
+  const socialImageUrl = seoData.image && seoData.image !== '/placeholder.svg' 
+    ? (seoData.image.includes('?') 
+        ? `${seoData.image}&t=${Date.now()}` 
+        : `${seoData.image}?t=${Date.now()}`)
+    : seoData.image;
 
   // Generate structured data for raffles
   const structuredData = raffle ? {
@@ -99,7 +112,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta property="og:type" content={type} />
       <meta property="og:title" content={seoData.title} />
       <meta property="og:description" content={seoData.description} />
-      <meta property="og:image" content={seoData.image} />
+      <meta property="og:image" content={socialImageUrl} />
       <meta property="og:url" content={url} />
       <meta property="og:site_name" content={siteName} />
       <meta property="og:locale" content="en_PH" />
@@ -108,7 +121,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={seoData.title} />
       <meta name="twitter:description" content={seoData.description} />
-      <meta name="twitter:image" content={seoData.image} />
+      <meta name="twitter:image" content={socialImageUrl} />
       {settings.twitter_handle && (
         <meta name="twitter:site" content={settings.twitter_handle} />
       )}

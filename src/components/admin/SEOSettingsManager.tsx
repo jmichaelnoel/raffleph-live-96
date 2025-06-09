@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Save, Settings, Globe, Share2, Palette } from 'lucide-react';
+import { Save, Settings, Globe, Share2, Palette, Eye, RefreshCw } from 'lucide-react';
 import SEOImageUpload from './SEOImageUpload';
 
 interface SEOSettingField {
@@ -71,13 +71,15 @@ const seoFields: SEOSettingField[] = [
 ];
 
 const SEOSettingsManager = () => {
-  const { settings, loading, updateSettings } = useSEOSettings();
+  const { settings, loading, updateSettings, refetch } = useSEOSettings();
   const [localSettings, setLocalSettings] = useState(settings);
   const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
     setLocalSettings(settings);
+    setHasChanges(false);
   }, [settings]);
 
   const handleInputChange = (key: string, value: string) => {
@@ -85,15 +87,17 @@ const SEOSettingsManager = () => {
       ...prev,
       [key]: value
     }));
+    setHasChanges(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await updateSettings(localSettings);
+      setHasChanges(false);
       toast({
-        title: "Settings Saved",
-        description: "SEO settings have been successfully saved to the database."
+        title: "Settings Saved ✅",
+        description: "SEO settings have been successfully updated. Changes should be visible immediately."
       });
     } catch (error) {
       console.error('Failed to save SEO settings:', error);
@@ -107,31 +111,57 @@ const SEOSettingsManager = () => {
     }
   };
 
+  const handleTestChanges = () => {
+    window.open('/', '_blank');
+  };
+
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+      toast({
+        title: "Settings Refreshed",
+        description: "SEO settings have been refreshed from the database."
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh settings. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getInputComponent = (field: SEOSettingField) => {
     const value = localSettings[field.key as keyof typeof localSettings] || '';
+    const originalValue = settings[field.key as keyof typeof settings] || '';
+    const isChanged = value !== originalValue;
 
     // Special handling for image fields
     if (field.key === 'default_social_image') {
       return (
-        <SEOImageUpload
-          label="Default Social Image"
-          value={value}
-          onChange={(newValue) => handleInputChange(field.key, newValue)}
-          type="social"
-          description={field.description}
-        />
+        <div className={isChanged ? 'ring-2 ring-blue-300 rounded-xl' : ''}>
+          <SEOImageUpload
+            label="Default Social Image"
+            value={value}
+            onChange={(newValue) => handleInputChange(field.key, newValue)}
+            type="social"
+            description={field.description}
+          />
+        </div>
       );
     }
 
     if (field.key === 'favicon_url') {
       return (
-        <SEOImageUpload
-          label="Favicon"
-          value={value}
-          onChange={(newValue) => handleInputChange(field.key, newValue)}
-          type="favicon"
-          description={field.description}
-        />
+        <div className={isChanged ? 'ring-2 ring-blue-300 rounded-xl' : ''}>
+          <SEOImageUpload
+            label="Favicon"
+            value={value}
+            onChange={(newValue) => handleInputChange(field.key, newValue)}
+            type="favicon"
+            description={field.description}
+          />
+        </div>
       );
     }
 
@@ -140,7 +170,9 @@ const SEOSettingsManager = () => {
       value: value,
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
         handleInputChange(field.key, e.target.value),
-      className: "border-2 border-purple-200 focus:border-purple-400 rounded-xl"
+      className: `border-2 border-purple-200 focus:border-purple-400 rounded-xl ${
+        isChanged ? 'ring-2 ring-blue-300' : ''
+      }`
     };
 
     switch (field.type) {
@@ -158,7 +190,7 @@ const SEOSettingsManager = () => {
             <Input 
               {...commonProps}
               type="color"
-              className="w-20 h-12 p-1"
+              className={`w-20 h-12 p-1 ${isChanged ? 'ring-2 ring-blue-300' : ''}`}
             />
             <Input 
               {...commonProps}
@@ -218,21 +250,56 @@ const SEOSettingsManager = () => {
         </p>
       </CardHeader>
       <CardContent className="p-6">
-        {/* Save Button */}
-        <div className="flex justify-end mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+        {/* Action Buttons */}
+        <div className="flex justify-between items-center mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              className="border-2 border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <Button
+              onClick={handleTestChanges}
+              variant="outline"
+              className="border-2 border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Test Site
+            </Button>
+          </div>
+          
           <Button
             onClick={handleSave}
-            disabled={saving}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
+            disabled={saving || !hasChanges}
+            className={`rounded-lg ${
+              hasChanges 
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                : 'bg-gray-400'
+            }`}
           >
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Saving...' : 'Save All Settings'}
+            {saving ? 'Saving...' : hasChanges ? 'Save Changes' : 'No Changes'}
           </Button>
         </div>
+
+        {hasChanges && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+            <p className="text-sm text-blue-700 font-medium">
+              💡 You have unsaved changes. Click "Save Changes" to apply them to your site.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-6">
           {seoFields.map((field) => {
             const category = getCategoryBadge(field.category);
+            const value = localSettings[field.key as keyof typeof localSettings] || '';
+            const originalValue = settings[field.key as keyof typeof settings] || '';
+            const isChanged = value !== originalValue;
+            
             return (
               <div key={field.key} className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
@@ -242,25 +309,37 @@ const SEOSettingsManager = () => {
                     <Badge className={category.color}>
                       {category.name}
                     </Badge>
+                    {isChanged && (
+                      <Badge className="bg-blue-100 text-blue-700">
+                        Modified
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 
                 <p className="text-sm text-gray-600 mb-2">{field.description}</p>
                 
                 {getInputComponent(field)}
+                
+                {isChanged && originalValue && (
+                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                    <span className="text-yellow-700">Original: </span>
+                    <span className="text-gray-600">{originalValue}</span>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
         
         <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2">💡 Database-Backed System Notes</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">💡 Live Update System Notes</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Settings are stored permanently in the Supabase database</li>
             <li>• Images are uploaded to secure Supabase storage buckets</li>
             <li>• Changes are applied immediately to the site preview</li>
-            <li>• All data persists across sessions and deployments</li>
-            <li>• Admin authentication required for making changes</li>
+            <li>• Favicon updates include cache-busting to force browser refresh</li>
+            <li>• Use "Test Site" button to verify changes in a new tab</li>
           </ul>
         </div>
       </CardContent>
