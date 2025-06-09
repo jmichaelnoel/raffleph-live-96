@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Raffle } from '@/data/raffles';
 import { useSEOSettings } from '@/hooks/useSEOSettings';
@@ -21,7 +21,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   raffle,
   type = 'website'
 }) => {
-  const { settings } = useSEOSettings();
+  const { settings, loading } = useSEOSettings();
 
   // Generate SEO data based on raffle if provided, otherwise use database settings or defaults
   const seoData = raffle ? {
@@ -30,27 +30,25 @@ const SEOHead: React.FC<SEOHeadProps> = ({
     image: raffle.imageUrl,
     keywords: `raffle, giveaway, ${raffle.category}, ${raffle.organization}, Philippine raffles, win prizes, online raffle`
   } : {
-    title: title || settings.site_title || 'Philippine Raffles - Win Amazing Prizes | Join Verified Raffles',
-    description: description || settings.site_description || 'Discover verified raffles in the Philippines. Win gadgets, cars, cash prizes and more. Join trusted raffles from verified organizers with transparent winning odds.',
-    image: image || settings.default_social_image || '/placeholder.svg',
-    keywords: 'Philippine raffles, online raffles, win prizes, giveaways, verified raffles, gadgets, cars, cash prizes'
+    title: title || settings.site_title || 'RafflePH - Win Cars, Millions in Cash, and More | No Sign-up Required',
+    description: description || settings.site_description || 'Win cars, millions in cash, and more — no sign-up required. Para sa pamilya, para sa pangarap — ito na \'yon! Join exciting online raffles in the Philippines with entry fees starting at ₱20.',
+    image: image || settings.default_social_image || '/lovable-uploads/adc5bb76-0107-4448-9683-195bd554314c.png',
+    keywords: 'online raffle Philippines, win cars Philippines, raffle PH, win cash prizes, online contest, gadgets raffle, car raffle, cash raffle, lottery Philippines, win millions'
   };
 
-  const siteName = settings.og_site_name || 'Philippine Raffles';
+  const siteName = settings.og_site_name || 'RafflePH';
   const canonicalUrl = url.split('?')[0]; // Remove query parameters for canonical URL
-  const themeColor = settings.theme_color || '#8B5CF6';
+  const themeColor = settings.theme_color || '#6366f1';
+  const twitterHandle = settings.twitter_handle || '@PhilippineRaffles';
 
-  // Add cache-busting to favicon and images
+  // Add cache-busting to favicon
   const faviconUrl = settings.favicon_url 
-    ? (settings.favicon_url.includes('?') 
-        ? `${settings.favicon_url}&t=${Date.now()}` 
-        : `${settings.favicon_url}?t=${Date.now()}`)
+    ? `${settings.favicon_url}?v=${Date.now()}` 
     : '/favicon.ico';
 
-  const socialImageUrl = seoData.image && seoData.image !== '/placeholder.svg' 
-    ? (seoData.image.includes('?') 
-        ? `${seoData.image}&t=${Date.now()}` 
-        : `${seoData.image}?t=${Date.now()}`)
+  // Add cache-busting to social images if they're from our storage
+  const socialImageUrl = seoData.image && seoData.image.includes('supabase') 
+    ? `${seoData.image}?v=${Date.now()}` 
     : seoData.image;
 
   // Generate structured data for raffles
@@ -87,15 +85,22 @@ const SEOHead: React.FC<SEOHeadProps> = ({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": siteName,
+    "alternateName": "Raffle Philippines",
+    "url": canonicalUrl,
     "description": seoData.description,
-    "url": url,
+    "inLanguage": "en-PH",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": `${url}?search={search_term_string}`
+        "urlTemplate": `${canonicalUrl}?search={search_term_string}`
       },
       "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": siteName,
+      "url": canonicalUrl
     }
   };
 
@@ -105,15 +110,25 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <title>{seoData.title}</title>
       <meta name="description" content={seoData.description} />
       <meta name="keywords" content={seoData.keywords} />
+      <meta name="author" content={siteName} />
+      <meta name="robots" content="index, follow" />
+      <meta name="language" content="English" />
+      <meta name="geo.region" content="PH" />
+      <meta name="geo.country" content="Philippines" />
+      <meta name="geo.placename" content="Philippines" />
+      
+      {/* Canonical URL */}
       <link rel="canonical" href={canonicalUrl} />
-      <link rel="icon" href={faviconUrl} />
+      
+      {/* Favicon */}
+      <link rel="icon" type="image/x-icon" href={faviconUrl} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
       <meta property="og:title" content={seoData.title} />
       <meta property="og:description" content={seoData.description} />
       <meta property="og:image" content={socialImageUrl} />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content={siteName} />
       <meta property="og:locale" content="en_PH" />
 
@@ -122,15 +137,15 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta name="twitter:title" content={seoData.title} />
       <meta name="twitter:description" content={seoData.description} />
       <meta name="twitter:image" content={socialImageUrl} />
-      {settings.twitter_handle && (
-        <meta name="twitter:site" content={settings.twitter_handle} />
-      )}
+      <meta name="twitter:site" content={twitterHandle} />
 
-      {/* Additional Meta Tags */}
-      <meta name="robots" content="index, follow" />
-      <meta name="author" content={siteName} />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta httpEquiv="Content-Language" content="en-PH" />
+      {/* Mobile optimization */}
+      <meta name="theme-color" content={themeColor} />
+      <meta name="msapplication-TileColor" content={themeColor} />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <meta name="format-detection" content="telephone=no" />
       
       {/* Raffle-specific meta tags */}
       {raffle && (
@@ -147,11 +162,6 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <script type="application/ld+json">
         {JSON.stringify(structuredData)}
       </script>
-
-      {/* Additional SEO Tags */}
-      <meta name="theme-color" content={themeColor} />
-      <meta name="msapplication-TileColor" content={themeColor} />
-      <meta name="format-detection" content="telephone=no" />
     </Helmet>
   );
 };

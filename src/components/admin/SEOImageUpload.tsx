@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Upload, X, AlertCircle } from 'lucide-react';
+import { Upload, X, AlertCircle, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,6 +23,7 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
 }) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getRecommendedSize = () => {
@@ -32,7 +33,7 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
   const validateFile = (file: File) => {
     // Check file type
     if (!file.type.startsWith('image/')) {
-      return 'Please select an image file (PNG, JPG, WEBP)';
+      return 'Please select an image file (PNG, JPG, WEBP, ICO)';
     }
 
     // Check file size (5MB limit)
@@ -54,6 +55,7 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
     }
 
     setError(null);
+    setSuccess(false);
     setUploading(true);
 
     try {
@@ -83,6 +85,10 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
 
       console.log(`SEO image uploaded successfully: ${publicUrl}`);
       onChange(publicUrl);
+      setSuccess(true);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       console.error('SEO image upload failed:', error);
       setError(error instanceof Error ? error.message : 'Upload failed');
@@ -94,6 +100,7 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
   const clearImage = () => {
     onChange('');
     setError(null);
+    setSuccess(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -148,8 +155,16 @@ const SEOImageUpload: React.FC<SEOImageUploadProps> = ({
 
       {/* Helper Text */}
       <p className="text-xs text-gray-500">
-        Recommended size: {getRecommendedSize()}px • PNG, JPG, or WEBP • Max 5MB
+        Recommended size: {getRecommendedSize()}px • PNG, JPG, WEBP, or ICO • Max 5MB
       </p>
+
+      {/* Success Message */}
+      {success && (
+        <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+          <Check className="h-4 w-4 text-green-600" />
+          <span className="text-sm text-green-700">Image uploaded successfully!</span>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

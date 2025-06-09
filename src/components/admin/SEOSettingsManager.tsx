@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSEOSettings } from '@/hooks/useSEOSettings';
@@ -7,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Save, Settings, Globe, Share2, Palette, Eye, RefreshCw } from 'lucide-react';
+import { Save, Settings, Globe, Share2, Palette, Eye, RefreshCw, TestTube } from 'lucide-react';
 import SEOImageUpload from './SEOImageUpload';
 
 interface SEOSettingField {
@@ -75,12 +74,33 @@ const SEOSettingsManager = () => {
   const [localSettings, setLocalSettings] = useState(settings);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   React.useEffect(() => {
     setLocalSettings(settings);
     setHasChanges(false);
+    setValidationErrors({});
   }, [settings]);
+
+  const validateField = (key: string, value: string) => {
+    const field = seoFields.find(f => f.key === key);
+    if (!field) return '';
+
+    if (field.type === 'text' && key === 'site_title' && value.length > 60) {
+      return 'Title should be under 60 characters for better SEO';
+    }
+    if (field.type === 'textarea' && key === 'site_description' && value.length > 160) {
+      return 'Description should be under 160 characters for better SEO';
+    }
+    if (field.type === 'url' && value && !value.match(/^https?:\/\/.+/)) {
+      return 'Please enter a valid URL starting with http:// or https://';
+    }
+    if (field.type === 'color' && value && !value.match(/^#[0-9a-fA-F]{6}$/)) {
+      return 'Please enter a valid hex color (e.g., #6366f1)';
+    }
+    return '';
+  };
 
   const handleInputChange = (key: string, value: string) => {
     setLocalSettings(prev => ({
@@ -88,16 +108,36 @@ const SEOSettingsManager = () => {
       [key]: value
     }));
     setHasChanges(true);
+
+    // Validate field
+    const error = validateField(key, value);
+    setValidationErrors(prev => ({
+      ...prev,
+      [key]: error
+    }));
+  };
+
+  const hasValidationErrors = () => {
+    return Object.values(validationErrors).some(error => error !== '');
   };
 
   const handleSave = async () => {
+    if (hasValidationErrors()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the validation errors before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       await updateSettings(localSettings);
       setHasChanges(false);
       toast({
         title: "Settings Saved ✅",
-        description: "SEO settings have been successfully updated. Changes should be visible immediately."
+        description: "SEO settings have been successfully updated. Changes are now live!"
       });
     } catch (error) {
       console.error('Failed to save SEO settings:', error);
@@ -131,10 +171,16 @@ const SEOSettingsManager = () => {
     }
   };
 
+  const handleTestSEO = () => {
+    const testUrl = `https://www.opengraph.xyz/url/${encodeURIComponent(window.location.origin)}`;
+    window.open(testUrl, '_blank');
+  };
+
   const getInputComponent = (field: SEOSettingField) => {
     const value = localSettings[field.key as keyof typeof localSettings] || '';
     const originalValue = settings[field.key as keyof typeof settings] || '';
     const isChanged = value !== originalValue;
+    const hasError = validationErrors[field.key];
 
     // Special handling for image fields
     if (field.key === 'default_social_image') {
@@ -172,17 +218,24 @@ const SEOSettingsManager = () => {
         handleInputChange(field.key, e.target.value),
       className: `border-2 border-purple-200 focus:border-purple-400 rounded-xl ${
         isChanged ? 'ring-2 ring-blue-300' : ''
-      }`
+      } ${hasError ? 'border-red-300 focus:border-red-400' : ''}`
     };
 
     switch (field.type) {
       case 'textarea':
         return (
-          <Textarea 
-            {...commonProps}
-            rows={3}
-            placeholder={field.description}
-          />
+          <div>
+            <Textarea 
+              {...commonProps}
+              rows={3}
+              placeholder={field.description}
+            />
+            {field.key === 'site_description' && (
+              <div className="text-xs text-gray-500 mt-1">
+                {value.length}/160 characters
+              </div>
+            )}
+          </div>
         );
       case 'color':
         return (
@@ -190,23 +243,30 @@ const SEOSettingsManager = () => {
             <Input 
               {...commonProps}
               type="color"
-              className={`w-20 h-12 p-1 ${isChanged ? 'ring-2 ring-blue-300' : ''}`}
+              className={`w-20 h-12 p-1 ${isChanged ? 'ring-2 ring-blue-300' : ''} ${hasError ? 'border-red-300' : ''}`}
             />
             <Input 
               {...commonProps}
               type="text"
-              placeholder="#8B5CF6"
+              placeholder="#6366f1"
               className="flex-1"
             />
           </div>
         );
       default:
         return (
-          <Input 
-            {...commonProps}
-            type="text"
-            placeholder={field.description}
-          />
+          <div>
+            <Input 
+              {...commonProps}
+              type="text"
+              placeholder={field.description}
+            />
+            {field.key === 'site_title' && (
+              <div className="text-xs text-gray-500 mt-1">
+                {value.length}/60 characters
+              </div>
+            )}
+          </div>
         );
     }
   };
@@ -243,16 +303,16 @@ const SEOSettingsManager = () => {
       <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
         <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
           <Settings className="h-5 w-5 text-purple-600" />
-          🔧 SEO Settings Manager (Database-Backed)
+          🔧 SEO Settings Manager (Live System)
         </CardTitle>
         <p className="text-gray-600 text-sm">
-          Manage your site's SEO properties, meta tags, and social sharing settings. Changes are saved to the database.
+          Manage your site's SEO properties, meta tags, and social sharing settings. Changes are applied immediately.
         </p>
       </CardHeader>
       <CardContent className="p-6">
         {/* Action Buttons */}
         <div className="flex justify-between items-center mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               onClick={handleRefresh}
               variant="outline"
@@ -269,13 +329,21 @@ const SEOSettingsManager = () => {
               <Eye className="h-4 w-4 mr-2" />
               Test Site
             </Button>
+            <Button
+              onClick={handleTestSEO}
+              variant="outline"
+              className="border-2 border-purple-200 text-purple-600 hover:bg-purple-50 rounded-lg"
+            >
+              <TestTube className="h-4 w-4 mr-2" />
+              Test SEO
+            </Button>
           </div>
           
           <Button
             onClick={handleSave}
-            disabled={saving || !hasChanges}
+            disabled={saving || !hasChanges || hasValidationErrors()}
             className={`rounded-lg ${
-              hasChanges 
+              hasChanges && !hasValidationErrors()
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
                 : 'bg-gray-400'
             }`}
@@ -293,12 +361,21 @@ const SEOSettingsManager = () => {
           </div>
         )}
 
+        {hasValidationErrors() && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-200">
+            <p className="text-sm text-red-700 font-medium">
+              ⚠️ Please fix the validation errors before saving.
+            </p>
+          </div>
+        )}
+
         <div className="space-y-6">
           {seoFields.map((field) => {
             const category = getCategoryBadge(field.category);
             const value = localSettings[field.key as keyof typeof localSettings] || '';
             const originalValue = settings[field.key as keyof typeof settings] || '';
             const isChanged = value !== originalValue;
+            const hasError = validationErrors[field.key];
             
             return (
               <div key={field.key} className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
@@ -314,6 +391,11 @@ const SEOSettingsManager = () => {
                         Modified
                       </Badge>
                     )}
+                    {hasError && (
+                      <Badge variant="destructive" className="bg-red-100 text-red-700">
+                        Error
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 
@@ -321,7 +403,13 @@ const SEOSettingsManager = () => {
                 
                 {getInputComponent(field)}
                 
-                {isChanged && originalValue && (
+                {hasError && (
+                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
+                    <span className="text-red-700">{hasError}</span>
+                  </div>
+                )}
+                
+                {isChanged && originalValue && !hasError && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
                     <span className="text-yellow-700">Original: </span>
                     <span className="text-gray-600">{originalValue}</span>
@@ -333,13 +421,14 @@ const SEOSettingsManager = () => {
         </div>
         
         <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-2">💡 Live Update System Notes</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">💡 Live SEO System Notes</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Settings are stored permanently in the Supabase database</li>
             <li>• Images are uploaded to secure Supabase storage buckets</li>
-            <li>• Changes are applied immediately to the site preview</li>
-            <li>• Favicon updates include cache-busting to force browser refresh</li>
-            <li>• Use "Test Site" button to verify changes in a new tab</li>
+            <li>• Changes are applied immediately to all pages</li>
+            <li>• Favicon updates include cache-busting for instant browser refresh</li>
+            <li>• Use "Test SEO" to validate your meta tags with external tools</li>
+            <li>• All pages now use dynamic SEO instead of static HTML tags</li>
           </ul>
         </div>
       </CardContent>
