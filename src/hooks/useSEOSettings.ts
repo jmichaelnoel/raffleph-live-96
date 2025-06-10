@@ -168,9 +168,8 @@ export const useSEOSettings = () => {
       console.error('Error type:', typeof error);
       console.error('Error constructor:', error?.constructor?.name);
       
-      // Re-throw with more context
+      // Create enhanced error without using Error.cause (not available in older TypeScript)
       const enhancedError = new Error(`SEO settings update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      enhancedError.cause = error;
       throw enhancedError;
     }
   };

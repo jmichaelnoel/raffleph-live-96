@@ -9,6 +9,7 @@ export const insertSampleRaffles = async () => {
       {
         title: 'iPhone 16 Pro Max Giveaway',
         description: 'Win the latest iPhone 16 Pro Max with 1TB storage. Brand new, sealed, and unlocked for all networks in the Philippines. Drawing will be done via Facebook Live.',
+        slug: 'iphone-16-pro-max-giveaway-' + Date.now(),
         grand_prize: 'iPhone 16 Pro Max 1TB',
         grand_prize_value: 89000,
         grand_prize_images: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'],
@@ -26,6 +27,7 @@ export const insertSampleRaffles = async () => {
       {
         title: 'Brand New Toyota Vios 2025',
         description: 'Drive home a brand new Toyota Vios 2025 model. Complete with 3-year warranty and full insurance coverage. Perfect for your family needs!',
+        slug: 'toyota-vios-2025-' + Date.now(),
         grand_prize: 'Toyota Vios 2025',
         grand_prize_value: 850000,
         grand_prize_images: ['https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'],
@@ -43,6 +45,7 @@ export const insertSampleRaffles = async () => {
       {
         title: 'Cash Prize ₱100,000',
         description: 'Win ₱100,000 cash directly deposited to your bank account. No questions asked, pure cash prize. Drawing every Sunday via Facebook Live.',
+        slug: 'cash-prize-100k-' + Date.now(),
         grand_prize: '₱100,000 Cash',
         grand_prize_value: 100000,
         grand_prize_images: ['https://images.unsplash.com/photo-1554672723-d42a16e533db?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800'],

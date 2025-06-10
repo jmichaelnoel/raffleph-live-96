@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +21,7 @@ interface PendingRaffle {
   cost_per_slot: number;
   total_slots: number;
   draw_date: string;
-  raffle_status: 'pending' | 'approved' | 'rejected';
+  approved: boolean;
   created_at: string;
 }
 
@@ -99,13 +100,13 @@ const AdminDashboard = () => {
     try {
       const { data, error } = await supabase
         .from('raffles')
-        .select('raffle_status');
+        .select('approved');
 
       if (error) throw error;
 
       const totalRaffles = data.length;
-      const pendingRaffles = data.filter(r => r.raffle_status === 'pending').length;
-      const approvedRaffles = data.filter(r => r.raffle_status === 'approved').length;
+      const pendingRaffles = data.filter(r => !r.approved).length;
+      const approvedRaffles = data.filter(r => r.approved).length;
 
       setStats({
         totalRaffles,
@@ -121,10 +122,7 @@ const AdminDashboard = () => {
     try {
       const { error } = await supabase
         .from('raffles')
-        .update({ 
-          approved,
-          raffle_status: approved ? 'approved' : 'rejected'
-        })
+        .update({ approved })
         .eq('id', raffleId);
 
       if (error) throw error;
@@ -154,16 +152,11 @@ const AdminDashboard = () => {
     }).format(value);
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-gradient-to-r from-yellow-50 to-orange-50 text-yellow-700 border-yellow-200">Pending</Badge>;
-      case 'approved':
-        return <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200">Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive" className="bg-gradient-to-r from-red-100 to-rose-100">Rejected</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
+  const getStatusBadge = (approved: boolean) => {
+    if (approved) {
+      return <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200">Approved</Badge>;
+    } else {
+      return <Badge variant="outline" className="bg-gradient-to-r from-yellow-50 to-orange-50 text-yellow-700 border-yellow-200">Pending</Badge>;
     }
   };
 
@@ -356,11 +349,11 @@ const AdminDashboard = () => {
                               />
                             </td>
                             <td className="py-4 px-6">
-                              {getStatusBadge(raffle.raffle_status)}
+                              {getStatusBadge(raffle.approved)}
                             </td>
                             <td className="py-4 px-6">
                               <div className="flex gap-2">
-                                {raffle.raffle_status === 'pending' && (
+                                {!raffle.approved && (
                                   <>
                                     <Button
                                       size="sm"
@@ -379,7 +372,7 @@ const AdminDashboard = () => {
                                     </Button>
                                   </>
                                 )}
-                                {raffle.raffle_status === 'approved' && (
+                                {raffle.approved && (
                                   <Button
                                     size="sm"
                                     variant="destructive"
@@ -387,15 +380,6 @@ const AdminDashboard = () => {
                                     className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg"
                                   >
                                     <X className="h-4 w-4 mr-1" /> Reject
-                                  </Button>
-                                )}
-                                {raffle.raffle_status === 'rejected' && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleApproval(raffle.id, true)}
-                                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg"
-                                  >
-                                    <Check className="h-4 w-4 mr-1" /> Approve
                                   </Button>
                                 )}
                               </div>
